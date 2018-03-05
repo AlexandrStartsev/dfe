@@ -1,0 +1,518 @@
+/*button,*/ input:not([type='button']):not([type='radio']):not([type="checkbox"]), select, textarea {
+    border: 1px solid;
+    border-color: darkgray;
+  /*font-family: 'SourceCodePro-Medium', monospace;
+    font-size: 14px;*/
+    text-decoration: none;
+    align-self: flex-start;
+}
+input[type="checkbox"], input[type="radio"] {
+    padding: 0px 2px 0px 2px;
+}
+select { max-width: 100%; }
+input { padding-left: 2px; }
+input[type='button'] { 
+    padding-left: 5px;
+    padding-right: 5px; 
+}
+label {
+    font-family: 'SourceCodePro-Medium', sans-serif;
+    text-decoration: none;
+    font-size: 12px
+}
+*[filter-out] { visibility: hidden; display: none; }
+*[hidden] { visibility: hidden; display: none; }
+/* ============================ DFE css framework ============================ */
+table.tab-alt-color, table.tab-alt-color-1 { 
+    width: 100%; 
+    overflow: hidden;
+    background: white;
+    border-collapse: collapse;
+}
+
+table.tab-alt-color > :nth-child(2n), table.tab-alt-color-1 > :nth-child(2n+1) {
+    background: rgb(238, 238, 238);
+}
+
+/*td, th {
+    padding: 4px 6px;
+    margin: 0px;
+    border: 0px;
+    box-sizing: border-box;
+}*/
+
+table.tab-alt-color > tr > td, table.tab-alt-color > tr > th, table.tab-alt-color-1 > tr > td, table.tab-alt-color-1 > tr > th {
+    padding: 4px 6px;
+    margin: 0px;
+    border: 0px;
+    box-sizing: border-box;
+}
+
+td {
+    vertical-align: top
+}
+
+th {
+    vertical-align: center
+}
+
+.tab-cols-4-3-3 > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 40%; border-right: 2px solid white; }
+.tab-cols-4-3-3 > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 30%; border-right: 2px solid white; }
+.tab-cols-4-3-3 > tr > td:nth-child(3n+3) { width: 30%; }
+
+.tab-cols-3-4-3 > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 30%; border-right: 2px solid white; }
+.tab-cols-3-4-3 > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 40%; border-right: 2px solid white; }
+.tab-cols-3-4-3 > tr > td:nth-child(3n+3) { width: 30%; }
+
+.tab-cols-2-5-3 > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 20%; border-right: 2px solid white; }
+.tab-cols-2-5-3 > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 50%; border-right: 2px solid white; }
+.tab-cols-2-5-3 > tr > td:nth-child(3n+3) { width: 30%; }
+
+.tab-cols-5-5 > tr > td:not([colspan="2"]):nth-child(2n+1) { width: 50%; border-right: 2px solid white; }
+.tab-cols-5-5 > tr > td:nth-child(2n+2) { width: 50%; }
+
+.col-va-middle > tr > td { vertical-align: middle }
+
+.col-1-centred > tr > td:nth-child(3n+1), .col-2-centred > tr > td:nth-child(3n+2), .col-3-centred > tr > td:nth-child(3n) { text-align: center; }
+
+
+.dfe-field-std-p1, .dfe-field-std-p2, .dfe-field-std-p3, .dfe-field-std-p4, .dfe-field-std-p5, .dfe-field-std-p6, .dfe-field-std-p7, 
+.dfe-field-std-p8, .dfe-field-std-p9, .dfe-field-std-p0 { 
+    width: 100%; 
+    outline-color: white; 
+    outline-width: 1px; 
+    outline-style: solid; 
+    padding: 6px 4px; 
+    box-sizing: border-box; 
+    /*margin: 0px; */
+    /*display: flex; 
+    flex-flow: column; */
+    display: inline-block; 
+    justify-content: center; 
+}
+.dfe-field-std-p1 { width: 10%; }
+.dfe-field-std-p2 { width: 20%; }
+.dfe-field-std-p3 { width: 30%; }
+.dfe-field-std-p4 { width: 40%; }
+.dfe-field-std-p5 { width: 50%; }
+.dfe-field-std-p6 { width: 60%; }
+.dfe-field-std-p7 { width: 70%; }
+.dfe-field-std-p8 { width: 80%; }
+.dfe-field-std-p9 { width: 90%; }
+.div-alt-color1-1, .div-alt-color1-2, .div-alt-color2-1, .div-alt-color2-2, .div-alt-color2-3, .div-alt-color2-4,
+.div-alt-color3-1, .div-alt-color3-2, .div-alt-color3-3, .div-alt-color3-4, .div-alt-color3-5, .div-alt-color3-6 { 
+    display: flex; flex-flow: row wrap; width: 100%; overflow: hidden; justify-content: space-between; 
+}
+.div-alt-color-fc {
+    display: inline-table;
+}
+.div-alt-color-fc > :first-child {
+    background: #e0e0e0;
+}
+.div-alt-color1-1 > :nth-child(2n+1), .div-alt-color1-2 > :nth-child(2n+2),
+.div-alt-color2-1 > :nth-child(4n+1), .div-alt-color2-1 > :nth-child(4n+2),
+.div-alt-color2-2 > :nth-child(4n+2), .div-alt-color2-2 > :nth-child(4n+3),
+.div-alt-color2-3 > :nth-child(4n+3), .div-alt-color2-3 > :nth-child(4n+4),
+.div-alt-color2-4 > :nth-child(4n+4), .div-alt-color2-4 > :nth-child(4n+1),
+.div-alt-color3-1 > :nth-child(6n+1), .div-alt-color3-1 > :nth-child(6n+2), .div-alt-color3-1 > :nth-child(6n+3),
+.div-alt-color3-2 > :nth-child(6n+2), .div-alt-color3-2 > :nth-child(6n+3), .div-alt-color3-2 > :nth-child(6n+4),
+.div-alt-color3-3 > :nth-child(6n+3), .div-alt-color3-3 > :nth-child(6n+4), .div-alt-color3-3 > :nth-child(6n+5),
+.div-alt-color3-4 > :nth-child(6n+4), .div-alt-color3-4 > :nth-child(6n+5), .div-alt-color3-4 > :nth-child(6n+0),
+.div-alt-color3-5 > :nth-child(6n+5), .div-alt-color3-5 > :nth-child(6n+0), .div-alt-color3-5 > :nth-child(6n+1),
+.div-alt-color3-6 > :nth-child(6n+0), .div-alt-color3-6 > :nth-child(6n+1), .div-alt-color3-6 > :nth-child(6n+2) { 
+    background: rgb(238, 238, 238); 
+}
+.div-alt-color1-1 > :nth-child(2n+2), .div-alt-color1-2 > :nth-child(2n+1),
+.div-alt-color2-1 > :nth-child(4n+3), .div-alt-color2-1 > :nth-child(4n+4),
+.div-alt-color2-2 > :nth-child(4n+4), .div-alt-color2-2 > :nth-child(4n+1),
+.div-alt-color2-3 > :nth-child(4n+1), .div-alt-color2-3 > :nth-child(4n+2),
+.div-alt-color2-4 > :nth-child(4n+2), .div-alt-color2-4 > :nth-child(4n+3),
+.div-alt-color3-1 > :nth-child(6n+4), .div-alt-color3-1 > :nth-child(6n+5), .div-alt-color3-1 > :nth-child(6n+6),
+.div-alt-color3-2 > :nth-child(6n+5), .div-alt-color3-2 > :nth-child(6n+6), .div-alt-color3-2 > :nth-child(6n+1),
+.div-alt-color3-3 > :nth-child(6n+6), .div-alt-color3-3 > :nth-child(6n+1), .div-alt-color3-3 > :nth-child(6n+2),
+.div-alt-color3-4 > :nth-child(6n+1), .div-alt-color3-4 > :nth-child(6n+2), .div-alt-color3-4 > :nth-child(6n+3),
+.div-alt-color3-5 > :nth-child(6n+2), .div-alt-color3-5 > :nth-child(6n+3), .div-alt-color3-5 > :nth-child(6n+4),
+.div-alt-color3-6 > :nth-child(6n+3), .div-alt-color3-6 > :nth-child(6n+4), .div-alt-color3-6 > :nth-child(6n+5) { 
+    background: white; 
+}
+
+.div-section-header {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+    background: darkgray;
+    font-weight: bold;
+    color: rgb(50,50,50);
+    margin: 2px 0px 2px 0px;
+    padding: 10px;
+    border-radius: 5px 5px 0px 0px; 
+}
+
+.dfe-inline-section-1, .-dfe-inline-section-1 {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0px 2px;  /* none for tab */
+    background: white!important;
+    padding: 0px!important;
+}
+
+.tab-section-header, .-dfe-inline-section-1 > table > thead th, .-dfe-inline-section-1 > table > tr:first-child > td, .inline-section-header {
+    border-bottom: 2px solid white;
+    border-top: 2px solid white;
+    background: lightgray;
+    text-align: left;
+    padding: 6px;
+    border-right: 0px;
+    position:relative;
+    color: #333333;
+}
+
+.tab-section-header label, .-dfe-inline-section-1 > table > thead label, .-dfe-inline-section-1 > table > tr:first-child label, .inline-section-header label { font-weight: bold; }
+
+.dfe-error {
+    color: #DB1260!Important;
+    font-weight: bold;
+    display: block;
+    text-decoration: none!Important;
+    white-space: nowrap;
+}
+/* ============================ end of DFE css framework ============================ */
+.link-button {
+    border: none;
+    background: transparent;
+    font-family: 'SourceCodePro-Medium', sans-serif;
+    font-size: 12px;
+    text-decoration: underline solid;
+    color: blue;
+    cursor: pointer;
+    outline: none;
+    align-self: center;
+}
+.link-button:active {
+    background-color: darkgrey;
+    transform: translateY(1px);
+}
+.div-flex {
+    overflow:visible;
+    position:relative;
+    width:auto;
+    display: flex;
+    flex-direction: column;
+}
+.div-flex-h {
+    overflow:visible;
+    position:relative;
+    width:auto;
+    display: flex;
+    flex-direction: row;
+}
+.div-flex-row {
+    display: flex;
+    flex-direction: row
+}
+.div-flex-row-h {
+    justify-content: center; 
+    display: flex; 
+    flex-direction: column;
+    margin: 1px;
+    padding: 1px;
+}
+.div-flex-col {
+    justify-content: center; 
+    display: flex; 
+    margin: 1px;
+    padding: 1px;
+}
+.-sticky-header {
+    position: sticky; 
+    top: 0px; 
+    z-index: 105;
+    margin: 0px;
+    border: solid 1px white;
+    border-bottom: solid 1px lightgray;
+}
+.div-flex-col-embedded {
+    justify-content: center; 
+    display: flex; 
+    margin: 0px;
+    padding: 0px 1px 0px 1px;
+    align-items: center;
+}
+.div-flex-col-embedded-1 {
+    justify-content: center; 
+    display: flex; 
+    margin: 1px 0px 0px 1px;
+    padding: 1px 0px;
+    align-items: center;
+}
+.editbox-col { width: auto; }
+.popup-edit-div-container {
+    flex-direction: column;
+    width: 172px;
+    height: 20px;
+    z-index:0;
+    margin: 0px;
+    padding: 1px;
+    position:relative;
+    overflow:hidden
+}
+/*.popup-edit-div-container:hover{
+    overflow:visible;
+    z-index:100
+}*/
+.editor-pos-fld {
+    width: 32px; 
+    -webkit-appearance: none; 
+    text-indent: 1px; 
+    text-align: right;
+    box-sizing: content-box;
+}
+.popup-edit-div-container:focus-within{
+    overflow:visible;
+    z-index:101
+}
+/*.popup-edit-popup{
+    z-index:110;
+    position: absolute;
+    left: 0px;
+    top: 22px;
+}*/
+
+.edit-popup-textarea {
+    width : 100%;
+    height : 100%;
+    box-sizing : border-box;
+    resize : none;
+    font-size : inherit;
+}
+
+.div-button {
+    font-family: "SourceCodePro-Medium", monospace;
+    font-size: 14px;
+    text-align: center;
+    min-height: 25px;
+    justify-content: center;
+    margin: 1px;
+    flex-flow: column;
+    border-radius: 3px;
+    display: inline-flex;
+    padding: 5px;
+    border: solid 1px;
+    border-color: darkgray;
+    line-height: 1em;
+}
+label, .link-button, .non-selectable, .div-button-text, .div-button-error {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+   /* background: transparent; */
+}
+.link-button:focus {
+   outline: -webkit-focus-ring-color auto 5px;
+}
+.div-button-text {
+    
+}
+.div-button-error {
+    color: red;
+    font-size: 10px;
+    display: block;
+}
+.div-button-x { 
+    opacity: 0;
+    border: 0px;
+    position: absolute; 
+    background: inherit; 
+    right: 1px; 
+    top: 1px;
+}
+.div-button-x:hover { 
+    opacity: 0.9;
+    border: solid;
+    border-color: darkgray;
+    border-width: 1px;
+    border-radius: 3px;
+}
+
+.div-tab-item:not(.div-tab-item-active) .div-button-x { display: none; }
+
+/* ============ TABs =========== */
+.div-tab-body {
+    border-radius: 0px 5px 5px; /* none for tab */
+    border: 1px solid darkgrey; /* none for tab */
+    padding: 2px;
+    display: flex; 
+    width: calc(100% - 2px);
+}
+
+.div-tab-item {
+    border-radius: 5px 5px 0px 0px;
+    display: inline-block;
+    vertical-align: bottom;
+    margin: 0px;
+    min-width: 20px;
+    background-color: buttonface;
+    position: relative;
+    align-self: flex-end;
+    border: solid 1px;
+    border-color: darkgray;
+    border-bottom: 0px;
+    max-height: fit-content;
+}
+
+.div-tab-item-active {
+    padding: 2px;
+    background-color: white;
+    z-index: 100;
+    top: 1px;
+}
+
+.div-tab-item-active .div-button-x  {
+    background-color: white;
+    right: -1px; 
+    top: -1px;
+}
+
+.tab-item > .div-button, .div-tab-item > .div-button {
+    border: none;
+    padding: 3px 3px 1px 3px;
+}
+
+.tab-item > .div-button {
+    text-align: left;
+    line-height: 1.2em;
+}
+
+.div-tab-header {  width: 90%;  }
+.tab-header, .div-tab-header {
+   display: flex; 
+   overflow: visible; 
+   align-items: stretch; 
+   flex-flow: row wrap;
+}
+
+.tab-body {
+    padding: 2px;
+    display: block; 
+    width: calc(100% - 2px);
+}
+
+.tab-item {
+    display: inline-block;
+    margin: 3px;
+    min-width: 20px;
+    background-color: white;
+}
+
+.tab-item label {
+    color: #2263a2;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.tab-item-active label {
+    font-weight: bold;
+}
+
+.tab-item .dfe-error {
+    font-style: italic;
+}
+/* ========== end TABs =========== */
+.editbox-error {
+    /*text-decoration: underline solid red;*/
+    background-color: antiquewhite;
+}
+.hover-visible { opacity: 0 }
+.hover-visible:hover, .hover-visible:focus-within { opacity: 1 }
+.focus-front:focus, .focus-front:active  {
+    z-index: 100;
+}
+/*input[type='submit'], .button-style {
+    text-align: center;
+    box-sizing: border-box;
+    display: inline-block;
+    padding: 1px 6px;
+    min-height: 20px;
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    -appearance: button;
+}*/
+/*.button-style > label {
+    line-height: 1.2em;
+}*/
+.ui-resizeable-handle-br {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    right: -4px;
+    bottom: -4px;        
+    cursor: nw-resize;
+    opacity: 0;
+}
+
+.popup-editor-wrapper {
+    border: 2px solid #888;
+    border-radius: 5px;
+    overflow: visible;
+    width: 500px;
+    height: 100px;
+    position: absolute;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+.popup-code-editor-erroring > div.ace_editor, textarea.popup-code-editor-erroring {
+    background-color: antiquewhite;
+}
+
+.Ace-Tern-hint-doc {
+    z-index: 1001!Important;
+}
+
+.server-error-dlg {
+    z-index: 1001;
+}
+
+.server-error-dlg:focus-within{
+    z-index: 1002;
+}
+
+.server-error-dlg > div.ui-dialog-content {
+    white-space: pre-wrap;
+    color: red;
+    font-size: 13px;
+    text-align: left;
+}
+
+.server-error-dlg span.ui-dialog-title {
+    color: black;
+}
+
+
+div.nav-menu-options, div#wrapper, div#innercontainer {
+    width: auto;
+    display: inline-block;
+    min-width: max-content;
+}
+
+div#body {
+    width: auto;
+    display: inline-table; 
+    padding: 17px 10px;
+}
+
+form#dfe_form {
+    width: auto;
+    display: table;
+}
+
+.navtop {
+   display: table-caption; 
+   width: -webkit-fill-available;
+}
+
+div#innercontainer {
+   display: -ms-flexbox;
+}

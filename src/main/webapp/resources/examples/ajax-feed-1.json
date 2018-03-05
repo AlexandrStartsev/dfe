@@ -1,0 +1,61 @@
+{
+  "dfe": [
+    {
+      "name": "root",
+      "type": "div",
+      "_get": "$$('policy')",
+      "attributes": "{ style: 'display: flex; flex-flow : column;' }"
+    },
+    {
+      "name": "state",
+      "type": "editbox",
+      "parent": "root",
+      "_get": "$$('.common.StateofDomicile')",
+      "_set": "$$.set('.common.StateofDomicile', value)"
+    },      
+    {
+      "name": "car",
+      "type": "div-flex",
+      "parent": "root",
+      "_get": "[$$('.cmau.location.car')[0]]",
+      "attributes": "{ rowstyle: 'display: flex; flex-flow : row wrap; align-items: center' }"
+    },      
+    {
+      "name": "field-5",
+      "type": "label",
+      "_get": "'<b>resulting value:</b>'",
+      "parent": "car",
+      "dpos": {
+        "colstyle": "padding: 10px;"
+      }
+    },
+    {
+      "name": "field-6",
+      "type": "editbox",
+      "_get": "$$('.otcded')",
+      "parent": "car",
+      "_set": "$$.set('.otcded', value)"
+    },
+    {
+      "name": "field-2",
+      "type": "radiolist",
+      "_get": "ajaxFeed($$, {url: 'http://localhost:7001/AJAXServlet.srv?method=SimpleSelectScriptHelper&lob=CMAU&state='+$$('....common.StateofDomicile')+'&option=policy.otcded[car]', param: {value: $$('.otcded')}, name: 'value'})",
+      "parent": "car",
+      "_set": "$$.set('.otcded', value)",
+      "attributes": "{ vstrategy: 'notified'}",
+      "dpos": {
+        "colstyle": "width : 100%"
+      }
+    },
+    {
+      "name": "field-3",
+      "type": "dropdown",
+      "_get": "ajaxFeed($$, {url: 'http://localhost:7001/AJAXServlet.srv?method=SimpleSelectScriptHelper&lob=CMAU&state='+$$('....common.StateofDomicile')+'&option=policy.otcded[car]', param: {value: $$('.otcded')}, name: 'value', default: {value: [], description: 'Please select...'}})",
+      "parent": "car",
+      "_set": "$$.set('.otcded', value)",
+      "dpos": {
+        "colstyle": "width : 50%"
+      }
+    }
+  ]
+}

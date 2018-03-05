@@ -1,0 +1,48 @@
+{
+  "dfe": [
+    {
+      "name": "root",
+      "parent": "",
+      "type": "container",
+      "_get": "$$('policy')",
+      "dpos": {}
+    },
+    {
+      "name": "r1",
+      "parent": "root",
+      "type": "div-flex",
+      "_get": "$$('.transaction')",
+      "attributes": "{class : 'div-flex-h', orientation: 'horizontal', rowclass : 'div-flex-row-h'}",
+      "tpos": {
+        "x": 0,
+        "y": 0
+      }
+    }, {
+      "name": "get_field",
+      "parent": "r1",
+      "type": "div",
+      "attributes": "{ hmodel : $$, class : 'popup-edit-div-container'}",
+      "dpos": { "colclass": "div-flex-col-embedded" }
+    },
+    {
+      "name": "get_field_ed1",
+      "parent": "get_field",
+      "type": "editbox",
+      "class": "header",
+      "_get": "$$('.timestamp')",
+      "_set": "$$.set('.timestamp', value); $$.form.fixFunctions($$, true)",
+      "attributes": "{ style : 'margin: 0px'}",
+      "validation": "if($$('.timestamp') == 0) $$.error = 'Must not be empty'"
+    },
+    {
+      "name": "get_field_ed2",
+      "parent": "get_field",
+      "type": "textarea",
+      "class": "header",
+      "attributes": "{ cols: 50, rows : 5, class : 'popup-edit-popup', spellcheck: false}",
+      "_get": "$$('.timestamp')",
+      "_set": "$$.set('.timestamp', value); $$.form.fixFunctions($$, true)",
+      "validation": "if($$('.timestamp') == 0) $$.error = 'Must not be empty'"
+    }
+  ]
+}

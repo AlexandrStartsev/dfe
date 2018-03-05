@@ -1,0 +1,49 @@
+{
+  "dfe": [
+    {
+      "name": "root",
+      "type": "div-flex",
+      "_get": "$$('.policy')",
+      "attributes": "{ class: 'div-flex', rowclass: 'div-flex-row', rowclass$header: 'div-flex-row', rowstyle: 'flex-flow: row wrap;'}"
+    },
+    {
+      "name": "f1",
+      "type": "editbox",
+      "_get": "1",
+      "tpos": {
+        "x": 0,
+        "y": 0
+      },
+      "parent": "root",
+      "dpos": {
+        "colstyle": "min-width: fit-content; width : 50%"
+      }
+    },
+    {
+      "name": "f2",
+      "type": "editbox",
+      "_get": "2",
+      "tpos": {
+        "x": 0,
+        "y": 0
+      },
+      "parent": "root",
+      "dpos": {
+        "colstyle": "min-width: fit-content; width : 50%"
+      }
+    },
+    {
+      "name": "{Change Name}",
+      "type": "editbox",
+      "_get": "3",
+      "tpos": {
+        "x": 0,
+        "y": 0
+      },
+      "parent": "root",
+      "dpos": {
+        "colstyle": "min-width: fit-content; width : 100%"
+      }
+    }
+  ]
+}

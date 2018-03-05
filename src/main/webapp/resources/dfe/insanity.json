@@ -1,0 +1,158 @@
+{
+  "dfe": [
+    {
+      "ppos": {
+        "x": 0,
+        "y": 0
+      },
+      "name": "root",
+      "_get": "(function() { var px = $$('policy')[0], ret = []; for(var i =0;i<500;i++) ret.push(px); return ret;})()",
+      "attributes" : "{hmodel : $$}",
+      "type": "table"
+    },
+    {
+      "ppos": {
+        "x": 0,
+        "y": 0,
+        "t" : "header"
+      },
+      "parent": "root",
+      "name": "bb",
+      "_get": "$$('.somefield')",
+      "type": "editbox",
+      "_set": "$$.set('.somefield', value)"
+    },
+    {
+      "ppos": {
+        "x": 0,
+        "y": 1,
+        "t" : "header"
+      },
+      "parent": "root",
+      "name": "bb2",
+      "_get": "$$('.somefield')",
+      "type": "editbox",
+      "_set": "$$.set('.somefield', value)"
+    },  
+    {
+      "ppos": {
+        "x": 0,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f1",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 1,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f2",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 2,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f3",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 3,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f4",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 4,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f5",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 5,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f6",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 6,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f7",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 7,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f8",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 8,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "f9",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    },
+    {
+      "ppos": {
+        "x": 9,
+        "y": 0
+      },
+      "parent": "root",
+      "name": "fA",
+      "_get": "$$('.quoteid')",
+      "type": "editbox",
+      "validation": "if( $$('.quoteid')==0 ) $$.error = 'Description not be empty'",
+      "_set": "$$.set('.quoteid', value)"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <!--<script src="/js/es5-shim.min.js"></script>
+        <script src="/js/es6-shim.js"></script>
+        <script src="/js/jquery.js"></script> -->
+        <script src="/js/require.js"></script>
+        <script src="/js/ui-utils.js"></script>
+        
+        <script src="/js/tsc.js"></script>
+        
+        <link href="/css/jquery-typeahead.css" type="text/css" rel="stylesheet">
+        <link href="/css/jquery-ui.css" type="text/css" rel="stylesheet">
+        <link href="/css/dfe-style.css" type="text/css" rel="stylesheet" >
+        <style id="custom-css-dfe" type="text/css"></style>
+        
+        <script src="/js/babel.js"></script>  
+        
+        <script> 
+            require.config({ baseUrl: '/js', paths: { forms : '../forms' } })
+            
+            var model = new Promise(function(resolve, reject) {
+                require(['babel', 'uglify', 'jquery'], function() {
+                    window.babel = require('babel');
+                    window.uglify = require('uglify');
+                    $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
+                })
+            });
+            
+            var wait4target = new Promise(function(resolve){
+                var f;
+                (f = function() {
+                    (document.querySelector('div[dfe-edit-target]') || {})._dfe_runtime ? resolve() : setTimeout(f, 5)
+                })();
+            });
+        </script>
+        
+        
+    </head>
+    <body> 
+        <div id='dfe' dfe-form='quote.cmau.car' dfe-model='model' dfe-edit-target ></div>
+        <br>
+        <br>
+        <br>
+        <div id ="edit" dfe-form='dfe.edit.dfe' dfe-model='wait4target'></div>
+    </body>
+</html>

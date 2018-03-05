@@ -1,0 +1,62 @@
+{
+  "dfe": [
+    {
+      "name": "root",
+      "type": "container",
+      "_get": "$$('policy.cmau.location')"
+    },
+    {
+      "name": "f1",
+      "type": "editbox",
+      "_get": "$$('.zip')",
+      "_set": "$$.set('.zip', value)",
+      "tpos": {
+        "w": 0,
+        "h": 2
+      },
+      "parent": "root"
+    },
+    {
+      "name": "f2",
+      "type": "editbox",
+      "_get": "$$('.zip')",
+      "_set": "$$.set('.zip', value)",
+      "tpos": {
+        "w": 0,
+        "h": 0
+      },
+      "parent": "root"
+    },
+    {
+      "name": "{Change Name}",
+      "type": "editbox",
+      "_get": "3",
+      "tpos": {
+        "w": 0,
+        "h": 0,
+        "n": "Y"
+      },
+      "parent": "root"
+    },
+    {
+      "name": "hf1",
+      "type": "label",
+      "class": "header",
+      "_get": "'Header'",
+      "tpos": {
+        "w": 2
+      },
+      "parent": "root"
+    },
+    {
+      "name": "ff1",
+      "type": "label",
+      "class": "footer",
+      "_get": "'Footer'",
+      "tpos": {
+        "w": 2
+      },
+      "parent": "root"
+    }      
+  ]
+}

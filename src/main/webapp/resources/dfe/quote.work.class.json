@@ -1,0 +1,352 @@
+{
+  "dfe": [
+    {
+      "name": "root",
+      "type": "div",
+      "get": "$$('policy.work')",
+      "atr": "{ vstrategy: 'always', style: 'width: 550px' }"
+    },
+    {
+      "name": "locs",
+      "parent": "root",
+      "type": "container",
+      "atr": "{ style: 'width: 100%', skip: $$('.location').length>1?[]:['field-8', 'field-14'] }",
+      "get": "$$.form.getLocs($$)"
+    },
+    {
+      "name": "field-2",
+      "type": "label",
+      "get": "'Location Informaton'",
+      "dpos": {},
+      "atr": "{ style: 'background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; line-height: 2em; display: block; '}",
+      "class": "header",
+      "tpos": {
+        "w": "6"
+      },
+      "parent": "locs"
+    },
+    {
+      "name": "field-3",
+      "type": "label",
+      "get": "'#'",
+      "parent": "locs",
+      "class": "header",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-4",
+      "type": "label",
+      "get": "'Street'",
+      "parent": "locs",
+      "class": "header",
+      "tpos": {
+        "s": "width:45%"
+      }
+    },
+    {
+      "name": "field-5",
+      "type": "label",
+      "get": "'City'",
+      "parent": "locs",
+      "class": "header",
+      "tpos": {
+        "s": "width:30%"
+      }
+    },
+    {
+      "name": "field-6",
+      "type": "label",
+      "get": "'State'",
+      "parent": "locs",
+      "class": "header",
+      "tpos": {}
+    },
+    {
+      "name": "field-7",
+      "type": "label",
+      "get": "'Zip Code'",
+      "parent": "locs",
+      "class": "header",
+      "tpos": {
+        "s": "width:70px; min-width:70px"
+      }
+    },
+    {
+      "name": "field-8",
+      "type": "label",
+      "get": "''",
+      "parent": "locs",
+      "class": "header",
+      "tpos": {}
+    },
+    {
+      "name": "field-9",
+      "type": "label",
+      "get": "$$.index() + 1",
+      "parent": "locs"
+    },
+    {
+      "name": "field-10",
+      "type": "editbox",
+      "get": "$$('.address1')",
+      "parent": "locs",
+      "set": "$$.set('.address1', value), $$.set('.addressLine', (value||'').toUpperCase())",
+      "atr": "{ style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px', maxlength: 50 }",
+      "val": "required($$, '.address1')"
+    },
+    {
+      "name": "field-11",
+      "type": "editbox",
+      "get": "$$('.city')",
+      "parent": "locs",
+      "set": "$$.set('.city', value)",
+      "atr": "{ style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px', pattern: '[a-zA-Z ]{1,45}' }",
+      "val": "required($$, '.city')"
+    },
+    {
+      "name": "field-12",
+      "type": "dropdown",
+      "get": "{ value : $$('.state'), items : ['AK','AL','AR','AZ','CA','CO','CT','DE','FL','GA','HI','IA','ID','IL','IN','KS','KY','LA','MA','MD','ME','MI','MN','MO','MS','MT','NC','ND','NE','NH','NJ','NM','NV','NY','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VA','VT','WA','WI','WV','WY']}",
+      "parent": "locs",
+      "set": "$$.set('.state', value)",
+      "atr": "{ style: 'width: 45px; border-radius: 1px; height: 20px' }",
+      "val": "required($$, '.state')"
+    },
+    {
+      "name": "field-13",
+      "type": "editbox",
+      "parent": "locs",
+      "set": "$$.set('.zip', value)",
+      "get": "$$('.zip')",
+      "atr": "{ style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px', pattern: '[0-9]{1,5}' }",
+      "val": "required($$, '.zip', '[0-9]{5}')"
+    },
+    {
+      "name": "field-14",
+      "type": "button",
+      "get": "'Delete'",
+      "parent": "locs",
+      "set": "$$.detach()"
+    },
+    {
+      "name": "field-15",
+      "type": "button",
+      "get": "'Add additional location'",
+      "parent": "root",
+      "set": "$$.append('.location')"
+    },
+    {
+      "name": "classes",
+      "type": "container",
+      "get": "$$.getOrAppend('.class')",
+      "parent": "locs",
+      "tpos": {
+        "n": "Y",
+        "w": "7"
+      },
+      "atr": "{ style: 'width: 100%;', skip : $$('.class').length>1?[]:['field-23', 'field-31'] }"
+    },
+    {
+      "name": "field-38",
+      "type": "div",
+      "tpos": {
+        "w": "7",
+        "n": "N"
+      },
+      "get": "[$$]",
+      "class": "header",
+      "parent": "classes"
+    },
+    {
+      "name": "field-17",
+      "type": "label",
+      "get": "'#'",
+      "parent": "classes",
+      "class": "header",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-18",
+      "type": "label",
+      "get": "'Class Code'",
+      "parent": "classes",
+      "class": "header",
+      "tpos": {
+        "n": "N"
+      }
+    },
+    {
+      "name": "field-19",
+      "type": "label",
+      "get": "'# F.T.<br>Employees'",
+      "parent": "classes",
+      "class": "header",
+      "tpos": {}
+    },
+    {
+      "name": "field-20",
+      "type": "label",
+      "get": "'# P.T.<br>Employees'",
+      "parent": "classes",
+      "class": "header",
+      "tpos": {}
+    },
+    {
+      "name": "field-21",
+      "type": "label",
+      "get": "'# Seasonal<br>Employees'",
+      "parent": "classes",
+      "class": "header",
+      "tpos": {}
+    },
+    {
+      "name": "field-22",
+      "type": "label",
+      "get": "'Est. Annual<br>Remuneration'",
+      "parent": "classes",
+      "class": "header",
+      "tpos": {}
+    },
+    {
+      "name": "field-23",
+      "type": "label",
+      "get": "''",
+      "parent": "classes",
+      "class": "header",
+      "tpos": {}
+    },
+    {
+      "name": "field-35",
+      "type": "div",
+      "get": "[$$]",
+      "parent": "locs",
+      "tpos": {
+        "n": "Y",
+        "w": "6"
+      },
+      "atr": "{ style: 'background: #dcdcdc; padding: 2px'}"
+    },
+    {
+      "name": "field-24",
+      "type": "button",
+      "get": "'Add additional class'",
+      "tpos": {
+        "n": "Y",
+        "w": "6"
+      },
+      "set": "$$.append('.class')",
+      "parent": "field-35",
+      "dpos": {
+        "colstyle": "display: inline;"
+      }
+    },
+    {
+      "name": "field-36",
+      "type": "button",
+      "get": "'Available class code list'",
+      "parent": "field-35",
+      "set": "$$.form.showAvailable($$('..effective'), $$('.state'))",
+      "dpos": {
+        "colstyle": "display: none;"
+      }
+    },
+    {
+      "name": "field-25",
+      "type": "label",
+      "get": "$$.index()+1",
+      "parent": "classes"
+    },
+    {
+      "name": "field-26",
+      "type": "editbox",
+      "get": "$$('.code')",
+      "parent": "classes",
+      "atr": "{ style: 'width: 50px; border-radius: 1px; height: 18px', pattern: '[0-9]{1,4}' }",
+      "set": "$$.set('.code', value)",
+      "val": "required($$, '.code', 0, 0, 'Please&nbsp;enter&nbsp;class&nbsp;code')",
+      "tpos": {
+        "s": ""
+      }
+    },
+    {
+      "name": "field-27",
+      "type": "editbox",
+      "get": "$$('.fulltimeemployeeamt')",
+      "parent": "classes",
+      "atr": "{ style: 'width: 40px; border-radius: 1px; height: 18px', pattern: '[0-9]{1,3}' }",
+      "set": "$$.set('.fulltimeemployeeamt', value)",
+      "val": "required($$, '.fulltimeemployeeamt')"
+    },
+    {
+      "name": "field-28",
+      "type": "editbox",
+      "get": "$$('.parttimeemployeeamt')",
+      "parent": "classes",
+      "atr": "{ style: 'width: 40px; border-radius: 1px; height: 18px', pattern: '[0-9]{1,3}' }",
+      "set": "$$.set('.parttimeemployeeamt', value)",
+      "val": "required($$, '.parttimeemployeeamt')"
+    },
+    {
+      "name": "field-29",
+      "type": "editbox",
+      "get": "$$('.seasonalemployeeamt')",
+      "parent": "classes",
+      "atr": "{ style: 'width: 40px; border-radius: 1px; height: 18px', pattern: '[0-9]{1,3}' }",
+      "set": "$$.set('.seasonalemployeeamt', value)"
+    },
+    {
+      "name": "field-30",
+      "type": "editbox-$",
+      "get": "$$('.payroll')",
+      "parent": "classes",
+      "atr": "{ style: 'width: 80px; border-radius: 1px; height: 18px', formatting: '99,999,999' }",
+      "set": "$$.set('.payroll', value)",
+      "val": "required($$, '.payroll')"
+    },
+    {
+      "name": "field-31",
+      "type": "button",
+      "get": "'Delete'",
+      "parent": "classes",
+      "set": "$$.detach()",
+      "tpos": {
+        "s": "max-width: 40px"
+      }
+    },
+    {
+      "name": "field-32",
+      "type": "radiolist",
+      "get": "ajaxFeed($$, { url: '/AJAXServlet.srv?action=getSubcodes&classCode='+$$('.code')+'&effectiveDate='+$$('...effective')+'&lob=WORK&state='+$$('..state')+'&method=WORKClassCodeScriptHelper', param: {value: $$('.subcode')}, name: 'value', element: 'result', method: 'POST', headers : {}, mapper: function(v) {return { value: v.combined, description: v.description}}})",
+      "tpos": {
+        "n": "Y",
+        "w": "7"
+      },
+      "set": "$$.set('.subcode', value)",
+      "atr": "{ style: 'padding: 2px 0px 0px 2px;' }",
+      "parent": "field-37"
+    },
+    {
+      "name": "field-39",
+      "type": "label",
+      "get": "'Class Informaton'",
+      "parent": "field-38",
+      "atr": "{ style: 'background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; display: block; line-height: 2em;'}",
+      "dpos": {}
+    },
+    {
+      "name": "field-37",
+      "type": "div",
+      "get": "$$('.code').length?[$$]:[]",
+      "parent": "classes",
+      "tpos": {
+        "n": "Y",
+        "w": "7"
+      }
+    }
+  ],
+  "setup": "this.getLocs = function($$) { \n        var fields = ['.address1', '.city', '.state', '.zip'], refLoc = $$('insured.location')[0], locs = $$.getOrAppend('.location');\n        locs.forEach(function(loc) { \n            var e = true; fields.forEach(function(f) { e = (e && loc.get(f)==0) }); \n            e && fields.forEach(function(f) { loc.set(f, refLoc.get(f.replace(/1/,''))) }); \n            loc.set('.addressLine', loc.get('.address1'));\n            loc.set('.classes', loc.getOrAppend('.class').length); \n        });\n        $$.set('.locations', locs.length); \n        return locs; \n    }\n    \n    this.showAvailable = function(effDt, state) {\n        require(['jquery-ui'], function() {\n            $.ajax({ \n                url: '/AJAXServlet.srv', \n                data: { \n                    method: 'WORKClassCodeScriptHelper', \n                    action: 'getList', \n                    effectiveDate: effDt, \n                    list: 'classcode', \n                    lob: 'WORK', \n                    state: state\n                },\n                dataType: 'json',\n                type: 'POST',\n                success: function(data) { \n                   $('<div>').text(data.result.map(function(e) { return e.description; }).join('\\n')).\n                    css('white-space', 'pre-wrap').dialog({ \n                        title: 'Available Class Code List', \n                        width: 'auto', \n                        height: 400, \n                        close: function() { \n                            $(this).dialog('destroy') \n                        } \n                    })\n                }\n            })\n        })\n    }"
+}

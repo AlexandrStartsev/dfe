@@ -1,0 +1,101 @@
+{
+  "dfe": [
+    {
+      "name": "root",
+      "type": "table",
+      "_get": "$$('policy.common')",
+      "attributes": "{ style: 'width: 700px;'}"
+    },
+    {
+      "name": "ta",
+      "parent": "root",
+      "type": "typeahead",
+      "_get": "ajaxFeed($$, {url: 'http://localhost:7001/AJAXServlet.srv?action=getSicNaics&state='+$$('.StateofDomicile')+'&effdate='+$$('.effective')+'&method=BBOPClassCodeScriptHelper', param: { sic: $$('.SICCd'), naics: $$('.NAICSCd')}})",
+      "_set": "$$.set('.SICCd', value.sic); $$.set('.NAICSCd', value.naics)",
+      "attributes": "{ options: { searchOnFocus: 'true', template: 'SIC: {{sic}} / NAICS: {{naics}} - {{description}}', display: ['naics','sic','description'] }, display : 'description' }",
+      "tpos": {
+        "x": 0,
+        "y": 2,
+        "c": 2
+      }
+    },
+    {
+      "name": "sic",
+      "parent": "root",
+      "type": "editbox",
+      "_get": "$$('.SICCd')",
+      "_set": "$$.set('.SICCd', value)",
+      "tpos": {
+        "x": 1,
+        "y": 3
+      },
+      "attributes": "{ disabled : 1}"
+    },
+    {
+      "name": "naics",
+      "parent": "root",
+      "type": "editbox",
+      "_get": "$$('.NAICSCd')",
+      "_set": "$$.set('.NAICSCd', value)",
+      "tpos": {
+        "x": 1,
+        "y": 4
+      },
+      "attributes": "{ disabled : 1}"
+    },
+    {
+      "name": "ls",
+      "parent": "root",
+      "type": "label",
+      "_get": "'State: '",
+      "tpos": {
+        "x": 0,
+        "y": 1
+      }
+    },
+    {
+      "name": "si",
+      "parent": "root",
+      "type": "editbox",
+      "_get": "$$('.StateofDomicile')",
+      "_set": "$$.set('.StateofDomicile', value)",
+      "attributes": "{ _trigger: 'change' }",
+      "tpos": {
+        "x": 1,
+        "y": 1
+      }
+    },
+    {
+      "name": "field-6",
+      "type": "label",
+      "_get": "'SIC:'",
+      "parent": "root",
+      "tpos": {
+        "x": 0,
+        "y": 3
+      }
+    },
+    {
+      "name": "field-7",
+      "type": "editbox",
+      "_get": "Date.ARFtoDOM($$('.effective' ))",
+      "parent": "root",
+      "tpos": {
+        "x": 1,
+        "y": 0
+      },
+      "attributes": "{ formatting : 'MM/DD/YYYY' }",
+      "_set": "$$.set('.effective', Date.DOMtoARF(value))"
+    },
+    {
+      "name": "field-8",
+      "type": "label",
+      "_get": "'Effective:'",
+      "parent": "root",
+      "tpos": {
+        "x": 0,
+        "y": 0
+      }
+    }
+  ]
+}

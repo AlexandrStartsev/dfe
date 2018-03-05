@@ -1,0 +1,1431 @@
+{
+  "dfe": [
+    {
+      "name": "root",
+      "get": "$$('policy.cmau')",
+      "type": "div"
+    },
+    {
+      "parent": "root",
+      "name": "locs",
+      "atr": "{ haclass: 'tab-item-active', focusnew: 1, hfield: 'loc-hdr', rowclass$header: 'tab-header', rowclass: 'tab-body', rowstyle : 'display: block; width: 900px;' }",
+      "get": "$$('.location')",
+      "type": "tab-s"
+    },
+    {
+      "parent": "locs",
+      "name": "loc-hdr",
+      "atr": "{ 'class': 'div-button', eclass: 'dfe-error', errorwatch : true, vstrategy: 'notified' }",
+      "type": "div-button",
+      "val": "$$.errorwatch()",
+      "dpos": {
+        "colclass": "tab-item"
+      },
+      "get": "'<a style=\"color: #444\">Location #' + ($$.index(2) + 1) + '</a><br/>' + ($$('.city') + ' ' + $$('.state') + ' ' + $$('.zip') + '-' + $$('.zipaddon')).replace(/-$/,'')"
+    },
+    {
+      "type": "div",
+      "get": "[$$]",
+      "parent": "locs",
+      "dpos": {
+        "colclass": "tab-section-header"
+      },
+      "name": "loc-title1"
+    },
+    {
+      "parent": "locs",
+      "name": "cars",
+      "atr": "{ haclass: 'tab-item-active', focusnew: 1, hfield: 'car-hdr', style: 'width: 100%;', rowclass$header: 'tab-header', rowclass: 'tab-body', rowstyle: 'padding: 0px; overflow: hidden;' }",
+      "get": "r = $$.getOrAppend('.car'), $$.form.countCars($$), r",
+      "dpos": {
+        "colstyle": "width: 100%; "
+      },
+      "type": "tab-s"
+    },
+    {
+      "name": "field-159",
+      "type": "label",
+      "get": "'Location #' + ($$.index() + 1)",
+      "parent": "loc-title1"
+    },
+    {
+      "name": "add-car",
+      "get": "'Add Vehicle'",
+      "type": "button",
+      "set": "var p = $$.append('.car')[0], r = $$.runtime; setTimeout(function() { r.findChildren(r.findControls('cars', $$), 1, 0, 'vin', p).pop().ui.focus()}, 2);  $$.form.countCars($$);",
+      "dpos": {
+        "colstyle": "position: absolute; right: 5px; top: 5px"
+      },
+      "parent": "loc-title1",
+      "atr": "{ style: 'padding: 1px 10px'}"
+    },
+    {
+      "name": "car-hdr",
+      "atr": "{ 'class': 'div-button', eclass: 'dfe-error', errorwatch : true, vstrategy: 'notified', ta : { visible: $$('..car').length-1 } }",
+      "get": "$$('..state') + ' - Vehicle #' + ($$.index() + 1) + '<br/>' + $$('.ModelYr') + ' ' + $$('.make')",
+      "type": "div-button",
+      "val": "$$.errorwatch()",
+      "dpos": {
+        "colclass": "tab-item"
+      },
+      "parent": "cars"
+    },
+    {
+      "parent": "root",
+      "name": "add-loc",
+      "atr": "{ style : 'width: 150px; margin: 3px; display: none'}",
+      "get": "'Add location'",
+      "type": "button",
+      "dpos": {
+        "colstyle": "align-self: flex-end;"
+      },
+      "set": "$$.append('.location')"
+    },
+    {
+      "name": "body",
+      "type": "container",
+      "get": "[$$]",
+      "parent": "cars",
+      "atr": "{ 'class': 'tab-cols-5-5 tab-alt-color' }",
+      "dpos": {
+        "colstyle": "width:100%",
+        "colclass": "-dfe-inline-section-1"
+      }
+    },
+    {
+      "name": "field-154",
+      "type": "label",
+      "get": "'Vehicle #' + ($$.index() + 1)",
+      "parent": "body",
+      "tpos": {
+        "w": "2"
+      }
+    },
+    {
+      "name": "field-8",
+      "get": "'Do you have the VIN?'",
+      "type": "label",
+      "parent": "body",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-9",
+      "atr": "{ orientation : 'horizontal' }",
+      "get": "$$.getOrDefault('.hasvin', 'Y')",
+      "type": "radiolist",
+      "set": "$$.set('.hasvin', value)",
+      "parent": "body"
+    },
+    {
+      "name": "vinnumber",
+      "atr": "{ 'class': 'tab-cols-5-5 tab-alt-color' }",
+      "get": "[$$]",
+      "type": "container",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "padding: 0px"
+      }
+    },
+    {
+      "name": "hastype",
+      "atr": "{ 'class': 'tab-cols-5-5 tab-alt-color-1' }",
+      "get": "$$('.hasvin') == 'Y'? [] : [$$]",
+      "type": "container",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "padding: 2px 0px; background: white;"
+      }
+    },
+    {
+      "name": "field-22",
+      "atr": "{ style : 'padding-left: 10px; '}",
+      "get": "'Override VIN?'",
+      "type": "label",
+      "parent": "hastype"
+    },
+    {
+      "name": "field-23",
+      "atr": "{ orientation : 'horizontal' }",
+      "get": "$$('.vinoverride')",
+      "type": "radiolist",
+      "set": "$$.set('.vinoverride', value)",
+      "parent": "hastype"
+    },
+    {
+      "name": "field-20",
+      "atr": "{ style : 'padding-left: 10px; '}",
+      "get": "'Vehicle Year, Make and/or Model is not available in dropdown'",
+      "type": "label",
+      "parent": "hastype",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-21",
+      "atr": "{ orientation : 'horizontal' }",
+      "get": "$$('.custom')",
+      "type": "radiolist",
+      "set": "$$.set('.custom', value)",
+      "parent": "hastype"
+    },
+    {
+      "name": "field-10",
+      "atr": "{ vstrategy: 'always'}",
+      "get": "'Vihicle Identification Number (VIN)'",
+      "type": "label",
+      "val": "$$('.hasvin') == 'Y' || $$('.vinoverride') == 'Y'",
+      "parent": "vinnumber"
+    },
+    {
+      "name": "vin",
+      "atr": "{ spellcheck: 'false', disabled: $$('.hasvin') != 'Y' && $$('.vinoverride') != 'Y', style: 'width: 150px; text-transform:uppercase;', pattern: '[a-zA-Z0-9]{1,17}'}",
+      "get": "(function($$){\n     var vin = $$('.vinnumber'), has = $$('.hasvin') =='Y', url = '/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber='+vin, cached = ajaxCache.get(url);\n     var foo = function(data) {\n        if(!(r=data.result).isMatch) {\n            $$.error('Vin not found');\n            $$.events.filter(function(e) { return 'validate' == e.action }).length || $$.control.notifications.push({ action : 'validate' });\n        }\n        $$.set('.vinvalid', r.isMatch ? 'Y' : 'N') \n        $$.set('.vehicletype', r.vehicleType); \n        $$.set('.ModelYr', r.vehicleYear);\n        $$.set('.make', r.vehicleMake);\n        $$.set('.modelinfo', r.vehicleModel); \n        $$.set('.vehicleocostnew', r.vehicleCost); \n        return cached || ajaxCache.set(url, data);\n     }\n     has && vin.length==17 && (cached && foo(cached) || $.ajax({ url: url, type: 'POST', dataType: 'json', success: foo, error: function(e,s) { $$.error(s); }}));\n     return has || $$('.vinoverride') == 'Y' ? vin : ''})($$)",
+      "type": "editbox",
+      "val": "$$('.vinnumber').length != 17 && $$.error('Invalid VIN number format')",
+      "set": "$$.set('.vinnumber', value)",
+      "parent": "vinnumber"
+    },
+    {
+      "name": "field-153",
+      "type": "div",
+      "get": "[]",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "s": "padding: 0px"
+      }
+    },
+    {
+      "name": "field-12",
+      "get": "'Vehicle Type'",
+      "type": "label",
+      "val": "$$('.hasvin') == 'Y' || required($$, '.vehicletype')",
+      "parent": "body",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "type-choice",
+      "atr": "{ disabled: $$('.hasvin') == 'Y', style: 'width: fit-content;', 'default': []}",
+      "get": "{ value : $$('.vehicletype'), items : [ {value :'car', description : 'Private Passenger Type'}, {value :'truck', description : 'Truck, Tractor or Trailer'}, { value : 'golf', description : 'Golf Carts and Low Speed Vehicles' }, { value : 'mobile', description : 'Mobile Homes'}, {value : 'antique', description : 'Antique Autos'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.vehicletype', value)",
+      "parent": "body"
+    },
+    {
+      "name": "field-14",
+      "get": "'<a href=\"javascript:showHelp(\\'/cmau_help.html#year\\')\" class=\"qmark\"></a>Vehicle Year'",
+      "type": "html",
+      "val": "$$('.hasvin') == 'Y' || required($$, '.ModelYr', '(18|19|20)\\\\d{2}')",
+      "parent": "body",
+      "tpos": {
+        "n": "Y"
+      },
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "year-switch",
+      "get": "[$$]",
+      "type": "div",
+      "parent": "body"
+    },
+    {
+      "parent": "year-switch",
+      "name": "year-free",
+      "atr": "{ hidden : !($$('.hasvin') == 'Y' || $$('.custom') == 'Y'), disabled: $$('.hasvin') == 'Y', style: 'width: 150px;', formatting: 'XXXX'}",
+      "get": "$$('.ModelYr')",
+      "type": "editbox",
+      "set": "$$.set('.ModelYr', value)"
+    },
+    {
+      "parent": "year-switch",
+      "name": "year-choice",
+      "atr": "{ hidden : $$('.hasvin') == 'Y' || $$('.custom') == 'Y', style: 'width: fit-content;', 'default': []}",
+      "get": "ajaxFeed($$, {url: '/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getYearOptions&vehicleType='+$$('.vehicletype'), param: {value: $$('.ModelYr')}, name: 'value', noerror: 1})",
+      "type": "dropdown",
+      "set": "$$.set('.ModelYr', value)"
+    },
+    {
+      "name": "field-16",
+      "get": "'<a href=\"javascript:showHelp(\\'/cmau_help.html#make\\')\" class=\"qmark\"></a>Vehicle Make'",
+      "type": "html",
+      "val": "$$('.hasvin') == 'Y' || required($$, '.make')",
+      "parent": "body",
+      "tpos": {
+        "n": "Y"
+      },
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "make-switch",
+      "get": "[$$]",
+      "type": "div",
+      "parent": "body"
+    },
+    {
+      "parent": "make-switch",
+      "name": "make-free",
+      "atr": "{ hidden : !($$('.hasvin') == 'Y' || $$('.custom') == 'Y'), disabled: $$('.hasvin') == 'Y', style: 'width: 150px;'}",
+      "get": "$$('.make')",
+      "type": "editbox",
+      "set": "$$.set('.make', value)"
+    },
+    {
+      "parent": "make-switch",
+      "name": "make-choice",
+      "atr": "{ hidden : $$('.hasvin') == 'Y' || $$('.custom') == 'Y', style: 'width: fit-content;', 'default':[]}",
+      "get": "ajaxFeed($$, {url: '/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getMakeOptions&vehicleType='+$$('.vehicletype')+'&vehicleYear='+$$('.ModelYr'), param: {value: $$('.make')}, name: 'value', noerror: 1})",
+      "type": "dropdown",
+      "set": "$$.set('.make', value)"
+    },
+    {
+      "name": "field-26",
+      "get": "'<a href=\"javascript:showHelp(\\'/cmau_help.html#model\\')\" class=\"qmark\"></a>Vehicle Model'",
+      "type": "label",
+      "val": "$$('.hasvin') == 'Y' || required($$, '.modelinfo')",
+      "parent": "body",
+      "tpos": {
+        "n": "Y"
+      },
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "model-switch",
+      "get": "[$$]",
+      "type": "div",
+      "parent": "body"
+    },
+    {
+      "parent": "model-switch",
+      "name": "model-free",
+      "atr": "{ hidden : !($$('.hasvin') == 'Y' || $$('.custom') == 'Y'), disabled: $$('.hasvin') == 'Y', style: 'width: 150px;'}",
+      "get": "$$('.modelinfo')",
+      "type": "editbox",
+      "set": "$$.set('.modelinfo', value)"
+    },
+    {
+      "parent": "model-switch",
+      "name": "model-choice",
+      "atr": "{ hidden : $$('.hasvin') == 'Y' || $$('.custom') == 'Y', style: 'width: 150px;', 'default': []}",
+      "get": "ajaxFeed($$, {url: '/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getModelOptions&vehicleType='+$$('.vehicletype')+'&vehicleYear='+$$('.ModelYr')+'&vehicleMake='+$$('.make'), param: {value: $$('.modelinfo')}, name: 'value', headers : {'X-Requested-With': 'Accept'}, noerror: 1})",
+      "type": "dropdown",
+      "set": "$$.set('.modelinfo', value)"
+    },
+    {
+      "name": "costnew-lbl",
+      "get": "'Original Cost New'",
+      "type": "label",
+      "val": "$$('.hasvin') == 'Y' || required($$, '.vehicleocostnew')",
+      "parent": "body",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "costnew-free",
+      "atr": "{ disabled: $$('.hasvin') == 'Y', style: 'width: 150px;', formatting: '$9,999,999' }",
+      "get": "$$('.vehicleocostnew')",
+      "type": "editbox-$",
+      "set": "$$.set('.vehicleocostnew', value)",
+      "parent": "body"
+    },
+    {
+      "name": "private",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color tab-cols-2-5-3' }",
+      "get": "$$('.vehicletype') == 'car' ? [$$] : []",
+      "type": "container",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "-dfe-inline-section-1"
+      }
+    },
+    {
+      "name": "field-36",
+      "get": "'Private Passenger Auto'",
+      "type": "label",
+      "parent": "private",
+      "tpos": {
+        "w": "3"
+      }
+    },
+    {
+      "name": "field-33",
+      "get": "'Usage'",
+      "type": "label",
+      "val": "required($$, '.VehUseCd')",
+      "parent": "private",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-34",
+      "atr": "{ 'default': [], style: 'width: min-content;'}",
+      "get": "{ value: $$('.VehUseCd'), items: [{value: 'Furnished for Non-Business Use'}, {value: 'All Other'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.VehUseCd', value)",
+      "parent": "private"
+    },
+    {
+      "name": "field-35",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Passenger Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.VehUseCd', 'car')",
+      "parent": "private"
+    },
+    {
+      "name": "nonbus",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color tab-cols-2-5-3' }",
+      "get": "$$('.VehUseCd') == 'Furnished for Non-Business Use' ? [$$] :[]",
+      "type": "container",
+      "parent": "private",
+      "tpos": {
+        "n": "Y",
+        "w": "3",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-37",
+      "get": "'Operator Experience'",
+      "type": "label",
+      "val": "required($$, '.OperExp')",
+      "parent": "nonbus",
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "field-38",
+      "atr": "{ 'default': [], style: 'width: min-content;' }",
+      "get": "{ value: $$('.OperExp'), items: [{value: 'No operator licensed less than 5 years'}, {value: 'Licenses less than 5 yrs not owner or principal operator'} , {value: 'Owner or principal operator licensed less than 5 yrs'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.OperExp', value)",
+      "parent": "nonbus"
+    },
+    {
+      "name": "field-39",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Passenger Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.OperExp', 'car')",
+      "parent": "nonbus"
+    },
+    {
+      "name": "field-41",
+      "get": "'Operator Use'",
+      "type": "label",
+      "val": "required($$, '.OperUse')",
+      "parent": "nonbus",
+      "tpos": {
+        "n": "Y"
+      },
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "field-42",
+      "atr": "{ 'default': [], style: 'width: fit-content' }",
+      "get": "{ value: $$('.OperUse'), items: [{value: 'Not driven to work or school'}, {value: 'To of from work less than 15 miles'} , {value: 'To or from work 15 or more miles'}]}  ",
+      "type": "dropdown",
+      "set": "$$.set('.OperUse', value)",
+      "parent": "nonbus"
+    },
+    {
+      "name": "field-43",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Passenger Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.OperUse', 'car')",
+      "parent": "nonbus"
+    },
+    {
+      "name": "field-151",
+      "type": "div",
+      "get": "[$$]",
+      "parent": "private",
+      "tpos": {
+        "n": "Y",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-44",
+      "get": "'Horsepower'",
+      "type": "label",
+      "val": "required($$, '.Horsepower', '[0-9]{2,4}')",
+      "parent": "private",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-45",
+      "atr": "{ pattern: '[0-9]{1,4}', style: 'width: 100px'}",
+      "get": "$$('.Horsepower')",
+      "type": "editbox",
+      "set": "$$.set('.Horsepower', value)",
+      "parent": "private"
+    },
+    {
+      "name": "field-46",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Passenger Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.Horsepower', 'car')",
+      "parent": "private"
+    },
+    {
+      "name": "truck",
+      "atr": "{ 'class': 'col-va-middle col-3-centred tab-alt-color tab-cols-3-4-3', skip: $$('.VehicleClass') == 'Trailer Types' ? ['field-152'] : [] }",
+      "get": "$$('.vehicletype') == 'truck' ? [$$] : []",
+      "type": "container",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "-dfe-inline-section-1"
+      }
+    },
+    {
+      "name": "golf",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color' }",
+      "get": "$$('.vehicletype') == 'golf' ? [$$] : []",
+      "type": "container",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "-dfe-inline-section-1"
+      }
+    },
+    {
+      "name": "mobile",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color tab-cols-2-5-3' }",
+      "get": "$$('.vehicletype') == 'mobile' ? [$$] : []",
+      "type": "container",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "-dfe-inline-section-1"
+      }
+    },
+    {
+      "name": "field-49",
+      "get": "'Trucks, Tractors and Trailers'",
+      "type": "label",
+      "parent": "truck",
+      "tpos": {
+        "w": "3"
+      }
+    },
+    {
+      "name": "field-50",
+      "get": "'Vehicle Class'",
+      "type": "label",
+      "val": "required($$, '.VehicleClass')",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-51",
+      "atr": "{'default': []}",
+      "get": "{ value: $$('.VehicleClass'), items: [{value: 'Light Truck 10,000 lbs GVW or less'}, {value: 'Medium Truck 10,001 to 20,000 lbs GVW'}, {value: 'Heavy Truck 20,001 to 45,000 lbs GVW'}, {value: 'Extra-Heavy Truck over 45,000 lbs GVW'}, {value: 'Heavy Truck-Tractor 45,000 lbs GCW or less'}, {value: 'Extra-Heavy Truck-Tractor over 45,000 lbs GCW'}, {value: 'Trailer Types'}] }",
+      "type": "dropdown",
+      "set": "$$.set('.VehicleClass', value)",
+      "parent": "truck"
+    },
+    {
+      "name": "field-52",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Trucks, Tractors and Trailers'",
+      "type": "button",
+      "set": "$$.form.all($$, '.VehicleClass', 'truck')",
+      "parent": "truck"
+    },
+    {
+      "name": "trailer",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color tab-cols-3-4-3' }",
+      "get": "$$('.VehicleClass') == 'Trailer Types' ? [$$] : []",
+      "type": "container",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y",
+        "w": "3",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-54",
+      "get": "'Trailer Type'",
+      "type": "label",
+      "val": "required($$, '.TrailerType')",
+      "tpos": {
+        "n": "N"
+      },
+      "parent": "trailer",
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "field-55",
+      "atr": "{'default': [], style: 'max-width: 310px;'}",
+      "get": "{ value: $$('.TrailerType'), items: [{value: 'Semitrailers'}, {value: 'Trailers'}, { value: 'Service or Utility Trailer (0-200 lbs. Load Capacity)'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.TrailerType', value)",
+      "parent": "trailer"
+    },
+    {
+      "name": "field-56",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Trucks, Tractors and Trailers'",
+      "type": "button",
+      "set": "$$.form.all($$, '.TrailerType', 'truck')",
+      "parent": "trailer"
+    },
+    {
+      "name": "field-152",
+      "type": "div",
+      "get": "[$$]",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y",
+        "w": "3",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-57",
+      "get": "'Is this auto used for transporting personnel, tools and equipment to and from a job location where it is parked for the majority of the day?'",
+      "type": "label",
+      "val": "required($$, '.UseClassInd1')",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-58",
+      "atr": "{ orientation : 'horizontal' }",
+      "get": "$$('.UseClassInd1')",
+      "type": "radiolist",
+      "set": "$$.set('.UseClassInd1',value)",
+      "parent": "truck"
+    },
+    {
+      "name": "field-59",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Trucks, Tractors and Trailers'",
+      "type": "button",
+      "set": "$$.form.all($$, '.UseClassInd1', 'truck')",
+      "parent": "truck"
+    },
+    {
+      "name": "field-61",
+      "get": "'Is this auto used for pick-up and/or delivery of property to residential households?'",
+      "type": "label",
+      "val": "required($$, '.UseClassInd2')",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-62",
+      "atr": "{ orientation : 'horizontal' }",
+      "get": "$$('.UseClassInd2')",
+      "type": "radiolist",
+      "set": "$$.set('.UseClassInd2',value)",
+      "parent": "truck"
+    },
+    {
+      "name": "field-63",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Trucks, Tractors and Trailers'",
+      "type": "button",
+      "set": "$$.form.all($$, '.UseClassInd2', 'truck')",
+      "parent": "truck"
+    },
+    {
+      "name": "field-64",
+      "get": "'Radius'",
+      "type": "label",
+      "val": "required($$, '.RadiusClass')",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-65",
+      "atr": "{style: 'width:fit-content', 'default': []}",
+      "get": "{value: $$('.RadiusClass'), items: [{value: 'Local up to 50 miles'},{value: 'Intermediate 51 to 200 miles'},{value: 'Long distance over 200 miles'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.RadiusClass',value)",
+      "parent": "truck"
+    },
+    {
+      "name": "field-66",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Trucks, Tractors and Trailers'",
+      "type": "button",
+      "set": "$$.form.all($$, '.RadiusClass', 'truck')",
+      "parent": "truck"
+    },
+    {
+      "name": "field-67",
+      "get": "'Used in dumping'",
+      "type": "label",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-68",
+      "get": "$$.getOrDefault('.DumpingOpInd', 'N')",
+      "type": "checkbox",
+      "set": "$$.set('.DumpingOpInd', value)",
+      "parent": "truck"
+    },
+    {
+      "name": "field-69",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Trucks, Tractors and Trailers'",
+      "type": "button",
+      "set": "$$.form.all($$, '.DumpingOpInd', 'truck')",
+      "parent": "truck"
+    },
+    {
+      "name": "field-70",
+      "get": "'Secondary Class'",
+      "type": "label",
+      "val": "required($$, '.SecondaryClass')",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-71",
+      "atr": "{style: 'width:fit-content', 'default': []}",
+      "get": "{ value: $$('.SecondaryClass'), items: [{value: 'Truckers'},{value: 'Food Delivery'},{value: 'Specialized Delivery'},{value: 'Waste Disposal'},{value: 'Farmers'},{value: 'Dump &amp; Transit Mix'},{value: 'Contractors'},{value: 'Not Otherwise Specified'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.SecondaryClass',value)",
+      "parent": "truck"
+    },
+    {
+      "name": "field-72",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Trucks, Tractors and Trailers'",
+      "type": "button",
+      "set": "$$.form.all($$, '.SecondaryClass', 'truck')",
+      "parent": "truck"
+    },
+    {
+      "name": "field-73",
+      "get": "'Secondary Class Type'",
+      "type": "label",
+      "val": "required($$, '.SecondaryClassType')",
+      "parent": "truck",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-74",
+      "atr": "{style: 'width:fit-content', 'default': []}",
+      "get": "ajaxFeed($$, {url: '/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getSecondaryClassTypeOptions&secondaryClass='+encodeURIComponent($$('.SecondaryClass')), param: {value: $$('.SecondaryClassType')}, name: 'value', headers : {'X-Requested-With': 'Accept'}, noerror: 1})",
+      "type": "dropdown",
+      "set": "$$.set('.SecondaryClassType', value)",
+      "parent": "truck"
+    },
+    {
+      "name": "field-75",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Trucks, Tractors and Trailers'",
+      "type": "button",
+      "set": "$$.form.all($$, '.SecondaryClassType', 'truck')",
+      "parent": "truck",
+      "tpos": {
+        "n": "N"
+      }
+    },
+    {
+      "name": "covs",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color tab-cols-4-3-3' }",
+      "get": "$$.set('.coverages.liab.IncludeInd','Y'),[$$]",
+      "type": "container",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "-dfe-inline-section-1"
+      }
+    },
+    {
+      "name": "field-77",
+      "get": "'Coverages'",
+      "type": "label",
+      "parent": "covs",
+      "tpos": {
+        "w": "3"
+      }
+    },
+    {
+      "name": "field-78",
+      "get": "'Physical Damage Only?'",
+      "type": "label",
+      "parent": "covs",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-79",
+      "get": "$$.getOrDefault('.PhysDmgInd', 'N')",
+      "type": "checkbox",
+      "set": "$$.set('.PhysDmgInd', value)",
+      "parent": "covs"
+    },
+    {
+      "name": "field-80",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.PhysDmgInd')",
+      "parent": "covs"
+    },
+    {
+      "name": "field-81",
+      "get": "'Comp. Ded'",
+      "type": "label",
+      "val": "required($$, '.coverages.otc.ded')",
+      "parent": "covs",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-82",
+      "atr": "{ style: 'width: min-content;', 'default': []}",
+      "get": "ajaxFeed($$, {url: '/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getCompDedOptions&vehicleType='+$$('.vehicletype'), param: {value: $$('.coverages.otc.ded')}, name: 'value', headers : {'X-Requested-With': 'Accept'}, noerror: 1, mapper: function(o) { return {value: o.value, description: o.text}}})",
+      "type": "dropdown",
+      "set": "$$.set('.coverages.otc.ded', value)",
+      "parent": "covs"
+    },
+    {
+      "name": "field-83",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.coverages.otc.ded')",
+      "parent": "covs"
+    },
+    {
+      "name": "field-84",
+      "get": "'Coll. Ded'",
+      "type": "label",
+      "val": "required($$, '.coverages.col.ded')",
+      "parent": "covs",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-85",
+      "atr": "{ style: 'width: min-content;', 'default': []}",
+      "get": "ajaxFeed($$, {url: '/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getCollDedOptions&vehicleType='+$$('.vehicletype'), param: {value: $$('.coverages.col.ded')}, name: 'value', headers : {'X-Requested-With': 'Accept'}, noerror: 1, mapper: function(o) { return {value: o.value, description: o.text}}})",
+      "type": "dropdown",
+      "set": "$$.set('.coverages.col.ded', value)",
+      "parent": "covs"
+    },
+    {
+      "name": "field-86",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.coverages.col.ded')",
+      "parent": "covs"
+    },
+    {
+      "name": "field-87",
+      "get": "'Valuation'",
+      "type": "label",
+      "val": "required($$, '.ValuationMethod')",
+      "parent": "covs",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-88",
+      "atr": "{ style: 'width: min-content;' , 'default': []}",
+      "get": "ajaxFeed($$, {url: '/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getValuationMethodOptions&vehicleType='+$$('.vehicletype'), param: {value: $$('.ValuationMethod')}, name: 'value', headers : {'X-Requested-With': 'Accept'}, noerror: 1})",
+      "type": "dropdown",
+      "set": "$$.set('.ValuationMethod', value)",
+      "parent": "covs"
+    },
+    {
+      "name": "field-89",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.ValuationMethod')",
+      "parent": "covs"
+    },
+    {
+      "name": "amt-switch",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color-1 tab-cols-4-3-3' }",
+      "get": "$$('.ValuationMethod') == 'Stated Amount' ? [$$] : []",
+      "type": "container",
+      "parent": "covs",
+      "tpos": {
+        "n": "Y",
+        "w": "3",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-91",
+      "atr": "{ style: 'padding-left: 10px; '}",
+      "get": "'Stated Amount'",
+      "type": "label",
+      "val": "required($$, '.StatedAmt')",
+      "parent": "amt-switch"
+    },
+    {
+      "name": "field-92",
+      "atr": "{ style : 'width: 100px', formatting: '$9,999,999'}",
+      "get": "$$('.StatedAmt')",
+      "type": "editbox-$",
+      "set": "$$.set('.StatedAmt', value)",
+      "parent": "amt-switch"
+    },
+    {
+      "name": "field-93",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.StatedAmt')",
+      "parent": "amt-switch"
+    },
+    {
+      "name": "pdonly-switch",
+      "atr": "{ 'class': 'col-3-centred tab-cols-4-3-3 ' + ($$('.ValuationMethod') == 'Stated Amount' ? 'tab-alt-color' : 'tab-alt-color-1') }",
+      "get": "$$('.PhysDmgInd') == 'Y' ? [] : [$$]",
+      "type": "container",
+      "parent": "covs",
+      "tpos": {
+        "n": "Y",
+        "w": "3",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-95",
+      "get": "'Personal Injury Protection Coverage'",
+      "type": "label",
+      "parent": "pdonly-switch"
+    },
+    {
+      "name": "field-96",
+      "get": "$$.getOrDefault('.coverages.pip.IncludeInd', 'N')",
+      "type": "checkbox",
+      "set": "$$.set('.coverages.pip.IncludeInd', value)",
+      "parent": "pdonly-switch"
+    },
+    {
+      "name": "field-97",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.coverages.pip.IncludeInd')",
+      "parent": "pdonly-switch"
+    },
+    {
+      "name": "pip-switch",
+      "atr": "{ 'class': 'col-3-centred tab-cols-4-3-3 ' + ($$('.ValuationMethod') == 'Stated Amount' ? 'tab-alt-color-1' : 'tab-alt-color') }",
+      "get": "$$('.coverages.pip.IncludeInd') == 'Y' ? [$$] : []",
+      "type": "container",
+      "parent": "pdonly-switch",
+      "tpos": {
+        "n": "Y",
+        "w": "3",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-99",
+      "get": "'Additional Personal Injury Protection'",
+      "type": "label",
+      "val": "required($$, '.coverages.pip.addedpipoption')",
+      "parent": "pip-switch",
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "field-100",
+      "atr": "{ style: 'width: fit-content', 'default': []}",
+      "get": "{ value : $$('.coverages.pip.addedpipoption'), items : [{value: 'Option 1'}, {value: 'Option 2'}] }",
+      "type": "dropdown",
+      "set": "$$.set('.coverages.pip.addedpipoption', value)",
+      "parent": "pip-switch"
+    },
+    {
+      "name": "field-101",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.coverages.pip.addedpipoption')",
+      "parent": "pip-switch"
+    },
+    {
+      "name": "field-102",
+      "get": "'Number of Individuals for Broadened PIP'",
+      "type": "label",
+      "val": "required($$, '.coverages.pip.broadpipnum')",
+      "parent": "pip-switch",
+      "tpos": {
+        "n": "Y"
+      },
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "field-103",
+      "atr": "{ pattern: '[0-9]{1,5}', style: 'width: 80px;'}",
+      "get": "$$('.coverages.pip.broadpipnum')",
+      "type": "editbox",
+      "set": "$$.set('.coverages.pip.broadpipnum', value)",
+      "parent": "pip-switch"
+    },
+    {
+      "name": "field-104",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.coverages.pip.broadpipnum')",
+      "parent": "pip-switch"
+    },
+    {
+      "name": "opt-covs",
+      "atr": "{ 'class': 'col-3-centred tab-cols-4-3-3 ' + ($$('.vehicletype') == 'car' ? 'tab-alt-color' : 'tab-alt-color-1') }",
+      "get": "[$$]",
+      "type": "container",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "-dfe-inline-section-1"
+      }
+    },
+    {
+      "name": "field-106",
+      "get": "'Optional Coverages'",
+      "type": "label",
+      "parent": "opt-covs",
+      "tpos": {
+        "w": "3"
+      }
+    },
+    {
+      "type": "div",
+      "get": "[$$]",
+      "parent": "body",
+      "tpos": {
+        "n": "Y",
+        "w": "2",
+        "s": "padding: 2px 0px"
+      },
+      "name": "car-ctrl",
+      "atr": "{ skip: $$('..car').length > 1 ? [] : ['remove-car'], style: 'padding: 5px; text-align: right; background: lightgray;'}"
+    },
+    {
+      "name": "towing-switch",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color-1 tab-cols-4-3-3' }",
+      "get": "$$('.vehicletype') == 'car' ? [$$] : []",
+      "type": "container",
+      "parent": "opt-covs",
+      "tpos": {
+        "w": "3",
+        "n": "Y",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "clone-car",
+      "get": "'Clone Vehicle'",
+      "type": "button",
+      "set": "var r = $$.runtime, p = $$.clone(), loc = p.get('..'); $$.form.countCars($$);\n    setTimeout(function() { ui = r.findChildren(r.findControls('cars', loc), 1, 0, 'vin', p).pop().ui, ui.focus(), ui.setSelectionRange(ui.value.length-6, ui.value.length) }, 2);",
+      "dpos": {
+        "colstyle": "display: inline-block"
+      },
+      "parent": "car-ctrl",
+      "atr": "{style : 'padding: 1px 10px; margin: 0px 5px'}"
+    },
+    {
+      "name": "field-117",
+      "get": "'Towing and Labor'",
+      "type": "label",
+      "val": "required($$, '.coverages.towlabor.towlabor')",
+      "parent": "towing-switch"
+    },
+    {
+      "name": "remove-car",
+      "type": "button",
+      "get": "'Remove Vehicle'",
+      "parent": "car-ctrl",
+      "dpos": {
+        "colstyle": "display: inline-block"
+      },
+      "atr": "{style : 'padding: 1px 10px; margin: 0px 5px'}",
+      "set": "$$.detach(); $$.form.countCars($$)"
+    },
+    {
+      "name": "field-118",
+      "atr": "{ 'default': [], style: 'width: fit-content' }",
+      "get": "{ value: $$('.coverages.towlabor.towlabor'),items: [{value: 'No Coverage'}, {value: '50', description: '$50'}, {value: '100', description: '$100'}, {value: '200', description: '$200'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.coverages.towlabor.towlabor', value)",
+      "parent": "towing-switch"
+    },
+    {
+      "name": "field-119",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Passenger Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.coverages.towlabor.towlabor', 'car')\n",
+      "parent": "towing-switch"
+    },
+    {
+      "name": "field-107",
+      "get": "'Loss Payee'",
+      "type": "label",
+      "parent": "opt-covs",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-108",
+      "get": "$$.getOrDefault('.losspayee.losspayeeInd', 'N')",
+      "type": "checkbox",
+      "set": "$$.set('.losspayee.losspayeeInd', value)",
+      "parent": "opt-covs"
+    },
+    {
+      "name": "field-109",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.losspayee.losspayeeInd')",
+      "parent": "opt-covs"
+    },
+    {
+      "name": "field-110",
+      "get": "'Additional Insured - Lessor'",
+      "type": "label",
+      "parent": "opt-covs",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-111",
+      "get": "$$.getOrDefault('.losspayee.ailessorInd', 'N')",
+      "type": "checkbox",
+      "set": "$$.set('.losspayee.ailessorInd', value)",
+      "parent": "opt-covs"
+    },
+    {
+      "name": "field-112",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.losspayee.ailessorInd')\n",
+      "parent": "opt-covs"
+    },
+    {
+      "name": "field-113",
+      "get": "'Hired Auto - Specified As Covered Auto You Own'",
+      "type": "label",
+      "parent": "opt-covs",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-114",
+      "get": "$$.getOrDefault('.losspayee.haownInd', 'N')",
+      "type": "checkbox",
+      "set": "$$.set('.losspayee.haownInd', value)",
+      "parent": "opt-covs"
+    },
+    {
+      "name": "field-115",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.losspayee.haownInd')",
+      "parent": "opt-covs"
+    },
+    {
+      "name": "field-122",
+      "get": "'Golf Carts and Low Speed Vehicles'",
+      "type": "label",
+      "parent": "golf",
+      "tpos": {
+        "w": "3"
+      }
+    },
+    {
+      "name": "field-123",
+      "get": "'Mobile Homes'",
+      "type": "label",
+      "parent": "mobile",
+      "tpos": {
+        "w": "3"
+      }
+    },
+    {
+      "name": "field-124",
+      "get": "'Type'",
+      "type": "label",
+      "val": "required($$, '.GolfType')",
+      "parent": "golf",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-125",
+      "atr": "{'default': [], style: 'width: fit-content'}",
+      "get": "{ value: $$('.GolfType'), items: [{value: 'Golf Cart'},{value:'Low Speed Vehicles'}] }",
+      "type": "dropdown",
+      "set": "$$.set('.GolfType', value)",
+      "parent": "golf"
+    },
+    {
+      "name": "field-126",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Golf Carts and Low Speed Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.GolfType', 'golf')",
+      "parent": "golf"
+    },
+    {
+      "name": "field-127",
+      "get": "'Use'",
+      "type": "label",
+      "val": "required($$, '.GolfUse')",
+      "parent": "golf",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-128",
+      "atr": "{'default': [], style: 'width: fit-content'}",
+      "get": "{ value: $$('.GolfUse'), items: [{value: 'Used On Golf Course'},{value:'Other Commercial Purposes'}] }",
+      "type": "dropdown",
+      "set": "$$.set('.GolfUse', value)",
+      "parent": "golf"
+    },
+    {
+      "name": "field-129",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Golf Carts and Low Speed Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.GolfUse', 'golf')",
+      "parent": "golf"
+    },
+    {
+      "name": "field-130",
+      "get": "'Vehicle subject to compulsory, financial or other law'",
+      "type": "label",
+      "parent": "golf",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-131",
+      "get": "$$('.GolfVhsub')",
+      "type": "checkbox",
+      "set": "$$.set('.GolfVhsub', value)",
+      "parent": "golf"
+    },
+    {
+      "name": "field-132",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Golf Carts and Low Speed Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.GolfVhsub', 'golf')",
+      "parent": "golf"
+    },
+    {
+      "name": "field-133",
+      "get": "'Type'",
+      "type": "label",
+      "val": "required($$, '.MobileHomeType')",
+      "parent": "mobile",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-134",
+      "atr": "{'default': [], style: 'width: fit-content'}",
+      "get": "{ value : $$('.MobileHomeType'), items : [{value :'Trailer Equipped As Living Quarters'},{value :'Pickup Trucks Used Solely To Transport Camper Bodies'},{value :'Motor Homes Self-Propelled Equipped As Living Quarters'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.MobileHomeType', value)",
+      "parent": "mobile"
+    },
+    {
+      "name": "field-135",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Mobile Homes'",
+      "type": "button",
+      "set": "$$.form.all($$, '.MobileHomeType', 'mobile')\n",
+      "parent": "mobile"
+    },
+    {
+      "name": "length-switch",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color tab-cols-2-5-3' }",
+      "get": "$$('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [$$] : []",
+      "type": "container",
+      "parent": "mobile",
+      "tpos": {
+        "n": "Y",
+        "w": "3"
+      }
+    },
+    {
+      "name": "field-137",
+      "get": "'Length'",
+      "type": "label",
+      "val": "required($$,'.MotorHomeSize')",
+      "parent": "length-switch"
+    },
+    {
+      "name": "field-138",
+      "atr": "{'default': [], style: 'width: fit-content'}",
+      "get": "{ value : $$('.MotorHomeSize'), items : [{value :'Up To 22 feet'},{value :'More Than 22 feet'}]}",
+      "type": "dropdown",
+      "set": "$$.set('.MotorHomeSize', value)",
+      "parent": "length-switch"
+    },
+    {
+      "name": "field-139",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Mobile Homes'",
+      "type": "button",
+      "set": "$$.form.all($$, '.MotorHomeSize', 'mobile')",
+      "parent": "length-switch"
+    },
+    {
+      "name": "added-pip",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color tab-cols-4-3-3'}",
+      "get": "+$$('.coverages.pip.broadpipnum')>0 ? [$$] : []",
+      "type": "container",
+      "parent": "pip-switch",
+      "tpos": {
+        "n": "Y",
+        "w": "3",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-144",
+      "get": "'Number of Named Individuals for Additional <br> Broadened PIP'",
+      "type": "html",
+      "val": "required($$, '.coverages.pip.addedbroadpipnum')",
+      "parent": "added-pip",
+      "atr": "{ style: 'padding-left: 10px'}"
+    },
+    {
+      "name": "field-145",
+      "atr": "{ pattern: '[0-9]{1,5}', style: 'width: 80px;'}",
+      "get": "$$('.coverages.pip.addedbroadpipnum')",
+      "type": "editbox",
+      "set": "$$.set('.coverages.pip.addedbroadpipnum', value)",
+      "parent": "added-pip"
+    },
+    {
+      "name": "field-146",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.coverages.pip.addedbroadpipnum')",
+      "parent": "added-pip"
+    },
+    {
+      "name": "added-pip-s",
+      "atr": "{ 'class': 'col-3-centred tab-alt-color-1 tab-cols-4-3-3'}",
+      "get": "+$$('.coverages.pip.addedbroadpipnum')>0 ? [$$] : []",
+      "type": "container",
+      "parent": "added-pip",
+      "tpos": {
+        "n": "Y",
+        "w": "3",
+        "s": "padding: 0px;"
+      }
+    },
+    {
+      "name": "field-148",
+      "get": "'Additional Broadened Personal Injury Protection'",
+      "type": "label",
+      "val": "required($$, '.coverages.pip.addedbpipoptioncd')",
+      "parent": "added-pip-s"
+    },
+    {
+      "name": "field-149",
+      "atr": "{ style: 'width: fit-content', 'default': []}",
+      "get": "{ value : $$('.coverages.pip.addedbpipoptioncd'), items : [{value: 'Option 1'}, {value: 'Option 2'}] }",
+      "type": "dropdown",
+      "set": "$$.set('.coverages.pip.addedbpipoptioncd', value)",
+      "parent": "added-pip-s"
+    },
+    {
+      "name": "field-150",
+      "atr": "{ 'class': 'link-button'}",
+      "get": "'Apply to all Vehicles'",
+      "type": "button",
+      "set": "$$.form.all($$, '.coverages.pip.addedbpipoptioncd')",
+      "parent": "added-pip-s"
+    },
+    {
+      "name": "field-156",
+      "type": "label",
+      "get": "'Employee as Lessor'",
+      "parent": "opt-covs",
+      "tpos": {
+        "n": "Y"
+      }
+    },
+    {
+      "name": "field-157",
+      "type": "checkbox",
+      "get": "$$.getOrDefault('.emplessor', 'N')",
+      "parent": "opt-covs"
+    },
+    {
+      "name": "field-158",
+      "type": "button",
+      "get": "'Apply to all Vehicles'",
+      "parent": "opt-covs",
+      "atr": "{ 'class': 'link-button'}",
+      "set": "$$.form.all($$, '.emplessor')"
+    }
+  ],
+  "setup": "this.all = function($$, prop, type) {\n       $$('...location.car').forEach(function(c){ (type&&c.data.vehicletype!=type)||c.set(prop, $$(prop))})\n    }\n    this.countCars = function($$, v) {\n       $$.set('policy.cmau.location.cars', $$('policy.cmau.location.car').length);\n    }\n    window.showHelp = function (freshurl) {\n        DetailWin = window.open(freshurl, 'DetailWin', 'scrollbars=yes,resizable=yes,toolbar=no,height=250,width=250');\n        if (window.focus)\n            DetailWin.focus();\n    }"
+}
