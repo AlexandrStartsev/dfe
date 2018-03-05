@@ -7,12 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.script.Bindings;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-
 import org.apache.commons.io.IOUtils;
-//import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -22,40 +18,24 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
-//import org.springframework.aop.target.CommonsPoolTargetSource;
+import org.apache.log4j.Logger;
 
-//import com.arrow.common.EnvironmentInfo;
-//import com.arrow.util.AexApplicationContext;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.arrow.common.EnvironmentInfo;
 
 public class AjaxHandler {
 	
-	//private final static CommonsPoolTargetSource clients = AexApplicationContext.getBean("http-client-pool", CommonsPoolTargetSource.class);
-	private final static HttpClient clients = HttpClientBuilder.create().build(); 
-		
-	private final static Gson gson = new GsonBuilder().create();
-	@SuppressWarnings("serial")
-	private final static TypeToken<Map<String, Object>> umTt = new TypeToken<Map<String, Object>>(){};
-	
-	/** TODO: 
-	  * Important: this needs HttpClient pool + dispatch internally for local url's
-	  */
-	
-	@SuppressWarnings("unchecked")
-	public void handle(Bindings bindings, ServletContext context, String localName, String path, String method, String dataType, Object request, Object headers) throws IOException {
-		RequestDispatcher dispatcher = context.getRequestDispatcher(path);
-		if(dispatcher != null) {
-			//localHandler.forward(request, response); - have to come up with servletrequest/servletresponse pair based on parameters.
-		}	
-		
-		localName = "http://localhost:7001"; //EnvironmentInfo.getInstance().getBaseAExUrl().toString();
+	private static final Logger log = Logger.getLogger(AjaxHandler.class);
+	private final static HttpClient client = new DefaultHttpClient(new ThreadSafeClientConnManager());
+
+	@SuppressWarnings({ "unchecked", "restriction" })
+	public static void handle(jdk.nashorn.api.scripting.ScriptObjectMirror context, String path, String meth, String dataType, Object request, Object headers) throws IOException {
+		final String localName = EnvironmentInfo.getInstance().getBaseAExUrl().toString();
 		Charset cs = Charset.defaultCharset();
 		HttpUriRequest req = null;
-		method = method == null || method.isEmpty() ? "GET" : method.toUpperCase();
+		String method = StringUtils.isEmpty(meth) ? "GET" : meth.toUpperCase();
 		Map<String, Object> data = request.toString() != "undefined" ? (Map<String, Object>) request : new HashMap<>();
 		if( method.equals("POST") ) {
 			HttpPost post = new HttpPost(path.startsWith("http") ? path : localName + path);
@@ -74,41 +54,48 @@ public class AjaxHandler {
 		}
 		HttpResponse resp = null;
 		String status = "unknown", strResponse = "";
-		HttpClient client = null; 
 		try {
-			client = clients;  //(HttpClient)clients.getTarget();
 			resp = client.execute(req);
 			strResponse = IOUtils.toString(resp.getEntity().getContent(), cs.name());
-			bindings.put("strResponse", strResponse);
+			context.put("responseString", strResponse);
+			context.put("errorString", "");
 			status = "success";
 		} catch (Throwable e) {
 			trace(e, resp, strResponse, localName, path, method, dataType, request, headers);
-			bindings.put("strError", e.toString());
+			context.put("errorString", e.toString());
 			status = "error";
 		} finally {
-			try {
-				//clients.releaseTarget(client);
-			}
-			catch (Exception e) {
-				bindings.put("strError", e.toString());
-				status = "error";
-			}
-			bindings.put("statusCode", Integer.valueOf(resp != null ? resp.getStatusLine().getStatusCode() : 500));
-			bindings.put("status", status);
-		}		
+			context.put("statusCode", Integer.valueOf(resp != null ? resp.getStatusLine().getStatusCode() : 500));
+			context.put("statusString", status);
+		}	
 	}
 	
 	private final static void trace(Throwable e, HttpResponse httpResponse, String response, String localName, String path, String method, String dataType, Object request, Object headers) {
-		System.err.println("AjaxHandler::handle errored:");
-		e.printStackTrace(System.err);
-		System.err.println("Request parameters:");
-		System.err.println(localName);
-		System.err.println(path);
-		System.err.println(method);
-		System.err.println(dataType);
-		System.err.println(request);
-		System.err.println(headers);
-		System.err.println("Response, if available:");
-		System.err.println(response);
+		log.error("AjaxHandler::handle", e);
+		log.error("Request parameters:");
+		log.error(localName);
+		log.error(path);
+		log.error(method);
+		log.error(dataType);
+		log.error(request);
+		log.error(headers);
+		log.error("Response, if available:");
+		log.error(httpResponse.getStatusLine().toString());
+		log.error(response);
 	}
+	
+	public final static void primeNashornAjaxCache(@SuppressWarnings("unused") String scriptName, String key, String jsonResponse) {
+		ExperimentalUtilsFactory.execute("function(k, v){ ajaxCache.put(k, v, 'json', 'success') }", key, jsonResponse);
+	}
+	
+	/*
+	//private final static CommonsPoolTargetSource clients = AexApplicationContext.getBean("http-client-pool", CommonsPoolTargetSource.class);
+	 * 
+    <bean id="http-client" class="org.apache.http.impl.client.DefaultHttpClient" scope="prototype" lazy-init="true"/>
+    
+    <bean id="http-client-pool" class="org.springframework.aop.target.CommonsPoolTargetSource" lazy-init="true">
+        <property name="targetBeanName" value="http-client"/>
+        <property name="maxSize" value="5"/>    
+    </bean>   
+	 * */
 }

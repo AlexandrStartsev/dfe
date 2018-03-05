@@ -1,11 +1,19 @@
 package com.arrow.util.experimental.collections;
 
+import static jdk.nashorn.internal.runtime.Context.getGlobal;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-@SuppressWarnings("restriction")
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.runtime.ScriptRuntime;
+
+
+@SuppressWarnings({ "restriction" })
 public class NashornMap<K, V> {
+
+	public final static JSPrototype prototype = new JSPrototype();
 	
 	public static class LinkedEntry<K, V> {
 		public K key;
@@ -18,15 +26,20 @@ public class NashornMap<K, V> {
 		}
 	}
 
-	
 	protected Map<K, LinkedEntry<K, V>> map = new HashMap<>();
 	protected LinkedEntry<K, V> first = null, last = null;
 	public int size = 0;
+	public final Object constructor;
 	
+	public NashornMap() { 
+		this.constructor = prototype.constructor; 
+	}
 	
-	public NashornMap() {}
-	
-	public NashornMap(jdk.nashorn.api.scripting.ScriptObjectMirror obj) {}
+	// TODO: fill map if obj is "iterable", aka [[k, v], [k, v], ...], has forEach or so, but since browser support for this is questionable it s unlikely to be used  
+	public NashornMap(ScriptObjectMirror obj) { 
+		this.constructor = prototype.constructor; 
+		throw new UnsupportedOperationException();
+	}
 	
 	public void clear() {
 		this.size = 0;
@@ -46,9 +59,13 @@ public class NashornMap<K, V> {
 		return e != null;
 	}
 	
+	public int _size() {
+		return this.size;
+	}	
+	
 	public V get(K key) {
 		LinkedEntry<K, V> e = this.map.get(key);
-		return e == null ? null : e.value;
+		return e == null ? (V)ScriptRuntime.UNDEFINED : e.value;
 	}
 	
 	public boolean has(K key) {
@@ -56,15 +73,19 @@ public class NashornMap<K, V> {
 	}
 	
 	
-	public void forEach(jdk.nashorn.api.scripting.ScriptObjectMirror func) {
+	public void forEach(ScriptObjectMirror action) {
+		this.forEach(action, getGlobal());
+    }
+	
+	public void forEach(ScriptObjectMirror action, Object ctx) {
 		for( LinkedEntry<K, V> e = this.first; e != null; e = e.next ) {
-			func.call(null, e.value, e.key);
+			action.call(ctx, e.value, e.key);
 		}
     }
 	
-	public void forEach(jdk.nashorn.api.scripting.ScriptObjectMirror func, jdk.nashorn.api.scripting.ScriptObjectMirror ctx) {
+	public void forEach(BiConsumer<V, K> action) {
 		for( LinkedEntry<K, V> e = this.first; e != null; e = e.next ) {
-			func.call(ctx, e.value, e.key);
+			action.accept(e.value, e.key);
 		}
     }
 	
