@@ -289,6 +289,7 @@ DFE.nav = function () {
 
 require.config({
 	waitSeconds : 3600,
+    baseUrl: '/js',
     bundles: {
         'components/generic' : ['components/dual-with-label', 'components/editbox','components/c-editbox','components/editbox-$','components/c-editbox-$','components/dropdown','components/c-dropdown','components/button','components/container','components/div','components/div-r','components/tab-s','components/div-c','components/checkbox','components/c-checkbox','components/c-radiolist','components/radiolist','components/label','components/html','components/textarea','components/editbox-P','components/div-button','components/multioption','components/typeahead',/*'components/placeholder',*/'components/div-button-x'],
     },            

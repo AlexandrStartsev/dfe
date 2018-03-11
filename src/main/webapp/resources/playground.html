@@ -8,8 +8,6 @@
         <script src="/js/require.js"></script>
         <script src="/js/ui-utils.js"></script>
         
-        <script src="/js/tsc.js"></script>
-        
         <link href="/css/jquery-typeahead.css" type="text/css" rel="stylesheet">
         <link href="/css/jquery-ui.css" type="text/css" rel="stylesheet">
         <link href="/css/dfe-style.css" type="text/css" rel="stylesheet" >
@@ -21,10 +19,10 @@
             require.config({ baseUrl: '/js', paths: { forms : '../forms' } })
             
             var model = new Promise(function(resolve, reject) {
-                require(['babel', 'uglify', 'jquery'], function() {
+                require(['babel', 'uglify', 'jquery', 'components/date-picker-polyfill'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
-                    $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
+                    $.get('/test/test-db.json', function(arf) { resolve(arf) })
                 })
             });
             
@@ -36,10 +34,71 @@
             });
         </script>
         
-        
+        <style>
+            .css-minus {
+                width: 10px;
+                height: 10px;
+                position: relative;
+            }
+            .css-minus::before {
+                content: '';
+                border-top: 2px solid;
+                border-color: inherit;
+                width: 100%;
+                position: absolute;
+                top: calc(50% - 1px);
+            }
+            .css-plus {
+                width: 10px;
+                height: 10px;
+                position: relative;
+            }
+            .css-plus::before {
+                content: '';
+                border-top: 2px solid;
+                border-color: inherit;
+                width: 100%;
+                position: absolute;
+                top: calc(50% - 1px);
+            }    
+            .css-plus::after {
+                content: '';
+                border-left: 2px solid;
+                border-color: inherit;
+                height: 100%;
+                position: absolute;
+                left: calc(50% - 1px);  
+            }    
+            .css-pm-button {
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                flex-direction: column;
+            }
+            .css-pm-button > div {
+                display: inline-flex; 
+                border: 1px solid lightblue; 
+                border-radius: 3px;
+                background: linear-gradient(to top left, lightblue, lightcyan);
+                border-color: lightblue darkgray darkgray lightblue;
+            }
+            .css-pm-button * {
+                pointer-events: none;
+            }
+            
+            .css-pm-button:active > div {
+                background: linear-gradient(to top left, lightcyan, lightblue);
+                border-color: darkgray lightblue lightblue darkgray;
+            }
+
+        </style>
     </head>
     <body> 
-        <div id='dfe' dfe-form='quote.cmau.car' dfe-model='model' dfe-edit-target ></div>
+        <!--<div class="css-pm-button" style="width: 15px; height: 15px;">
+             <div ><div class="css-plus" style="border-color: green;"></div></div></div>
+        
+        <input type="datepicker"/>-->
+        <div id='dfe' dfe-form='dfe.mydashboard' dfe-model='model' dfe-edit-target ></div>
         <br>
         <br>
         <br>

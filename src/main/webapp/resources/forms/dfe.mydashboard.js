@@ -1,4 +1,4 @@
-defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/css-anim", "dfe-field-helper", "components/div", "components/container", "components/label", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/html", "components/div-button", "components/button", "components/editbox-$" ], function(require, jq, cmn, cssAnim, fields, __c_div, __c_container, __c_label, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_html, __c_div_button, __c_button, __c_editbox_$) {
+defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "css-anim", "dfe-field-helper", "components/div", "components/container", "components/label", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/html", "components/div-button", "components/button", "components/editbox-$" ], function(require, jq, cmn, cssAnim, fields, __c_div, __c_container, __c_label, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_html, __c_div_button, __c_button, __c_editbox_$) {
     return new class {
         constructor() {
             this.dfe = [ {
@@ -187,10 +187,7 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/c
                 get: $$ => $$('.status') + ' (' + $$('.rows').filter(row => this.shouldShow(row)).length + ')',
                 atr: $$ => ({
                     style: 'white-space: nowrap'
-                }),
-                pos: [ {
-                    s: "padding-top: 4px"
-                } ]
+                })
             }, {
                 name: "field-15",
                 component: __c_label,
@@ -486,6 +483,7 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/c
             } ];
         }
         loadDateRange(px, effFrom, effTo) {
+            return ;
             let f = this, url = `/AJAXServlet.srv?method=DashboardScriptHelper&action=geninfo&lob=WORK&eff=${effFrom}&effTo=${effTo}&idKey=${++f.idKey}`, toLoad = [], curRep = px('result'), matched = new Set();
             px.set('loading', 1)
             jq.get(url, function(data) {
@@ -555,28 +553,27 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/c
     		        border-collapse: collapse;
     		    }
 
-    		    .header-button {
-    			    transform: rotate(90deg) scale(0.4, 0.3);
+    		    .header-button, .header-button-flip {
     			    width: 16px;
 				    height: 16px;
-				    position: relative;
-				    top: -2px;
-				    left: 1px;
     		    }
+
+                .header-button > .css-arrow {
+                    transform: rotate(90deg) scale(0.4, 0.3);
+                }
     		    
-    		    .header-button-flip {
+    		    .header-button-flip > .css-arrow {
     		        transform: rotate(-90deg) scale(0.4, 0.3);
-    			    width: 16px;
-				    height: 16px;
-				    position: relative;
-				    top: 1px;
-				    left: -1px;
+    		    }
+
+                .header-button:active > .css-arrow {
+                    transform: rotate(90deg) scale(0.36, 0.27);
+                }
+    		    
+    		    .header-button-flip:active > .css-arrow {
+    		        transform: rotate(-90deg) scale(0.36, 0.27);
     		    }
     		    
-    		    /*.header-button:active *, .header-button-flip:active {
-    		        zoom: 0.9
-    		    }
-    		    */
     		    .wrong-date {
     		        background: antiquewhite;
     		    }
