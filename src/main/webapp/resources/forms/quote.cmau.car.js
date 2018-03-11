@@ -10,6 +10,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 component: __c_tab_s,
                 parent: "root",
                 get: $$ => $$('.location'),
+                val: $$ => $$.required('.location'),
                 atr: () => ({
                     haclass: 'tab-item-active',
                     focusnew: 1,
@@ -45,6 +46,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 component: __c_tab_s,
                 parent: "locs",
                 get: $$ => $$('.car'),
+                val: $$ => $$.required('.car'),
                 atr: () => ({
                     haclass: 'tab-item-active',
                     focusnew: 1,

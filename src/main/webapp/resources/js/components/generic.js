@@ -1,20 +1,20 @@
 (function (){
 	function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
-    function defer(c, d, e, a, t) { delete c._deferred; return !c.allParentNodes && (c._deferred = function() {c.component.render(c, d, e, a, t)}) }
+    function defer(c, d, e, a, t) { return c._deferred = c.allParentNodes ? 0 : function() {c.component.render(c, d, e, a, t)} }
 	define('components/component', ['ui-utils'], function(uiUtils) {
 	    return {
 	        name: 'component',
 	        isContainer: false,
             slots: 1,
 	        skipattrs: (function(c){ var r = new Set(); c.forEach(function(a) {r.add(a)}); return r})([
-	                                                                'tagname', 'hmodel', 'options', 'trigger', 'orientation', 'vstrategy', 'formatting',
+	                                                                'tagname', 'hmodel', 'options', 'trigger', 'orientation', 'vstrategy', 'formatting', 
 	                                                                'default', 'display', 'focusnew', 'data', 'info', 'depend', 'errorwatch', 'events', 'ta', 
 	                                                                'filter', 'order', 'offsetLeft', 'offsetTop', 'rowclass', 'rowstyle', 'colclass', 'colstyle',
 	                                                                'rowclass$header', 'rowclass$footer', 'rowstyle$header', 'rowstyle$footer', 'haclass', 'nodollar',
 	                                                                'skip', 'pattern', 'transform', 'hfield', 'tagname', 'eclass', 'getter', 'setter', 'validator']),
 	        toAttribute: (function(c){ var r = new Set(); c.forEach(function(a) {r.add(a)}); return r})([
 	                                                                'name', 'id', 'disabled', 'hidden', 'readonly', 'maxlength', 'placeholder', 'spellcheck', 
-	                                                                'class', 'style']),
+	                                                                'class', 'style', 'type']),
 	        setAttributesUI: function(ui, data, errs, attrs) { 
 	            for(var i in attrs) {
 	                if(! this.skipattrs.has(i)) {
@@ -96,7 +96,7 @@
 	    }
 	})
     
-	define('components/editbox', ['components/component', 'ui-utils'], function(Component, uiUtils) {
+	define('components/editbox', ['components/component', 'ui-utils', 'components/date-picker-polyfill'], function(Component, uiUtils) {
 	    var Patterning = function(v, p) { while(p && v != 0 && !(v.match(p) && v.match(p)[0] == v) ) v = v.substr(0, v.length-1); return v; }
 	    var Formatting = function(value, format) { // aka XXX-XXX-XXXX or MM/DD/YYYY
 	        if(format && typeof value !== 'undefined') {
@@ -699,7 +699,7 @@
                         uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, 'clicked')});
                         this.setEvents(control.ui, control, data, errs, attrs);
                     }
-                    control.ui.innerHTML = data;
+                    attrs.html ? (control.ui.innerHTML = data) : (control.ui.innerText = data);
                     this.setAttributes(control, data, errs, attrs);
                     this.appendError(control, control.parentNode, errs, attrs);
                 }
@@ -714,6 +714,7 @@
 	            if(!control.ui) {
 	                control.ui = document.createElement('div');
 	                control.ui._dfe_ = control;
+	                uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, data)});
 	                control.parentNode && control.parentNode.appendChild(control.ui);
 	            }
 	            control.ui.innerHTML = data;
@@ -866,21 +867,23 @@
 	    return _extend({
 	        name: 'div-button',
 	        render: function (control, data, errs, attrs, events) {
-	            if(!control.ui) {
-	                control.ui = document.createElement('div');
-	                control.ui._dfe_ = control;
-	                control.ui.appendChild(control.ui_text = document.createElement('label'));
-	                control.ui.appendChild(control.ui_error = document.createElement('label'));
-	                control.ui_text.setAttribute('class', 'div-button-text');
-	                control.ui_error.setAttribute('class', attrs.eclass || 'div-button-error'); 
-	                uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, data)});
-	                this.setEvents(control.ui, control, data, errs, attrs);
-	                control.parentNode && control.parentNode.appendChild(control.ui);
-	            }
-	            var e = errs ? 'error' : '';
-	            if(control.ui_text.innerHTML != data) control.ui_text.innerHTML = data;
-	            if(control.ui_error.innerHTML != e) control.ui_error.innerHTML = e;
-	            this.setAttributes(control, data, errs, attrs);
+	        	if(!defer(control, data, errs, attrs, events)) {
+		            if(!control.ui) {
+		                control.ui = document.createElement('div');
+		                control.ui._dfe_ = control;
+		                control.ui.appendChild(control.ui_text = document.createElement('label'));
+		                control.ui.appendChild(control.ui_error = document.createElement('label'));
+		                control.ui_text.setAttribute('class', 'div-button-text');
+		                control.ui_error.setAttribute('class', attrs.eclass || 'div-button-error'); 
+		                uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, data)});
+		                this.setEvents(control.ui, control, data, errs, attrs);
+		                control.parentNode && control.parentNode.appendChild(control.ui);
+		            }
+		            var e = errs ? 'error' : '';
+		            if(control.ui_text.innerHTML != data) control.ui_text.innerHTML = data;
+		            if(control.ui_error.innerHTML != e) control.ui_error.innerHTML = e;
+		            this.setAttributes(control, data, errs, attrs);
+	        	}
 	        }
 	    }, Component, {})
 	})
@@ -943,10 +946,7 @@
 	            if( data && data.status != 'loading' ) {
 	                jQuery(rt.node).prop('disabled', false);
 	                jQuery(rt.node).typeahead('hideloading');
-	                if( rt.url != data.url ) {
-	                    rt.url = data.url;
-	                    jQuery(rt.node).typeahead( { source : { data : data.items} }, 'reload' );
-	                }
+	                jQuery(rt.node).typeahead( { source : { data : data.items} }, 'reload' );
 	                if(!data.found) {
 	                    if(data.items.length > 0) {
 	                        control.component.store(control, rt.memorizedItem = {});
@@ -1032,8 +1032,13 @@
                     }
                     attrs.html ? (control.captionUi.innerHTML = attrs.html) : (control.captionUi.innerText = attrs.text);
                     uiUtils.setAttribute(control.captionUi, 'style', attrs.cstyle);
-                    this.renderingComponent.render(control, data, 0, attrs, events);
-                    this.appendError(control, control.allParentNodes && control.allParentNodes[0], errs, attrs);
+                    var ce = attrs.captureError || this.captureError;
+                    if(typeof ce != 'function' || ce(data, errs, attrs)) {
+                    	this.renderingComponent.render(control, data, 0, attrs, events);
+                    	this.appendError(control, control.allParentNodes && control.allParentNodes[0], errs, attrs);
+                    } else {
+                    	this.renderingComponent.render(control, data, errs, attrs, events);
+                    }
                 }
             }
         }, Component, {});
@@ -1056,6 +1061,7 @@
     define('components/c-editbox', ['components/dual-with-label', 'components/editbox', 'ui-utils'], function(DWC, Editbox, uiUtils) {
         return _extend({
 	        name: 'c-editbox',
+            captureError: function(data, errs, attrs) { return !attrs.eclass },
             renderingComponent: _extend({skipattrs: DWC.skipattrs}, Editbox, {}),
         }, DWC, {})
     })  

@@ -1,5 +1,5 @@
-defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/div", "components/container", "components/label", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/div-button", "components/button", "components/editbox-$" ], function(require, jq, cmn, __c_div, __c_container, __c_label, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_div_button, __c_button, __c_editbox_$) {
-    return new class { 
+defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/css-anim", "dfe-field-helper", "components/div", "components/container", "components/label", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/html", "components/div-button", "components/button", "components/editbox-$" ], function(require, jq, cmn, cssAnim, fields, __c_div, __c_container, __c_label, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_html, __c_div_button, __c_button, __c_editbox_$) {
+    return new class {
         constructor() {
             this.dfe = [ {
                 name: "root",
@@ -26,31 +26,33 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                 name: "field-4",
                 component: __c_c_editbox,
                 parent: "filtr",
-                get: $$ => $$('effFrom'),
-                set: ($$, value) => $$.set('effFrom', value),
-                val: $$ => $$.required('.effFrom', 'date'),
-                atr: () => ({
-                    formatting: 'MM/DD/YYYY',
-                    transform: '67890134',
-                    style: 'width: 70px',
+                set: function($$, value) { 
+                	$$.set('effFrom', value); 
+                	let to = cmn.ARFtoDate($$('effTo')), fr = cmn.ARFtoDate(value);
+                	fr.setDate(fr.getDate()+90);
+                	to - fr > 0 && $$.set('effTo', cmn.yyyymmdd(fr))
+                }, 
+                atr: () => fields.date('Effective Date Range:', 'effFrom', {
                     vstrategy: 'notified',
+                    trigger: 'change',
                     eclass: 'wrong-date',
-                    text: 'Effective Date Range:'
+                    type: 'datepicker'
                 })
             }, {
                 name: "field-6",
                 component: __c_c_editbox,
                 parent: "filtr",
-                get: $$ => $$('effTo'),
-                set: ($$, value) => $$.set('effTo', value),
-                val: $$ => $$.required('.effTo', 'date'),
-                atr: () => ({
-                    formatting: 'MM/DD/YYYY',
-                    transform: '67890134',
-                    style: 'width: 70px',
+                set: function($$, value) { 
+                	$$.set('effTo', value); 
+                	let fr = cmn.ARFtoDate($$('effFrom')), to = cmn.ARFtoDate(value);
+                	to.setDate(to.getDate()-90);
+                	to - fr > 0 && $$.set('effFrom', cmn.yyyymmdd(to))
+                },                 
+                atr: () => fields.date('to:', 'effTo', {
                     vstrategy: 'notified',
+                    trigger: 'change',
                     eclass: 'wrong-date',
-                    text: 'to:'
+                    type: 'datepicker'
                 })
             }, {
                 name: "field-8",
@@ -150,7 +152,15 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                     return [ $$ ];
                 },
                 atr: () => ({
-                    style: 'margin-top: 20px'
+                    style: 'margin-top: 20px; position: relative'
+                })
+            }, {
+                name: "loading",
+                component: __c_html,
+                parent: "report",
+                get: () => cssAnim.loadingCircles(),
+                atr: $$ => ({
+                    style: `display: ${$$('loading') == 0 ? 'none' : '' }; align-content: center; justify-content: center; position: absolute; width: 100%; height: 100%; min-height: 200px; min-width: 200px; background: lightgray; opacity: 0.3`
                 })
             }, {
                 name: "filtered",
@@ -163,11 +173,12 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                 })
             }, {
                 name: "field-18",
-                component: __c_div_button,
+                component: __c_html,
                 parent: "filtered",
                 set: $$ => $$.set('.expanded', $$('.expanded') == 'Y' ? 'N' : 'Y'),
+                get: $$ => $$('.expanded') == 'Y' ? cssAnim.sign('minus', 'red') : cssAnim.sign('plus', 'green'), 
                 atr: $$ => ({
-                    style: `background: url("/images/base/${$$('.expanded') == 'Y' ? 66 : 65}.png") no-repeat; min-height: auto; width: 12px; height: 12px; margin: 3px`
+                    style: `/*background: url("/images/base/${$$('.expanded') == 'Y' ? 66 : 65}.png") no-repeat; min-height: auto;*/ width: 12px; height: 12px; margin: 3px`
                 })
             }, {
                 name: "field-14",
@@ -276,10 +287,10 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                 } ]
             }, {
                 name: "field-36",
-                component: __c_button,
+                component: __c_html,
                 parent: "rbody",
                 class: "header",
-                get: $$ => 'v',
+                get: () => cssAnim.arrow('white'),
                 set: function($$) {
                     this.sortInverse($$, '.effectiveDate');
                 },
@@ -296,10 +307,10 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                 } ]
             }, {
                 name: "field-37",
-                component: __c_button,
+                component: __c_html,
                 parent: "rbody",
                 class: "header",
-                get: $$ => 'v',
+                get: () => cssAnim.arrow('white'),
                 set: function($$) {
                     this.sortInverse($$, '.writtenPremium');
                 },
@@ -310,7 +321,8 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                 parent: "rbody",
                 get: $$ => '<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=' + $$('.quoteid') + '">' + $$('.quoteid') + '</a>',
                 atr: () => ({
-                    class: 'label-centered'
+                    class: 'label-centered',
+                    html: true
                 })
             }, {
                 name: "field-30",
@@ -329,9 +341,17 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                     class: 'label-centered'
                 })
             }, {
+                name: "field-46",
+                component: __c_div,
+                parent: "rbody",
+                get: $$ => [ $$ ],
+                atr: () => ({
+                    class: 'hoverable'
+                })
+            }, {
                 name: "field-32",
                 component: __c_label,
-                parent: "rbody",
+                parent: "field-46",
                 get: $$ => $$('.producerCode'),
                 atr: () => ({
                     class: 'label-centered'
@@ -386,10 +406,10 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                 } ]
             }, {
                 name: "field-39",
-                component: __c_button,
+                component: __c_html,
                 parent: "rbody",
                 class: "header",
-                get: () => 'v',
+                get: () => cssAnim.arrow('white'),
                 set: ($$, value) => {
                     this.sortInverse($$, '.govClass');
                 },
@@ -414,10 +434,10 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                 } ]
             }, {
                 name: "field-42",
-                component: __c_button,
+                component: __c_html,
                 parent: "rbody",
                 class: "header",
-                get: () => 'v',
+                get: () => cssAnim.arrow('white'),
                 set: ($$, value) => {
                     this.sortInverse($$, '.newRenewal');
                 },
@@ -452,12 +472,26 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
                 pos: [ {
                     w: "2"
                 } ]
+            }, {
+                name: "field-47",
+                component: __c_label,
+                parent: "field-46",
+                get: $$ => $$('.producerName'),
+                atr: $$ => ({
+                    class: 'display-on-hover'
+                }),
+                pos: [ {
+                    colstyle: "position: absolute"
+                } ]
             } ];
         }
         loadDateRange(px, effFrom, effTo) {
-            let url = '/AJAXServlet.srv?method=DashboardScriptHelper&action=geninfo&lob=WORK&eff=' + effFrom + '&effTo=' + effTo, toLoad = [], curRep = px('result'), matched = new Set();
+            let f = this, url = `/AJAXServlet.srv?method=DashboardScriptHelper&action=geninfo&lob=WORK&eff=${effFrom}&effTo=${effTo}&idKey=${++f.idKey}`, toLoad = [], curRep = px('result'), matched = new Set();
+            px.set('loading', 1)
             jq.get(url, function(data) {
-                if (data && data.status == 'success') {
+                if (data && data.status == 'success' && (!data.idKey || +data.idKey > +f.lastProcessedKey)) {
+                	px.set('loading')
+                    f.lastProcessedKey = +data.idKey;
                     data.result.forEach(res => {
                         res.rows.forEach(r => matched.add(r.quoteid));
                         let idx = px('result.status').indexOf(res.status);
@@ -501,8 +535,9 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
             if (optionalField != 0 && optionalValue != 0 && $$.get(optionalField).toString().toUpperCase().replace(/[^\w]/g, '').indexOf(optionalValue) == -1) return false;
             return (companyCode == 0 || $$.get('.companyCode') == companyCode) && (newRenewal == 0 || $$.get('.newRenewal') == newRenewal);
         }
-        setup() {
-            setDfeCustomStyle(`
+        onstart($$) {
+            this.idKey = this.lastProcessedKey = 0;
+            require('ui-utils').setDfeCustomStyle(`
         	    th {
     		        background-color: #97a47a;
     		        border-right: solid 2px white;
@@ -521,32 +556,45 @@ defineForm("dfe.mydashboard", [ "require", "jquery", "dfe-common", "components/d
     		    }
 
     		    .header-button {
-    			    background-color: gray;
-    			    border: 1px solid lightgray;
-    			    border-radius: 3px;
-    			    padding: 0px 1px;
-    			    font-weight: normal;
+    			    transform: rotate(90deg) scale(0.4, 0.3);
+    			    width: 16px;
+				    height: 16px;
+				    position: relative;
+				    top: -2px;
+				    left: 1px;
     		    }
     		    
     		    .header-button-flip {
-    		        transform: rotate(180deg);
-    		        background-color: gray;
-    		        border: 1px solid lightgray;
-    		        border-radius: 3px;
-    		        padding: 0px 1px;
-    		        font-weight: normal;
+    		        transform: rotate(-90deg) scale(0.4, 0.3);
+    			    width: 16px;
+				    height: 16px;
+				    position: relative;
+				    top: 1px;
+				    left: -1px;
     		    }
     		    
-    		    .header-button:active {
-    		        transform: scale(0.8);
+    		    /*.header-button:active *, .header-button-flip:active {
+    		        zoom: 0.9
     		    }
-    		    
-    		    .header-button-flip:active {
-    		        transform: rotate(180deg) scale(0.8);
-    		    }
-    		    
+    		    */
     		    .wrong-date {
     		        background: antiquewhite;
+    		    }
+    		    
+    		    .display-on-hover {
+    		        display: none;
+    		        position: relative;
+				    left: -20px;
+				    opacity: 0.9;
+				    background: antiquewhite;
+				    padding: 5px 10px;
+				    border-radius: 7px;
+				    box-shadow: 2px 2px lightgrey;
+				    z-index: 100;
+    		    }
+    		    
+    		    .hoverable:hover .display-on-hover {
+    		        display: block;
     		    }
     		    
     		    .label-centered {

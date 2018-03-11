@@ -169,25 +169,25 @@ defineForm("quote.work.class", [ "require", "jquery-ui", "dfe-common", "dfe-fiel
                 component: __c_label,
                 parent: "classes",
                 class: "header",
-                get: () => '# F.T.<br>Employees'
+                get: () => '# F.T. Employees'
             }, {
                 name: "field-20",
                 component: __c_label,
                 parent: "classes",
                 class: "header",
-                get: () => '# P.T.<br>Employees'
+                get: () => '# P.T. Employees'
             }, {
                 name: "field-21",
                 component: __c_label,
                 parent: "classes",
                 class: "header",
-                get: () => '# Seasonal<br>Employees'
+                get: () => '# Seasonal Employees'
             }, {
                 name: "field-22",
                 component: __c_label,
                 parent: "classes",
                 class: "header",
-                get: () => 'Est. Annual<br>Remuneration'
+                get: () => 'Est. Annual Remuneration'
             }, {
                 name: "field-23",
                 component: __c_label,
@@ -282,8 +282,15 @@ defineForm("quote.work.class", [ "require", "jquery-ui", "dfe-common", "dfe-fiel
                 name: "field-32",
                 component: __c_radiolist,
                 parent: "field-37",
-                get: $$ => cmn.ajaxFeed($$, { 
-                    query: {action: 'getSubcodes', classCode: $$('.code'), effectiveDate: $$('...effective')==0 ? '20180303':$$('...effective'), lob: 'WORK', state: $$('..state'), method: 'WORKClassCodeScriptHelper'},
+                get: $$ => cmn.ajaxFeed($$, {
+                    query: {
+                        action: 'getSubcodes',
+                        classCode: $$('.code'),
+                        effectiveDate: $$('...effective') == 0 ? '20180303' : $$('...effective'),
+                        lob: 'WORK',
+                        state: $$('..state'),
+                        method: 'WORKClassCodeScriptHelper'
+                    },
                     param: {
                         value: $$('.subcode')
                     },
@@ -332,28 +339,22 @@ defineForm("quote.work.class", [ "require", "jquery-ui", "dfe-common", "dfe-fiel
         }
         onpost($$) {}
         showAvailable(effDt, state) {
-            $.ajax({
-                url: '/AJAXServlet.srv',
-                data: {
-                    method: 'WORKClassCodeScriptHelper',
-                    action: 'getList',
-                    effectiveDate: effDt,
-                    list: 'classcode',
-                    lob: 'WORK',
-                    state: state
-                },
-                dataType: 'json',
-                type: 'POST',
-                success: data => {
-                    $('<div>').text(data.result.map(e => e.description).join('\n')).css('white-space', 'pre-wrap').dialog({
-                        title: 'Available Class Code List',
-                        width: 'auto',
-                        height: 400,
-                        close: function() {
-                            $(this).dialog('destroy');
-                        }
-                    });
-                }
+            ajaxCache.get({
+                method: 'WORKClassCodeScriptHelper',
+                action: 'getList',
+                effectiveDate: effDt,
+                list: 'classcode',
+                lob: 'WORK',
+                state: state
+            }).then(data => {
+                $('<div>').text(data.result.map(e => e.description).join('\n')).css('white-space', 'pre-wrap').dialog({
+                    title: 'Available Class Code List',
+                    width: 'auto',
+                    height: 400,
+                    close: function() {
+                        $(this).dialog('destroy');
+                    }
+                });
             });
         }
         setup() {}

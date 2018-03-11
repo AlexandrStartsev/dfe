@@ -278,12 +278,12 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    delete this.rootControl;
 	}
 	
-	DfeRuntime.prototype.restart = function(initAction) {
+	DfeRuntime.prototype.restart = function(initAction, suppressOnstart) {
 	    this.shutdown();
 	    this.initAction = {action: initAction||'init'};        
 	    var self = this, px = this.model_proxy;
 	    if(px && this.root_field_proxy) {
-	        typeof this.form.onstart == 'function' && this.form.onstart.call(this.form, cmn.extend(px, function(p) { return px.get(p) }), this);
+	    	suppressOnstart || typeof this.form.onstart == 'function' && this.form.onstart.call(this.form, cmn.extend(px, function(p) { return px.get(p) }), this);
 	        this.rootControl = this.addControl(0, this.model_proxy, this.root_field_proxy);
             this.rootControl.allParentNodes = [this.rootControl.parentNode = this.rootUI];
 	        this.processInterceptors();
@@ -368,7 +368,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
         var _m = []; for(var _it in new JsonProxy()) _it == 'listener' || _m.push(_it);
         return function(model, out, l) { for(var i = _m.length-1; i >=0; i-- ) out[_m[i]] = model[_m[i]]; out.listener = l; return out; }
     })()
-	
+    
 	DfeRuntime.prototype.prep$$ = function(control, model_proxy, field_proxy) {
 	    var runtime = this, listener = this.listener.For(control);
 	    var field = control.field = field_proxy.withListener(listener);
@@ -400,7 +400,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 		    var val = model.get(name);
 		    Array.isArray(val) && (val = val[0]);
 		    if( typeof val === 'undefined' || val.toString().replace(/ /g, '') === '' ) model.error(message || 'Required');
-		    else if( pattern === 'date' && !val.toString().match(cmn.arfDatePattern) || pattern && pattern !== 'date' && ! val.match(pattern) )
+		    else if( pattern === 'date' && !val.toString().match(cmn.arfDateRegExp) || pattern && pattern !== 'date' && ! val.match(pattern) )
 		    	     model.error(message || 'Invalid format');
 		         else return true ;
 		}	   
@@ -523,23 +523,24 @@ define('validation/component', function() {
 })
 
 define('validation/validator', ['dfe-core', 'validation/component'], function(core, component) {
-    var listener = {
-        dpMap : {},
-        depend : function () {},
-        notify : function (d, e, a, v) { 
-            if('mard'.indexOf(a) != -1) {
-                console.error('Model is mutating:\n' + JSON.stringify(d) + '\n' + e + '\n' + a + '\n' + v );
-                throw new Error('Model is mutating');
-            }
-            return true; 
-        },
-        get : function(data, elem) { return data[elem] },
-        For: function() { return this; }
-    }
+	function listener(c) {
+		return {
+	        depend : function () {},
+	        notify : function (d, e, a, v) { 
+	            if('mard'.indexOf(a) != -1) {
+	                console.error('Model is mutating (' + c && c.field.data.name + '):\n' + JSON.stringify(d) + '\n' + e + '\n' + a + '\n' + v );
+	                throw new Error('Model is mutating');
+	            }
+	            return true; 
+	        },
+	        get : function(data, elem) { return data[elem] },
+	        For: function(o) { return listener(o); }
+		}
+	}
     return {
         validate: function(model, form) { //model, form
             console.time('Nashorn validation took');
-            var rt = new core.DfeRuntime(null, listener).setDfeForm(form).setModel(model).restart('validate'), errors = [];
+            var rt = new core.DfeRuntime(null, listener()).setDfeForm(form).setModel(model).restart('validate', true), errors = [];
             rt.rootControl.erroringControls.forEach(function(c) {errors.push(c)});
             rt.stop(); //shutdown(); //GC will do it for us?  - but stopping is necessary on client side since they have processInterceptors loop going
             var e = errors.map(function(c) { return {field: c.field.data.name, error: c.error}});

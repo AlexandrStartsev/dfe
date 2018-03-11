@@ -200,7 +200,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 set: function($$, value) {
                 	var s = babel.transform(this.runtimeToJs($$.data), { plugins: ['transform-es3-property-literals', 'transform-es3-member-expression-literals'], presets : ['es2015']}).code;
                 	//s = s.replace('defineForm("' + $$.data.name + '"', 'defineForm("' + $$.data.name + '.min"');
-                	s = s.replace("Object.defineProperty(target, descriptor.key, descriptor);", "target[descriptor.key] = descriptor.value;");
+                	s = s.replace("Object.defineProperty(target, descriptor.key, descriptor);", "try{Object.defineProperty(target, descriptor.key, descriptor)}catch(e){target[descriptor.key] = descriptor.value}");
                 	s = uglify.parse(s);
                     s.figure_out_scope();
                     s.compute_char_frequency();

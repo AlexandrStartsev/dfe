@@ -310,7 +310,15 @@ define('ui-utils', ['jquery'], function(jq) {
         },
         removeNode: function(node) {
         	node && node.parentNode && node.parentNode.removeChild(node);
-        }
+        },
+        setDfeCustomStyle: function(css, formname) {
+			if(typeof document == 'object') {
+				var e;
+				e = formname && document.getElementById(formname + '-custom-style') || document.head.appendChild(document.createElement('style'));
+				formname && e.setAttribute('id', formname + '-custom-style');
+				e.innerHTML = css;
+			}
+		}
     }
 });
 
@@ -351,15 +359,6 @@ function defineForm(n, d, f) {
 	require(['jquery'], function(jq) { jq(document).ready(function() { l(); _try = false }, false) });
 })();
 
-function setDfeCustomStyle(css, formname) {
-	if(typeof document == 'object') {
-		var e;
-		e = formname && document.getElementById(formname + '-custom-style') || document.head.appendChild(document.createElement('style'));
-		formname && e.setAttribute('id', formname + '-custom-style');
-		e.innerHTML = css;
-	}
-}
-
 var ajaxCache = (function() {
     /*function _Promise(f){
         var t = this;
@@ -376,12 +375,12 @@ var ajaxCache = (function() {
     //ajaxCache.get({method: 'CMAUVehicleScriptHelper', action: 'getVinLookupResults', vinNumber: '1C6RR7GT4FS723795'}).then(d => console.log(d))
     var storage = new Map(), extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
     return {
-        clean: function() {
-            storage.clean();
+        clear: function() {
+            storage.clear();
         },
         get: function(opt) {
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
-                var u = 'https://cors-anywhere.herokuapp.com/https://staging.arrowheadexchange.com/AJAXServlet.srv?';
+                var u = '/AJAXServlet.srv?';
                 for(var o in opt)
                     (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
                         u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';

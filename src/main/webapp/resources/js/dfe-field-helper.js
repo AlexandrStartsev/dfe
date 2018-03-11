@@ -16,6 +16,24 @@ define('dfe-field-helper', ['dfe-common'], function(cmn) {
                 }
             });
         },
+        date: function(text, field, valFunc, attrs) {
+        	typeof field == 'string' || (attrs = valFunc, valFunc = text, field = text)
+            return  cmn.extend(typeof valFunc == 'function' ? attrs : valFunc, {
+            	formatting: 'MM/DD/YYYY',
+                transform: '67890134',
+                text: text,
+                get: function(model) {
+                    return model.get(field);
+                },
+                set: function(model, value) {
+                    model.set(field, value);
+                },
+                val: function(model) {
+                	var value = cmn.ARFtoDate(model.get(field));
+                	model.error( value instanceof Date ? typeof valFunc == 'function' && valFunc(value, model, field) : 'Invalid format' ); 
+                }
+            });
+        },
         choice: function(field, items, attrs){
             return cmn.extend(attrs, {
                 get: function(model) {
