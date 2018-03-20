@@ -178,22 +178,26 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 parent: "common",
                 get: $$ => cmn.ajaxFeed($$, {
                     query: { action: 'getSicNaics', state: $$('.StateofDomicile'), effdate: $$('.effective'), method: 'BBOPClassCodeScriptHelper' },
-                    param: {
-                        sic: $$('.SICCd'),
-                        naics: $$('.NAICSCd')
+                    value: {
+                    	sicCode: $$('.SICCd'),
+                    	naicsCode: $$('.NAICSCd')
                     }
                 }),
                 set: function($$, value) {
-                    $$.set('.SICCd', value.sic);
-                    $$.set('.NAICSCd', value.naics);
+                    $$.set('.SICCd', value.sicCode);
+                    $$.set('.NAICSCd', value.naicsCode);
                 },
                 atr: () => ({
                     options: {
                         searchOnFocus: 'true',
-                        template: 'SIC: {{sic}} / NAICS: {{naics}} - {{description}}',
-                        display: [ 'naics', 'sic', 'description' ]
+                        template: 'SIC: {{sicCode}} / NAICS: {{naicsCode}} ({{naicsDescription}})',
+                        display: ['naicsCode', 'sicCode', 'naicsDescription']
                     },
-                    display: 'description'
+                    display: 'naicsDescription',
+                    filter: function(items) {
+                    	var o = {}; 
+                    	return items.filter(function(v) { var key=v.sicCode+v.naicsCode+v.naicsDescription, p = o[key]; o[key]=1; return !p})
+                    } 
                 }),
                 pos: [ {
                     colclass: "dfe-field-std-p0"

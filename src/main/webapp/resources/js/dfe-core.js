@@ -118,6 +118,10 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    
 	JsonProxy.prototype.set = function (path, value) {
 	    if(!path) return ;
+	    if(typeof path == 'object') {
+	    	for(var i in path) this.set('.' + i, path[i]);
+	    	return ;
+	    }
 	    value || (value = '');
 	    if(value.length && Array.isArray(value)) value=value[0];
 	    if(typeof value == 'number') value = value.toString();

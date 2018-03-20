@@ -1,4 +1,4 @@
-defineForm("quote.work.class", [ "require", "jquery-ui", "dfe-common", "dfe-field-helper", "components/div", "components/container", "components/label", "components/editbox", "components/dropdown", "components/button", "components/editbox-$", "components/radiolist" ], function(require, $, cmn, fields, __c_div, __c_container, __c_label, __c_editbox, __c_dropdown, __c_button, __c_editbox_$, __c_radiolist) {
+defineForm("quote.work.class", [ "require", "ui/jquery-ui", "dfe-common", "dfe-field-helper", "components/div", "components/container", "components/label", "components/editbox", "components/dropdown", "components/button", "components/editbox-$", "components/radiolist" ], function(require, jq, cmn, fields, __c_div, __c_container, __c_label, __c_editbox, __c_dropdown, __c_button, __c_editbox_$, __c_radiolist) {
     return new class {
         constructor() {
             this.dfe = [ {
@@ -14,6 +14,7 @@ defineForm("quote.work.class", [ "require", "jquery-ui", "dfe-common", "dfe-fiel
                 component: __c_container,
                 parent: "root",
                 get: $$ => $$('.location'),
+                val: $$ => $$.required('.location'),
                 atr: $$ => ({
                     style: 'width: 100%',
                     skip: $$('.location').length > 1 ? [] : [ 'field-8', 'field-14' ]
@@ -132,6 +133,7 @@ defineForm("quote.work.class", [ "require", "jquery-ui", "dfe-common", "dfe-fiel
                 component: __c_container,
                 parent: "locs",
                 get: $$ => $$('.class'),
+                val: $$ => $$.required('.class'),
                 atr: $$ => ({
                     style: 'width: 100%;',
                     skip: $$('.class').length > 1 ? [] : [ 'field-23', 'field-31' ]
@@ -291,16 +293,13 @@ defineForm("quote.work.class", [ "require", "jquery-ui", "dfe-common", "dfe-fiel
                         state: $$('..state'),
                         method: 'WORKClassCodeScriptHelper'
                     },
-                    param: {
-                        value: $$('.subcode')
-                    },
-                    name: 'value',
+                    value: $$('.subcode'),
                     mapper: v => ({
-                        value: v.combined,
-                        description: v.description
+                    	value: v.combined,
+                        description: `${v.classCode} - ${v.description}`
                     })
                 }),
-                set: ($$, value) => $$.set('.subcode', value),
+                set: ($$, v) => $$.set('.subcode', v),
                 atr: () => ({
                     style: 'padding: 2px 0px 0px 2px;'
                 }),
@@ -347,12 +346,12 @@ defineForm("quote.work.class", [ "require", "jquery-ui", "dfe-common", "dfe-fiel
                 lob: 'WORK',
                 state: state
             }).then(data => {
-                $('<div>').text(data.result.map(e => e.description).join('\n')).css('white-space', 'pre-wrap').dialog({
+                jq('<div>').text(data.result.map(e => e.description).join('\n')).css('white-space', 'pre-wrap').dialog({
                     title: 'Available Class Code List',
                     width: 'auto',
                     height: 400,
                     close: function() {
-                        $(this).dialog('destroy');
+                        jq(this).dialog('destroy');
                     }
                 });
             });

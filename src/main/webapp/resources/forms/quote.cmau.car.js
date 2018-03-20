@@ -126,7 +126,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 },
                 pos: [ {
                     colstyle: "width:100%",
-                    colclass: "-dfe-inline-section-1"
+                    colclass: ".dfe-inline-section-1"
                 } ]
             }, {
                 name: "field-154",
@@ -278,7 +278,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: "-dfe-inline-section-1"
+                    s: ".dfe-inline-section-1"
                 } ]
             }, {
                 name: "field-36",
@@ -402,7 +402,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: "-dfe-inline-section-1"
+                    s: ".dfe-inline-section-1"
                 } ]
             }, {
                 name: "golf",
@@ -415,7 +415,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: "-dfe-inline-section-1"
+                    s: ".dfe-inline-section-1"
                 } ]
             }, {
                 name: "mobile",
@@ -428,7 +428,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: "-dfe-inline-section-1"
+                    s: ".dfe-inline-section-1"
                 } ]
             }, {
                 name: "field-49",
@@ -631,7 +631,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: "-dfe-inline-section-1"
+                    s: ".dfe-inline-section-1"
                 } ]
             }, {
                 name: "field-77",
@@ -879,7 +879,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: "-dfe-inline-section-1"
+                    s: ".dfe-inline-section-1"
                 } ]
             }, {
                 name: "field-106",
@@ -1304,7 +1304,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 noerror: freetext
             }, {
                 cstyle: 'padding-left: 10px',
-                html: `<a href="javascript:showHelp('/cmau_help.html#${help}')" class="qmark"></a>${label}`,
+                html: `<a href="javascript:showHelp('/cmau_help.html#${help}')" class="css-qmark"></a>${label}`,
                 editbox: freetext,
                 pattern: freetext && pattern,
                 disabled: disabled,
@@ -1324,13 +1324,13 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
             }).then(function(data) {
                 let r = data.result;
                 if (r.isMatch) {
-                    $$.set('.vinvalid', r.isMatch ? 'Y' : 'N');
-                    $$.set('.vehicletype', r.vehicleType);
-                    $$.set('.ModelYr', r.vehicleYear);
-                    $$.set('.make', r.vehicleMake);
-                    $$.set('.modelinfo', r.vehicleModel);
-                    $$.set('.vehicleocostnew', r.vehicleCost);
-                    $$.set('.vinoverride', 'N');
+                    $$.set({vinvalid: r.isMatch ? 'Y' : 'N', 
+                    		vehicletype: r.vehicleType, 
+                    		ModelYr: r.vehicleYear, 
+                    		make: r.vehicleMake, 
+                    		modelinfo: r.vehicleModel, 
+                    		vehicleocostnew: r.vehicleCost,
+                    		vinoverride: 'N'});
                 }
             }, () => $$.set('.vinvalid', 'N')) : $$.set('.vinvalid', 'N');
         }

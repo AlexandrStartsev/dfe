@@ -29,7 +29,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     var pname = $$('childrenOf') == 0 ? $$('dfe.name')[0] : $$('childrenOf');
                     $$.append('dfe', {
                         name: this.generateName($$),
-                        get: $$ => [$$],
+                        get: this.textToCode($$.runtime, '$$ => [$$]'),
                         parent: pname,
                         pos: [{}]
                     })[0].set('.component', require('components/editbox'));
@@ -330,7 +330,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     };
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header",
+                    colclass: "div-flex-col sticky-header",
                     colstyle: "border-top-left-radius: 3px;"
                 }]
             }, {
@@ -342,7 +342,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Field name';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header"
+                    colclass: "div-flex-col sticky-header"
                 }]
             }, {
                 name: "parent_field_h",
@@ -353,7 +353,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Parent';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header"
+                    colclass: "div-flex-col sticky-header"
                 }]
             }, {
                 name: "type_field_h",
@@ -364,7 +364,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Type';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header"
+                    colclass: "div-flex-col sticky-header"
                 }]
             }, {
                 name: "get_field_h",
@@ -375,7 +375,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Getter';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header"
+                    colclass: "div-flex-col sticky-header"
                 }]
             }, {
                 name: "set_field_h",
@@ -386,7 +386,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Setter';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header"
+                    colclass: "div-flex-col sticky-header"
                 }]
             }, {
                 name: "val_field_h",
@@ -397,7 +397,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Validation';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header"
+                    colclass: "div-flex-col sticky-header"
                 }]
             }, {
                 name: "attr_field_h",
@@ -408,7 +408,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Attributes';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header"
+                    colclass: "div-flex-col sticky-header"
                 }]
             }, {
                 name: "del_field_h",
@@ -419,7 +419,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Del.';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header",
+                    colclass: "div-flex-col sticky-header",
                     colstyle: "margin-bottom: 0px;"
                 }]
             }, {
@@ -431,7 +431,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return 'Class';
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header",
+                    colclass: "div-flex-col sticky-header",
                     colstyle: "margin-bottom: 0px;"
                 }]
             }, {
@@ -448,7 +448,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     };
                 },
                 pos: [{
-                    colclass: "div-flex-col -sticky-header",
+                    colclass: "div-flex-col sticky-header",
                     colstyle: "border-top-right-radius: 3px;margin-bottom: 0px;"
                 }]
             }, {
@@ -523,7 +523,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 get: function($$) {
                     return {
                         value: $$('.component').name,
-                        items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'html', 'label', 'multioption', /*'placeholder',*/ 'radiolist', 'tab-s', 'textarea', 'typeahead' ]
+                        items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'form', 'html', 'label', 'multioption', /*'placeholder',*/ 'radiolist', 'tab-s', 'textarea', 'typeahead' ]
                     };
                 },
                 set: function($$, value) {
@@ -733,7 +733,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 atr: function($$) {
                     return {
                         disabled: $$('.pos_idx') == 0,
-                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; font-weight: bold; color: black;' // border: 1px solid;
+                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$('.pos_idx') == 0 ? '' : 'font-weight: bold;') + ' color: black;'
                     }
                 },
                 pos: [{
@@ -753,7 +753,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 atr: function($$) {
                     return {
                     	disabled: $$('.pos_idx') == $$('.pos').length - 1,
-                    	style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; font-weight: bold; color: black;' // border: 1px solid;
+                    	style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$('.pos_idx') == $$('.pos').length - 1 ? '' : 'font-weight: bold;') + ' color: black;'
                     }
                 },
                 pos: [{

@@ -51,8 +51,7 @@ define('dfe-field-helper', ['dfe-common'], function(cmn) {
         ajaxChoice: function(field, opts, attrs){
             return cmn.extend(attrs, {
                 get: function(model) {
-                    return opts.query ? cmn.ajaxFeed(model, cmn.extend(opts, { param: { value: model(field) }, name: 'value' })) :
-                        cmn.ajaxFeed(model, { query: opts, param: { value: model(field) }, name: 'value' })
+                    return opts.query ? cmn.ajaxFeed(model, cmn.extend(opts, { value: model(field) })) : cmn.ajaxFeed(model, { query: opts, value: model(field) })
                 },
                 set: function(model, value) {
                     model.set(field, value);

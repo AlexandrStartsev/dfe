@@ -19,18 +19,22 @@ define('dfe-common', ['exports'], function(exports) {
 	var statesPatternType = (function(){ var ss = new Set(); statesPattern.split('|').forEach(function(s) {ss.add(s.charAt(0))}); return Array.from(ss).join('|') + '|' + statesPattern})();
 	//#################################################################################################################
 	
-    function __test(n, i, p){ if(n) return i[n]==p[n]; for(var v in p) if(i[v]!=p[v]) return; return true; }
+	function _test(a, b) { if(a == 0) return b == 0; if(typeof a != 'object') return a == b; for(var i in a) if(a[i] != b[i]) return false; return true; }
 	function ajaxFeed($$, args) {
-	    var o = _extend(args, {mapper : function(i) {return i}}), r = { value : ( o.name ? o.param[o.name] : o.param), items : [], status: 'loading'}, p;
+	    var o = _extend(args, {test: _test, mapper : function(i) {return i}}), r = { value : (Array.isArray(o.value) ? o.value[0] : o.value)||0, items : [], status: 'loading'}, p;
         (p = ajaxCache.get(o.query)).then(function(data){
         	try {
         		r.status = 'error';
 	            var d = data && data.result;
 		        o['default'] && (d = [o['default']].concat(d));
-		        (r.status = data.status == 'success') && Array.isArray(d) && d.forEach( function(i) { r.items.push(i=o.mapper(i)); r.found||__test(o.name, i, o.param)&&(r.found=(o.name ? i[o.name] : i)) });
+		        (r.status = data.status == 'success') && Array.isArray(d) && d.forEach( function(i) { 
+		        	r.items.push(i = o.mapper(i));
+		        	i.value = i.value || _extend(i, {});
+		        	r.found = r.found || o.test(r.value, i.value) && i.value; 
+		        });
 		        r.found || o.noerror || !$$.control.doVal ? $$.result(r) : $$.error(r.items.length > 0 ? 'Please make selection' : 'Not found', r);
         	} catch (e) {
-        		$$.error(e.message);
+        		$$.error(e.message, r);
         	}
         }, function(fail){
         	try {
@@ -42,7 +46,7 @@ define('dfe-common', ['exports'], function(exports) {
 	            } else
 	                $$.result(r)
         	} catch (e) {
-        		$$.error(e.message);
+        		$$.error(e.message, r);
         	}
         })
         if(!p.done) return r; // no need to repeat rendering if promise was resolved

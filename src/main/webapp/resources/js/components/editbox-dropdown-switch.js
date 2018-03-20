@@ -1,4 +1,4 @@
-define('components/editbox-dropdown-switch', ['components/dual-with-label', 'components/editbox', 'components/dropdown', 'ui-utils'], function(DWC, Editbox, Dropdown, uiUtils) {
+define('components/editbox-dropdown-switch', ['components/dual-with-label', 'components/editbox', 'components/dropdown', 'ui/utils'], function(DWC, Editbox, Dropdown, uiUtils) {
     function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
     function defer(c, d, e, a, t) { delete c._deferred; return !c.allParentNodes && (c._deferred = function() {c.component.render(c, d, e, a, t)}) }
     var e = _extend(Editbox, {}), d = _extend(Dropdown, {}), sa = new Set();

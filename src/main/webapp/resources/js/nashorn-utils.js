@@ -26,25 +26,7 @@ typeof clearInterval !== 'undefined' || (clearInterval = function() {});
 
 var AjaxHandler = Java.type('com.arrow.util.experimental.AjaxHandler');
 var CacheHandler = Java.type('com.arrow.util.experimental.CacheHandler');
-var ajaxCache = CacheHandler.sharedCache('ajaxCache', '1000', '60');
 
-// TODO: make amd
-var $ = {
-	ajax : function(o) {
-		var context = {}, ok = false;
-		try {
-			AjaxHandler.handle(context, o.url, o.type, o.dataType, o.data, o.headers);
-			if( context.statusString == 'success' ) {
-				typeof o.success == "function" && o.success(JSON.parse(context.responseString), 'success');
-				ok = true;
-			}
-		} catch(e) { 
-			context.errorString = e.message; 
-		}
-		ok || typeof o.error == "function" && o.error('error', context.errorString);
-    }
-}
- 
 var Set = Java.type('com.arrow.util.experimental.collections.NashornSet'); 
 var Map = Java.type('com.arrow.util.experimental.collections.NashornMap'); 
 
@@ -84,9 +66,9 @@ global.loadModule = function(moduleName, loadArg) {
 	(function() {
 		try {
 			if(loadArg) {
-				global.__moduleName = moduleName;
+				global.requirejs.modules.__loadingModule = moduleName;
 				load(loadArg);
-				delete global.__moduleName;
+				global.requirejs.modules.__loadingModule = '';
 			} else {
 				load(moduleName);
 			}
@@ -99,22 +81,28 @@ global.loadModule = function(moduleName, loadArg) {
 global.requirejs = global.require = function(d, cb) {
 	if(typeof d == 'string') {
 		// TODO: lookup via proper config: baseUrl/paths/map
+		var addr = d;
+		if( d.indexOf('ui/') == 0 ) {
+			return global.requirejs.modules.__dummy;
+		}
 		if( d.indexOf('components/') == 0 ) {
 			d = 'validation/component';
-			global.loadModule( global.baseUrl + '/experimental/dfe-core.js' );
+			addr = 'dfe-core';
 		}
-		global.requirejs.modules[d] || global.loadModule( global.baseUrl + '/experimental/' + d + '.js' );
+		if( d.indexOf('validation/') == 0 )
+			addr = 'dfe-core';
+		global.requirejs.modules[d] || global.loadModule( global.baseUrl + '/experimental/' + addr + '.js' );
 		return  global.requirejs.modules[d];
 	}
 	return Array.isArray(d) && typeof cb == 'function' && cb.apply(global, d.map( function(d) { return require(d) } ) ) || undefined;
 }
 
 global.define = function(n, d, cb) {
-	var r, exports = {}/* = global[n]||(global[n] = {})*/, module = { id: n, uri: '<unsupported>', config: {}, exports: exports };
+	var r, exports = {}, module = { id: n, uri: '<unsupported>', config: {}, exports: exports };
 	if(typeof n != 'string') {
 		cb = d;
 		d = n;
-		n = global.__moduleName || '_anonymous_' + (++global.requirejs.modules.__moduleIdx);
+		n = global.requirejs.modules.__loadingModule || '_anonymous_' + global.requirejs.modules.__moduleIdx.incrementAndGet();
 	}
 	if(!Array.isArray(d) ) { 
 		cb = d; 
@@ -124,12 +112,19 @@ global.define = function(n, d, cb) {
 	global.requirejs.modules[n] = r || exports || undefined;
 }
 
-global.requirejs.modules = { __moduleIdx : 0, require: global.require };
-global.requirejs.require = global.requirejs;
+global.requirejs.modules = new (Java.type('java.util.concurrent.ConcurrentHashMap'))();
+global.requirejs.modules.require = global.require;
+global.requirejs.modules.__loadingModule = '';
+global.requirejs.modules.__moduleIdx = new (Java.type('java.util.concurrent.atomic.AtomicInteger'))();
+global.requirejs.modules.__dummy = function() { return global.requirejs.modules.__dummy; }
+global.requirejs.modules.__dummy.__noSuchProperty__ = global.requirejs.modules.__dummy;
+global.requirejs.modules.__dummy.__noSuchMethod__ = global.requirejs.modules.__dummy;
+
+global.requirejs.require = global.require;
 global.requirejs.define = global.define;
-global.requirejs.undef = function(n) { delete global.requirejs.modules[n]; delete global[n] }
+global.requirejs.undef = function(n) { global.requirejs.modules.remove(n); }
+
 global.define.amd = { jQuery: false };
-global.define('require', function () { return global.require })
 
 // TODO: rid of this, unify with client side -- when session scope config is in place because if we use "define" like this we'll override form for everyone
 function defineForm(n, d, f) {
@@ -148,3 +143,54 @@ function defineForm(n, d, f) {
     }
     return fx.apply(global, d.map( function(d) { return global.require(d) }));
 }
+
+var ajaxCache = (function() {
+    var storage = CacheHandler.sharedCache('ajaxCache', '1000', '60'), extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
+    return {
+        clear: function() {
+            storage.clear();
+        },
+        get: function(opt) {
+            if(typeof opt != 'string' && !opt.url) {
+                var u = '/AJAXServlet.srv?';
+                for(var o in opt)
+                    (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
+                        u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';
+                    })
+                opt = u.replace(/\&$/,'');
+            }
+            var url = typeof opt == 'string' ? opt : opt.url, key = url;
+            if(storage.has(key)) {
+                return storage.get(key);
+            } else {
+                var v, context = {}, dataType = opt.dataType || 'json', so = typeof opt.data == 'object';
+                var hrds = extend(opt.headers, {'Content-Type' : so ? 'application/json' : 'application/x-www-form-urlencoded'});
+                try {
+        			AjaxHandler.handle(context, so ? url : url + '&cacheKey=' + encodeURIComponent(key), opt.type || 'GET', dataType, so ? extend(opt.data, {cacheKey: key}) : opt.data, o.headers);
+        			return this.put(key, context.responseString, dataType, context.statusString);
+        		} catch(e) { 
+        			return this.put(key, context.responseString, dataType, 'error', e); 
+        		}
+            }
+        },
+        put: function(key, responseString, dataType, statusString, ex) {
+            var ok = false, v, result;
+            statusString = statusString||'success';
+            try {
+            	if( statusString == 'success' ) {
+            		result = dataType == 'json' ? JSON.parse(responseString) : responseString;
+            		ok = true;
+    			} else {
+    				result = {xhr: {statusText: statusString, responseText : responseString}, exception: ex}
+    			}
+    		} catch(e) { 
+    			result = {xhr: {statusText: statusString, responseText : responseString}, exception: e}; 
+    		}
+    		storage.set(key, v = { done: 1,
+    			then: function(success, error) { ok ? typeof success == 'function' && success(result) : typeof error == 'function' && error(result) },
+    			fail: function(error) { this.then(0, error) }
+    		});
+            return v;
+        }
+    }
+})()

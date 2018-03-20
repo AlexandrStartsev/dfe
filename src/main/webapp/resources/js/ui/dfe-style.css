@@ -148,7 +148,7 @@ th {
     border-radius: 5px 5px 0px 0px; 
 }
 
-.dfe-inline-section-1, .-dfe-inline-section-1 {
+.dfe-inline-section-1 {
     width: 100%;
     box-sizing: border-box;
     margin: 0px 2px;  /* none for tab */
@@ -156,7 +156,7 @@ th {
     padding: 0px!important;
 }
 
-.tab-section-header, .-dfe-inline-section-1 > table > thead th, .-dfe-inline-section-1 > table > tr:first-child > td, .inline-section-header {
+.tab-section-header, .dfe-inline-section-1 > table > thead th, .dfe-inline-section-1 > table > tr:first-child > td, .inline-section-header {
     border-bottom: 2px solid white;
     border-top: 2px solid white;
     background: lightgray;
@@ -167,7 +167,7 @@ th {
     color: #333333;
 }
 
-.tab-section-header label, .-dfe-inline-section-1 > table > thead label, .-dfe-inline-section-1 > table > tr:first-child label, .inline-section-header label { font-weight: bold; }
+.tab-section-header label, .dfe-inline-section-1 > table > thead label, .dfe-inline-section-1 > table > tr:first-child label, .inline-section-header label { font-weight: bold; }
 
 .dfe-error {
     color: #DB1260!Important;
@@ -183,7 +183,7 @@ th {
     font-family: 'SourceCodePro-Medium', sans-serif;
     font-size: 12px;
     text-decoration: underline solid;
-    color: blue;
+    color: #2263a2;
     cursor: pointer;
     outline: none;
     align-self: center;
@@ -223,7 +223,7 @@ th {
     margin: 1px;
     padding: 1px;
 }
-.-sticky-header {
+.sticky-header {
     position: sticky; 
     top: 0px; 
     z-index: 105;
@@ -301,7 +301,7 @@ th {
     border-color: darkgray;
     line-height: 1em;
 }
-label, .link-button, .non-selectable, .div-button-text, .div-button-error {
+/*label, */.link-button, .non-selectable, .div-button-text, .div-button-error {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -515,4 +515,20 @@ form#dfe_form {
 
 div#innercontainer {
    display: -ms-flexbox;
+}
+
+a.css-qmark {
+	text-decoration: none!Important;
+}
+
+a.css-qmark::before {
+	content: "?";
+    background: #f4b400;
+    padding: 0px 1px;
+    font-size: 10px;
+    text-decoration: none;
+    font-style: normal;
+    border-radius: 2px;
+    margin-right: 2px;
+    border: 1px solid #9a6f39;
 }

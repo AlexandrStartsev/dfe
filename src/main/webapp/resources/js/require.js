@@ -532,7 +532,8 @@ var requirejs, require, define;
         function onError(err, errback) {
             var ids = err.requireModules,
                 notified = false;
-
+            console.error('module loading error:');
+            console.error(err);
             if (errback) {
                 errback(err);
             } else {
