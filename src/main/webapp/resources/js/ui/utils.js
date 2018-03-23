@@ -218,13 +218,20 @@ function dfe_navigate(form, action) {
 	}
 	function postModel(runtime, onsuccess, onerror) {
 		typeof runtime.form.onpost == 'function' && runtime.form.onpost.call(runtime.form, _extend(runtime.model_proxy, function(p) { return arguments.callee.get(p); }), runtime);
-		require('ui/jquery').ajax({ url: '/DfeServlet.srv?a=model', type: 'POST', dataType: 'json', contentType:"application/json", data: JSON.stringify(runtime.model_proxy.data),
-	        success: function(r, s) { 
-	        	runtime.notifyControls(runtime.findControls(r.data.map(function(v) {return v.field})), 'validate');
-	        	(r.result ? onsuccess : onerror)(r, s);
-	        },
-	        error: function(d, s, e) { onerror(d, s, e); }
-	    })		
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', '/DfeServlet.srv?a=model');
+		xhr.setRequestHeader("Content-type", "application/json");
+		xhr.onreadystatechange = function() {
+			try {
+			    if(xhr.readyState == 4 && xhr.status == 200) {
+			    	var r = JSON.parse(xhr.responseText);
+			    	runtime.notifyControls(runtime.findControls(r.data.map(function(v) {return v.field})), 'validate');
+			    	(r.result ? onsuccess : onerror)(r, 'success');
+			    }
+			    xhr.readyState == 4 && xhr.status != 200 && onerror(xhr, xhr.statusText, e);
+			} catch(e) { onerror(xhr, 'error', e) }
+		}		
+		xhr.send(JSON.stringify(runtime.model_proxy.data));
 	}
 	try {
 		var runtime = document.querySelector('div[dfe-form]')._dfe_runtime;
@@ -232,23 +239,19 @@ function dfe_navigate(form, action) {
 	    form.policy_formname.value = arf.policy[0].formname;
 	    if(action == 'next') {
 	    	form.action.value = 'next_experimental';
-	     	/*
-	     	typeof runtime.form.onpost == 'function' && runtime.form.onpost(_extend(runtime.model_proxy, function(p) { return arguments.callee.get(p); }), runtime);
-	     	form.jsonModel.value = JSON.stringify(arf);
-	     	form.submit();
-	     	*/
 	     	postModel(
 	     		runtime, 
 	     		function(){ 
 	     			form.submit() 
 	     		}, 
 	     		function(xhr){
+	     			document.getElementById('button_next').disabled = false;
 	     			if(xhr.status == 401) {
 	     				form.action = '/aex/session_expire.jsp';
 	     				form.submit();
 	     			} else {
 	     				xhr.responseText && displayServerError(xhr.responseText);
-     					document.getElementById('button_next').disabled = false;
+		     			xhr.data && console.log(xhr.data);
 	     			}
 		     	}
 	     	);
@@ -296,25 +299,58 @@ require.config({
     },            
 });
 
-define('ui/utils', ['ui/jquery', 'module'], function(jq, m) {
+define('ui/utils', ['dfe-core', 'module'], function(core, m) {
+	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
+    (function(f) {this.defineForm = f})(function (n, d, f) {
+    	define("forms/" + n, d, function() {
+    	    var a = f.apply(this, arguments), m = new Map();
+    	    a.name = n;
+    	    a.dependencies = {};
+    	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').slice(1).forEach(function(n, i){a.dependencies[n] = d[i + 1]})
+    	    a.dfe.forEach(function(row) {
+    	        m.get(row.parent) ? m.get(row.parent).push(row) : m.set(row.parent, [ row ]);
+    	        (row.children = m.get(row.name)) || m.set(row.name, row.children = []);
+    	        row.pos || (row.pos = []);
+    	        Array.isArray(row.pos) || (row.pos = [row.pos]);
+                for(var i = row.component.slots - row.pos.length; i; i > 0 ? (row.pos.push({}), i--) : (row.pos.pop(), i++)) ;
+    	    });
+    	    return a;
+    	}); 
+    })
+    function setupNode(node) {
+		var formName = node.getAttribute('dfe-form'), args = eval(node.getAttribute('dfe-arguments')), model = eval(node.getAttribute('dfe-model'))||{}, pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
+		Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
+			var dfe = values[0], arf = values[1], cur = node._dfe_runtime;
+			if(cur && cur.form.name != formName) {
+				cur.shutdown();
+				cur = null;
+			}
+	        if(!cur) node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe }));
+		})
+	}
     var _isIE7 = (navigator.appVersion.indexOf("MSIE 7.") != -1);
     var _isIE8 = (navigator.appVersion.indexOf("MSIE 8.") != -1);
-    navigator.appVersion.match(/MSIE (8|9)/) && setInterval(function() {jq('#innercontainer').width(jq('#body').width() + jq('.nav-menu-options').width() + 20)}, 100);
+    navigator.appVersion.match(/MSIE (8|9)/) && setInterval(function() { 
+    	try { document.getElementById('innercontainer').style.width = (document.getElementById('body').clientWidth + document.getElementsByClassName('nav-menu-options')[0].clientWidth + 20) + 'px' } catch(e) {}
+    }, 100);
     var styleUri = m.uri.replace(m.id.match(/[^\/]*$/)[0] + '.js', 'dfe-style.css'), link = document.createElement('link');
     link.setAttribute('rel', "stylesheet");
     link.setAttribute('type', "text/css");
     link.setAttribute('href', styleUri);
     var document_head = _isIE7 || _isIE8 ? document.getElementsByTagName('head')[0] : document.head;
     document_head.appendChild(link);
+    function lookup() { for(var n = document.querySelectorAll('div[dfe-form]'), i = 0; i < n.length; setupNode(n[i++])); }
+    setInterval(lookup, 100);
+    setTimeout(lookup, 0);  
     return {
         setAttribute: function (node, name, value) { 
-            if(value && value != 0) { _isIE7 ? jq(node).attr(name, value) : node.setAttribute(name, value); return true; } else node.removeAttribute(name); 
+            if(value && value != 0) { /*_isIE7 ? jq(node).attr(name, value) :*/ node.setAttribute(name, value); return true; } else node.removeAttribute(name); 
         },
         addEventListener: function (node, eventname, handler, capture) {
-            typeof node.addEventListener === 'function' ? node.addEventListener(eventname, handler, capture) : jq(node).on(eventname, handler);
+            typeof node.addEventListener === 'function' ? node.addEventListener(eventname, handler, capture) : node.attachEvent('on' + eventname, handler);
         },
         removeEventListener: function (node, eventname, handler, capture) {
-            typeof node.removeEventListener === 'function' ? node.removeEventListener(eventname, handler, capture) : jq(node).off(eventname, handler);
+            typeof node.removeEventListener === 'function' ? node.removeEventListener(eventname, handler, capture) : node.detachEvent('on' + eventname, handler);
         },
         removeNode: function(node) {
         	node && node.parentNode && node.parentNode.removeChild(node);
@@ -326,46 +362,10 @@ define('ui/utils', ['ui/jquery', 'module'], function(jq, m) {
 				formname && e.setAttribute('id', formname + '-custom-style');
 				e.innerHTML = css;
 			}
-		}
+		},
+		setupNode: setupNode
     }
 });
-
-function defineForm(n, d, f) {
-	var fx = function() {
-	    var a = f.apply(this, arguments), m = new Map();
-	    a.name = n;
-	    a.dependencies = {};
-	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').slice(1).forEach(function(n, i){
-	        a.dependencies[n] = d[i + 1];
-	    })
-	    a.dfe.forEach(function(row) {
-	        m.get(row.parent) ? m.get(row.parent).push(row) : m.set(row.parent, [ row ]);
-	        (row.children = m.get(row.name)) || m.set(row.name, row.children = []);
-	        row.pos || (row.pos = []);
-	        Array.isArray(row.pos) || (row.pos = [row.pos]);
-            for(var i = row.component.slots - row.pos.length; i; i > 0 ? (row.pos.push({}), i--) : (row.pos.pop(), i++)) ;
-	    });
-	    return a;
-	}
-	define("forms/" + n, d, fx); 
-}
-
-(function() {
-	var l, _try = true, processed = new Set(), f = function(node){
-        require(['dfe-core', 'forms/' + node.getAttribute('dfe-form')], function(core, dfe) {
-        	var model = node.getAttribute('dfe-model'), f = function(arf) { core.startRuntime({ model : arf, node: node, form: dfe, params: { launchThrottle: 500 } }) };
-        	window[model] && typeof window[model].then == 'function' ? window[model].then(f) : f(window[model]); 
-        })
-    };
-    (l = function() {
-    	if(_try) {
-			for(var n = document.querySelectorAll('div[dfe-form]'), i = 0; i < n.length; i++)  
-				processed.has(n[i]) || ( processed.add(n[i]), f(n[i]));
-			setTimeout(l, 5);
-    	}
-	})();
-	require(['ui/jquery'], function(jq) { jq(document).ready(function() { l(); _try = false }, false) });
-})();
 
 var ajaxCache = (function() {
     var storage = new Map(), extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }

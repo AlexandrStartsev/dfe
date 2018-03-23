@@ -32,7 +32,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                         get: this.textToCode($$.runtime, '$$ => [$$]'),
                         parent: pname,
                         pos: [{}]
-                    })[0].set('.component', require('components/editbox'));
+                    })[0].data.component = require('components/editbox');
                     this.rebuildChildren(this.nameToPx($$).get(pname));
                 },
                 pos: [{
@@ -130,47 +130,6 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 set: function($$, value) {
                     $$.set('childrenOf', []);
                     $$.set('hierarchyOf', value);
-                },
-                pos: [{
-                    colstyle: "display: inline; margin-left: 2px; "
-                }]
-            }, {
-                name: "append_css",
-                component: require("components/button"),
-                parent: "root",
-                "class": "header",
-                get: function($$) {
-                    return 'Custom CSS:';
-                },
-                set: function($$, value) {
-                    this.pushCSStoPage($$('css'), 'custom-css-dfe');
-                },
-                pos: [{
-                    colstyle: "display: inline; margin-left: 2px; height: min-content;"
-                }]
-            }, {
-                name: "css_text",
-                component: require("components/editbox-code"),
-                parent: "root",
-                "class": "header",
-                get: function($$) {
-                    return $$('css');
-                },
-                set: function($$, value) {
-                    $$.set('css', value);
-                },
-                atr: function($$) {
-                    return {
-                        "class": 'focus-front',
-                        trigger: 'change',
-                        style: 'width: 100px;',
-                        ta: {
-                            style: 'width: 1070px; height: 400px;',
-                            lang: 'css',
-                            offsetLeft: -200,
-                            'class': 'popup-editor-wrapper'
-                        }
-                    };
                 },
                 pos: [{
                     colstyle: "display: inline; margin-left: 2px; "
@@ -1003,19 +962,16 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
         }
         storeInSession($$) {
             function ajaxPost(data, url, accept, error) {
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    data: data,
-                    dataType: 'json',
-                    contentType: "text/plain",
-                    success: function(d, s) {
-                        typeof accept == 'function' && accept(d, s);
-                    },
-                    error: function(d, s, e) {
-                        typeof error == 'function' ? error(d, s, e) : console.log(e);
-                    }
-                });
+            	var xhr = new XMLHttpRequest();
+        		xhr.open('POST', url);
+        		xhr.setRequestHeader("Content-type", "text/plain");
+        		xhr.onreadystatechange = function() {
+        			try {
+        			    xhr.readyState == 4 && xhr.status == 200 && typeof accept == 'function' && accept(xhr.responseText, xhr.statusText);
+        			    xhr.readyState == 4 && xhr.status != 200 &&  typeof error == 'function' && error(xhr, xhr.statusText, null);
+        			} catch(e) { typeof error == 'function' && error(xhr, 'error', e) }
+        		}		
+        		xhr.send(data);
             }
             ajaxPost(this.runtimeToJs($$.data), '/DfeServlet.srv?a=dfe&p=' + $$.data.name, function(d, s) {
                 alert(s);
@@ -1135,7 +1091,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
         changeType(px, value) {
         	var ppx = this.nameToPx(px).parent;
             require(['components/' + value], function(c) {
-            	px.set('.component', c);
+            	px.listener.set(px.data, 'component', c);
             	px.get('.parent') != 0 && px.listener.notify(ppx.data, 'children');
             	var pos = [];
             	for(var i = 0; i < c.slots; i++) pos.push({});
@@ -1190,14 +1146,6 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
             this.compilationerror = function($$) {
                 $$.error('compilation error');
             }
-        	var node = (window.opener ? window.opener.document : document).querySelector('div[dfe-edit-target]');
-            var tr = node._dfe_runtime;
-            cmn.extend({
-                launchThrottle: 0,
-                target_runtime: tr,
-                listener: tr.listener
-            }, runtime);
-            runtime.setModel(tr.form);
         }
     }
 });

@@ -126,7 +126,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 },
                 pos: [ {
                     colstyle: "width:100%",
-                    colclass: ".dfe-inline-section-1"
+                    colclass: "dfe-inline-section-1"
                 } ]
             }, {
                 name: "field-154",
@@ -369,27 +369,6 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     n: "Y",
                     s: "padding: 0px;"
                 } ]
-            }, {
-                name: "field-45",
-                component: __c_c_editbox,
-                parent: "private",
-                atr: () => fields.simple('.Horsepower', [ [ '[0-9]{2,4}' ] ], {
-                    pattern: '[0-9]{1,4}',
-                    style: 'width: 100px',
-                    text: 'Horsepower'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }, {
-                name: "field-46",
-                component: __c_button,
-                parent: "private",
-                get: () => 'Apply to all Passenger Vehicles',
-                set: ($$, value) => this.all($$, '.Horsepower', 'car'),
-                atr: () => ({
-                    class: 'link-button'
-                })
             }, {
                 name: "truck",
                 component: __c_container,
@@ -1316,22 +1295,24 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
             return $$('.vehicletype') == 'car' && $$('.coverages.otc.ded').toString().match(/\d|Full/);
         }
         vehProcessVin($$) {
-            let vin = $$.get('.vinnumber');
-            vin.length == 17 ? ajaxCache.get({
+            $$.get('.vinnumber').length == 17 ? ajaxCache.get({
                 method: 'CMAUVehicleScriptHelper',
                 action: 'getVinLookupResults',
                 vinNumber: $$.get('.vinnumber')
             }).then(function(data) {
-                let r = data.result;
-                if (r.isMatch) {
-                    $$.set({vinvalid: r.isMatch ? 'Y' : 'N', 
-                    		vehicletype: r.vehicleType, 
-                    		ModelYr: r.vehicleYear, 
-                    		make: r.vehicleMake, 
-                    		modelinfo: r.vehicleModel, 
-                    		vehicleocostnew: r.vehicleCost,
-                    		vinoverride: 'N'});
-                }
+                let r = data.result, isTrailer = r.vehicleType == 'x';
+                $$.set(r.isMatch ? {
+                    vinvalid: 'Y',
+                    vehicletype: isTrailer ? 'truck' : r.vehicleType,
+                    ModelYr: r.vehicleYear,
+                    make: r.vehicleMake,
+                    modelinfo: r.vehicleModel,
+                    vehicleocostnew: r.vehicleCost,
+                    vinoverride: 'N',
+                    VehicleClass: isTrailer ? 'Trailer Types' : $$.get('.VehicleClass')
+                } : {
+                	vinvalid: 'N'
+                });
             }, () => $$.set('.vinvalid', 'N')) : $$.set('.vinvalid', 'N');
         }
         all($$, prop, type) {

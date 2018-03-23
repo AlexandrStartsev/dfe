@@ -134,37 +134,40 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    var p = path.split('.'), pa = this.parents.concat(this),
 	    va = [pa[0]];
 	    for(var i = 0; i < p.length - 1 && va.length > 0; i++) {
-	       if(maintained && pa.length-sb > i+1 && this.elements[i] == p[i]) {
-	          va = [pa[i+1]];
-	       } else {
-	          var nva = [], e;
-	          va.forEach(function(px){
-	            if((e = px.data[p[i]]) == undefined) e = [undefined];
-	            if(!Array.isArray(e)) throw 'Unable to overwrite property with subset';
-	            e.forEach(function(d){
-	               nva.push(new JsonProxy(d, px.parents.concat(px), p.slice(0, i+1), listener));
-	            });
-	          });
-	          maintained = false;
-	          va = nva;
-	       }
-	       value.length && va.forEach(function(px) {px.persist()});
+	    	if(maintained && pa.length-sb > i+1 && this.elements[i] == p[i]) {
+	    		va = [pa[i+1]];
+	    	} else {
+	    		var nva = [], e;
+	          	va.forEach(function(px){
+	          		if((e = px.data[p[i]]) == undefined) e = [undefined];
+	            	if(!Array.isArray(e)) throw 'Unable to overwrite property with subset';
+	            	e.forEach(function(d){
+	            		nva.push(new JsonProxy(d, px.parents.concat(px), p.slice(0, i+1), listener));
+	            	});
+	          	});
+	          	maintained = false;
+	          	va = nva;
+	       	}
+	       	value.length && va.forEach(function(px) {px.persist()});
 	    }
 	    le = p.pop();
 	    va.forEach(function(px) {
-	       var v = px.data[le];
-	       if(v == undefined || v==[]) v = '';
-	       if(typeof v == 'number') v = v.toString();
-	       if(v != value) {
-	          var old = px.data[le];
-	          if(value.length == 0) {
-	            delete px.data[le];
-	            listener && listener.notify(px.data, le, 'r', old); 
-	          } else {
-	            px.data[le] = value;
-	            listener && listener.notify(px.data, le, 'm', old, value.toString());
-	          }
-	       }
+	    	var v = px.data[le], old = v;
+	    	if(typeof value == 'object') {
+	    		Array.isArray(v) ? px.get('.' + le).forEach(function(px) { px.set(value)}) : px.append('.' + le, value);
+	    	} else {
+	    		if(v == undefined || v==[]) v = '';
+	    		if(typeof v == 'number') v = v.toString();
+	    		if(v != value) {
+	    			if(value.length == 0) {
+	    				delete px.data[le];
+	    				listener && listener.notify(px.data, le, 'r', old); 
+	    			} else {
+	    				px.data[le] = value;
+	    				listener && listener.notify(px.data, le, 'm', old, value.toString());
+	    			}
+		       }
+	    	}
 	    });
 	}
 	 
@@ -204,7 +207,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	 * @param {String} path full-path string i.e. 'policy.class' or relative path like '.class'
 	 * @returns {String|JsonProxy} 
 	 */
-	JsonProxy.prototype.first = function (path) { var v  = this.get(path); return Array.isArray(v) ? v[0] : v; }
+	JsonProxy.prototype.first = function (path) { var v  = this.get(path); return (Array.isArray(v) ? v[0] : v)||[]; }
 	
 	/* retrieves existing value from model, if field doesn't exist, default value is assigned to field in model and returned. 
 	 * @param {String} path full-path string i.e. 'policy.class' or relative path like '.class'
@@ -310,16 +313,6 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	            this.render(control, events);
 	        }
 	    }, this);
-        /*
-		if( this.launchThrottle && typeof this.controls.keys == 'function' ) {
-			var self = this, keys = this.controls.keys(), worker, item, lt = this.launchThrottle;
-			this.launchThrottle = 0;
-			(worker = function() {
-				for(var togo = lt; togo-- && !(item = keys.next()).done; process.call(self, item.value));
-				item.done || setTimeout(worker, 0);
-			})();
-		} else {        
-        */
 	}
 	
 	DfeRuntime.prototype.processChildren = function(parent, rx, prx, fpx) {
@@ -501,11 +494,11 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	}
 	
 	function startRuntime(arg) {
-	    var listener = arg.listener||new DfeListener(), runtime = new DfeRuntime(arg.node, listener);
+		var m = arg.model, j = m instanceof JsonProxy || typeof m.shadow == 'function', listener = j && m.listener || arg.listener ||new DfeListener(), runtime = new DfeRuntime(arg.node, listener);
 	    for(var v in arg.params) runtime[v] = arg.params[v];
-	    runtime.setModel(arg.model).setDfeForm(arg.form).restart(arg.initAction);
+	    j ? runtime.model_proxy = m : runtime.setModel(m);
+	    runtime.setDfeForm(arg.form).restart(arg.initAction);
         arg.ready && arg.ready(runtime, dfe, arg.model);
-        arg.node && (arg.node._dfe_runtime = runtime);
 	    return runtime;
 	} 
 	

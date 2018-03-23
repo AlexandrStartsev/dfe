@@ -1,4 +1,4 @@
-define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils', 'uglify', 'dfe-common'], function(CEditPopup, ace, uiUtils, uglify, cmn) {
+define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils', 'ui/jquery', 'uglify', 'dfe-common'], function(CEditPopup, ace, uiUtils, $, uglify, cmn) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
     //little how-to: https://ace.c9.io/#nav=howto&api=virtual_renderer
     //https://github.com/ajaxorg/ace
@@ -27,22 +27,19 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
                 }, 
                 //useWorker: false, 
                 startedCb: function () {
-                 $('script').each(function(){ 
-                     if(this.src.match(/components\/editbox-code.js$/)) {
-                         var url = this.src, src = ['ui/utils', 'dfe-core', 'dfe-common', 'ace/dfe-hints']; // $('script').each( ... )
-                         $.when.apply($, src.map(function(s) { return $.get(url.replace(/components\/editbox-code/, s), 0, 0, 'text')})).done(function() {
-                             for(var i = 0; i < arguments.length; i++) {
-                                 aceEditor.ternServer.addDoc(src[i], arguments[i][0]);
-                                 for(var b = uglify.parse(arguments[i][0]).body, j = 0, f, n; j < b.length; j++)
-                                     if(b[j].body && b[j].body.args && (f = b[j].body.args.pop()) instanceof uglify.AST_Function &&
-                                       (n = b[j].body.args[0]) instanceof uglify.AST_String ) {
-                                         aceEditor.ternServer.addDoc(n.value.replace(/[^\w]/g,'_'), 
-                                                'var ' + n.value.replace(/[^\w]/g,'_') + ' = (' + f.print_to_string() + ')()');
-                                     }
-                             }
-                         });
-                     }
-                 })
+                	$('script').each(function(){ 
+                		if(this.src.match(/components\/editbox-code.js$/)) {
+                			var url = this.src, src = ['ui/utils', 'dfe-core', 'dfe-common', 'ace/dfe-hints']; // $('script').each( ... )
+                			$.when.apply($, src.map(function(s) { return $.get(url.replace(/components\/editbox-code/, s), 0, 0, 'text')})).done(function() {
+                				for(var i = 0; i < arguments.length; i++) {
+                					aceEditor.ternServer.addDoc(src[i], arguments[i][0]);
+                					for(var b = uglify.parse(arguments[i][0]).body, j = 0, f, n; j < b.length; j++)
+                						if(b[j].body && b[j].body.args && (f = b[j].body.args.pop()) instanceof uglify.AST_Function && (n = b[j].body.args[0]) instanceof uglify.AST_String ) 
+                							aceEditor.ternServer.addDoc(n.value.replace(/[^\w]/g,'_'), 'var ' + n.value.replace(/[^\w]/g,'_') + ' = (' + f.print_to_string() + ')()');
+                                }
+                            });
+                		}
+                	})
                 },
             },
             enableSnippets: true,

@@ -1,4 +1,4 @@
-defineForm("dfe.mydashboard", [ "require", "ui/jquery", "dfe-common", "ui/utils", "ui/css-shapes", "dfe-field-helper", "components/container", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/form", "components/button", "components/html", "components/label", "components/editbox-$" ], function(require, jq, cmn, uiUtils, shapes, fields, __c_container, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_form, __c_button, __c_html, __c_label, __c_editbox_$) {
+defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/css-shapes", "dfe-field-helper", "components/container", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/form", "components/button", "components/html", "components/label", "components/editbox-$" ], function(require, core, notesForm, jq, cmn, uiUtils, shapes, fields, __c_container, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_form, __c_button, __c_html, __c_label, __c_editbox_$) {
     return new class {
         constructor() {
             this.dfe = [ {
@@ -182,7 +182,7 @@ defineForm("dfe.mydashboard", [ "require", "ui/jquery", "dfe-common", "ui/utils"
                 set: ($$, value) => $$.set('qs-crit', value),
                 atr: $$ => ({
                     text: 'Quick Search:',
-                    cstyle: 'font: 14px bold; color: red; text-shadow: 1px 1px 1px #aaa;'
+                    cstyle: 'font-weight: bold; color: #444; text-shadow: 1px 1px 1px #aaa;'
                 }),
                 pos: [ {
                     colstyle: "display: inline; padding: 2px 2px"
@@ -589,13 +589,17 @@ defineForm("dfe.mydashboard", [ "require", "ui/jquery", "dfe-common", "ui/utils"
                 name: "field-51",
                 component: __c_div,
                 parent: "rbody",
-                get: $$ => $$('.note') == 0 ? [] : [ $$ ],
-                atr: $$ => ({
-                    class: `${$$('.note') == 0 ? 'no-' : ''}note-icon hoverable`,
-                    events: {
-                        click: () => alert('TODO')
-                    }
-                }),
+                atr: function($$) {
+                    let n = this.firstUserNote($$);
+                    return {
+                        class: 'note-icon hoverable',
+                        style: `opacity: ${n.length ? 1 : .3}`,
+                        get: () => n,
+                        events: {
+                            click: () => this.showNotes($$)
+                        }
+                    };
+                },
                 pos: [ {
                     s: ".label-centered"
                 } ]
@@ -603,10 +607,10 @@ defineForm("dfe.mydashboard", [ "require", "ui/jquery", "dfe-common", "ui/utils"
                 name: "field-52",
                 component: __c_label,
                 parent: "field-51",
-                get: $$ => $$('.note'),
+                get: $$ => $$('.subject'),
                 atr: $$ => ({
                     class: 'display-on-hover',
-                    style: 'left: -100px; top: 20px; width: 200px'
+                    style: 'left: -200px; top: 20px; width: 200px'
                 }),
                 pos: [ {
                     colstyle: "position: absolute"
@@ -670,7 +674,7 @@ defineForm("dfe.mydashboard", [ "require", "ui/jquery", "dfe-common", "ui/utils"
                             jq.get(`/AJAXServlet.srv?method=DashboardScriptHelper&action=notes&${qs}`, data => {
                                 sub.forEach(r => {
                                     let det = data.result[r.get('.quoteid')];
-                                    det && r.set('.note', det.subject);
+                                    det && det.forEach(note => r.append('.note', note));
                                 });
                             });
                         }
@@ -699,8 +703,47 @@ defineForm("dfe.mydashboard", [ "require", "ui/jquery", "dfe-common", "ui/utils"
             if (f != 0 && v != 0 && (f == '.accountName' ? [ f, '.DBA' ] : [ f ]).filter(f => $$.get(f).toString().toUpperCase().replace(/[^\w]/g, '').indexOf(v) != -1).length == 0) return false;
             return (cc == 0 || $$.get('.companyCode') == cc) && (newRenewal == 0 || $$.get('.newRenewal') == newRenewal);
         }
+        firstUserNote(row) {
+            let user = row.get('currentUser'), note = row.get('.note').filter(n => n.get('.user') == user && n.get('.subject') != 0).pop();
+            return note ? [ note ] : [];
+        }
+        showNotes($$) {
+            let qid = $$('.quoteid'), map = this.noteRt, rt = map.get(qid);
+            if (!rt) {
+                map.set(qid, rt = core.startRuntime({
+                    form: notesForm,
+                    model: $$,
+                    node: jq('<div>').dialog({
+                        title: 'Notes for quote #' + $$.get('.quoteid'),
+                        width: 400,
+                        height: 200,
+                        close: function() {
+                            rt.shutdown();
+                            jq(this).dialog('destroy');
+                            map.delete(qid);
+                            let json = JSON.stringify($$.get('.note').filter(n => {
+                                if (n.get('.isnew') != 0) {
+                                    n.set('.isnew');
+                                    let s = n.get('.subject');
+                                    s == 0 && n.detach();
+                                    return s != 0;
+                                }
+                            }).map(n => n.data));
+                            json == '[]' || jq.get(`/AJAXServlet.srv?method=DashboardScriptHelper&action=saveNotes&quoteId=${qid}&data=${encodeURIComponent(json)}`);
+                        }
+                    })[0]
+                }));
+            } else {
+                jq(rt.rootUI).dialog('moveToTop');
+            }
+        }
         onstart($$) {
+            let tsUpdate = () => $$.get('result.rows.note').forEach(n => n.get('.isnew') != 0 && n.set('.datetime', notesForm.now()));
+            setTimeout(() => {
+                tsUpdate(), setInterval(tsUpdate, 6e4);
+            }, (61 - new Date().getSeconds()) * 1e3);
             $$.get('qs-crit') == 0 && $$.set('qs-crit', 'submissionId');
+            this.noteRt = new Map();
             this.idKey = this.lastProcessedKey = 0;
             uiUtils.setDfeCustomStyle(`
         	    th {
@@ -790,6 +833,16 @@ defineForm("dfe.mydashboard", [ "require", "ui/jquery", "dfe-common", "ui/utils"
 				    border-style: solid;
 				    border-color: #fff #fff rgba(255,255,255,.35) rgba(255,255,255,.35);
 				    box-sizing: inherit;
+				}
+				
+				.ui-widget-header{
+				    background: #97a47a;
+				    color: #fff;
+				}
+				
+				.ui-dialog .ui-dialog-content{
+            		text-align: left; 
+            		padding: 4px;
 				}`, this.name);
         }
     }();

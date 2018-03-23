@@ -1,4 +1,4 @@
-defineForm("quote.work.class", [ "require", "ui/jquery-ui", "dfe-common", "dfe-field-helper", "components/div", "components/container", "components/label", "components/editbox", "components/dropdown", "components/button", "components/editbox-$", "components/radiolist" ], function(require, jq, cmn, fields, __c_div, __c_container, __c_label, __c_editbox, __c_dropdown, __c_button, __c_editbox_$, __c_radiolist) {
+defineForm("quote.work.class", [ "require", "dfe-common", "dfe-field-helper", "components/div", "components/container", "components/label", "components/editbox", "components/dropdown", "components/button", "components/editbox-$", "components/radiolist" ], function(require, cmn, fields, __c_div, __c_container, __c_label, __c_editbox, __c_dropdown, __c_button, __c_editbox_$, __c_radiolist) {
     return new class {
         constructor() {
             this.dfe = [ {
@@ -299,7 +299,7 @@ defineForm("quote.work.class", [ "require", "ui/jquery-ui", "dfe-common", "dfe-f
                         description: `${v.classCode} - ${v.description}`
                     })
                 }),
-                set: ($$, v) => $$.set('.subcode', v),
+                set: ($$, value) => $$.set('.subcode', value),
                 atr: () => ({
                     style: 'padding: 2px 0px 0px 2px;'
                 }),
@@ -338,24 +338,24 @@ defineForm("quote.work.class", [ "require", "ui/jquery-ui", "dfe-common", "dfe-f
         }
         onpost($$) {}
         showAvailable(effDt, state) {
-            ajaxCache.get({
+            Promise.all(require(['ui/jquery-ui']), ajaxCache.get({
                 method: 'WORKClassCodeScriptHelper',
                 action: 'getList',
                 effectiveDate: effDt,
                 list: 'classcode',
                 lob: 'WORK',
                 state: state
-            }).then(data => {
-                jq('<div>').text(data.result.map(e => e.description).join('\n')).css('white-space', 'pre-wrap').dialog({
+            })).then(dep => {
+            	dep[0]('<div>').text(dep[1].result.map(e => e.description).join('\n')).css('white-space', 'pre-wrap').dialog({
                     title: 'Available Class Code List',
                     width: 'auto',
                     height: 400,
                     close: function() {
-                        jq(this).dialog('destroy');
+                    	dep[0](this).dialog('destroy');
                     }
                 });
             });
         }
         setup() {}
-    }();
+    }(); 
 });

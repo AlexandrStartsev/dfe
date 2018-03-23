@@ -1416,7 +1416,7 @@ var requirejs, require, define;
                     if (typeof deps === 'string') {
                         if (isFunction(callback)) {
                             //Invalid call
-                            return onError(makeError('requireargs', 'Invalid require call'), errback);
+                            return typeof errback == 'function' ? errback('requireargs', 'Invalid require call') : onError(makeError('requireargs', 'Invalid require call'), errback);
                         }
 
                         //If require|exports|module are requested, get the
@@ -1437,7 +1437,7 @@ var requirejs, require, define;
                         id = map.id;
 
                         if (!hasProp(defined, id)) {
-                            return onError(makeError('notloaded', 'Module name "' +
+                            return typeof errback == 'function' ? errback('notloaded', id) : onError(makeError('notloaded', 'Module name "' +
                                         id +
                                         '" has not been loaded yet for context: ' +
                                         contextName +
@@ -1798,11 +1798,7 @@ var requirejs, require, define;
             context.configure(config);
         }
         
-        return isArray(deps) ? new Promise(function(resolve, reject){
-                context.require(deps, function() {
-                	for(var i = deps.length -1; i >= 0 && deps[i] != 'exports'; i--);   
-                    var p = callback && callback.apply(null, arguments); resolve(i >= 0 ? arguments[i] : p) },reject)
-            }) : context.require(deps, callback, errback);
+        return isArray(deps) ? new Promise(function(resolve, reject){ context.require(deps, function() { callback && callback.apply(null, arguments); resolve(arguments.length == 1 ? arguments[0] : arguments) },reject) }) : context.require(deps, callback, errback);
     };
 
     /**
