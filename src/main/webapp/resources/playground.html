@@ -3,35 +3,37 @@
 
     <head>
         <script src="/js/require.js"></script>
-        <script src="/js/babel.js"></script>  
         <script> 
-            require.config({ baseUrl: '/js', paths: { forms : '../forms' } })
-            require(['ui/utils'])
-            
             var model = new Promise(function(resolve, reject) {
-                require(['babel', 'uglify', 'jquery'], function() {
+                require(['babel', 'uglify', 'ui/jquery'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
                     $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
                 })
             });
             
-            var wait4target = new Promise(function(resolve){
-                var f;
-                (f = function() {
-                    (document.querySelector('div[dfe-edit-target]') || {})._dfe_runtime ? resolve() : setTimeout(f, 5)
-                })();
-            });
-        </script>
-        
-        
-        <style id="custom-css-dfe" type="text/css"></style>
+            require.config({ baseUrl: '/js', paths: { forms : '../forms' } })
+            require(['ui/utils'])
+            
+        </script>     
     </head>
+
+    
+        
     <body> 
-        <div id='dfe' dfe-form='quote.cmau.car' dfe-model='model' dfe-edit-target ></div>
+        <div style="width:16px; height: 16px; background-image: url(test/i1.svg)">
+        </div>
+        <div id='dfe' dfe-form='a' dfe-model='window.model' dfe-edit-target ></div>
         <br>
         <br>
         <br>
-        <div id ="edit" dfe-form='dfe.edit.dfe' dfe-model='wait4target'></div>
+        <div id ="edit"></div>
+        <!--<script>
+            setTimeout(function(){
+                var node = document.getElementById('edit');
+                node.setAttribute('dfe-form', 'dfe.edit.dfe');
+                node.setAttribute('dfe-arguments', '(function(r){ return {params: {target_runtime: r}, model: r.form, listener: r.listener} })(document.querySelector("div[dfe-edit-target]")._dfe_runtime)');
+            }, 1000)
+        </script> -->
     </body>
 </html>
