@@ -1,4 +1,4 @@
-defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/css-shapes", "dfe-field-helper", "components/container", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/form", "components/button", "components/html", "components/label", "components/editbox-$" ], function(require, core, notesForm, jq, cmn, uiUtils, shapes, fields, __c_container, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_form, __c_button, __c_html, __c_label, __c_editbox_$) {
+defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/container", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/form", "components/button", "components/html", "components/label", "components/editbox-$" ], function(require, core, notesForm, jq, cmn, uiUtils, shapes, fields, __c_container, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_form, __c_button, __c_html, __c_label, __c_editbox_$) {
     return new class {
         constructor() {
             this.dfe = [ {
@@ -156,8 +156,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 get: $$ => [ $$ ],
                 atr: $$ => ({
                     action: '/tools/work/QuoteSearch.do',
-                    method: 'post',
-                    target: '_blank'
+                    method: 'post'
                 }),
                 pos: [ {
                     s: "float: right"
@@ -182,7 +181,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 set: ($$, value) => $$.set('qs-crit', value),
                 atr: $$ => ({
                     text: 'Quick Search:',
-                    cstyle: 'font-weight: bold; color: #444; text-shadow: 1px 1px 1px #aaa;'
+                    cstyle: 'font-weight: bold;'
                 }),
                 pos: [ {
                     colstyle: "display: inline; padding: 2px 2px"
@@ -234,7 +233,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 name: "loading",
                 component: __c_html,
                 parent: "report",
-                get: () => shapes.loadingCircles(),
+                get: $$ => shapes.cssShape($$, 'css-loading-anim-circle'),
                 atr: $$ => ({
                     style: `display: ${$$('loading') == 0 ? 'none' : ''}; align-content: center; justify-content: center; position: absolute; width: 100%; height: 100%; min-height: 200px; min-width: 200px; background: lightgray; opacity: 0.3`
                 })
@@ -251,7 +250,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 name: "field-18",
                 component: __c_html,
                 parent: "filtered",
-                get: $$ => $$('.expanded') == 'Y' ? shapes.sign('minus', 'red') : shapes.sign('plus', 'green'),
+                get: $$ => shapes.cssShape($$, $$('.expanded') == 'Y' ? 'css-button-minus' : 'css-button-plus'),
                 atr: $$ => ({
                     style: 'width: 12px; height: 12px; margin: 3px',
                     events: {
@@ -568,7 +567,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 name: "field-49",
                 component: __c_html,
                 parent: "field-2",
-                get: $$ => $$('filterCollapsed') == 'Y' ? shapes.sign('plus', 'green') : shapes.sign('minus', 'red'),
+                get: $$ => shapes.cssShape($$, $$('filterCollapsed') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
                 atr: $$ => ({
                     events: {
                         click: () => $$.set('filterCollapsed', $$('filterCollapsed') == 'Y' ? 'N' : 'Y')
@@ -593,7 +592,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                     let n = this.firstUserNote($$);
                     return {
                         class: 'note-icon hoverable',
-                        style: `opacity: ${n.length ? 1 : .3}`,
+                        style: `opacity: ${n.length ? 1 : .3}; display: inline-block; cursor: pointer; width: 16px; height: 16px;`,
                         get: () => n,
                         events: {
                             click: () => this.showNotes($$)
@@ -604,16 +603,21 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                     s: ".label-centered"
                 } ]
             }, {
+                name: "field-52a",
+                component: __c_html,
+                parent: "field-51",
+                class: 'header',
+                get: $$ => shapes.svgShape($$, 'svg-icon-file-text')
+            }, {
                 name: "field-52",
                 component: __c_label,
                 parent: "field-51",
                 get: $$ => $$('.subject'),
                 atr: $$ => ({
-                    class: 'display-on-hover',
-                    style: 'left: -200px; top: 20px; width: 200px'
+                    class: 'display-on-hover'
                 }),
                 pos: [ {
-                    colstyle: "position: absolute"
+                    colstyle: "position: absolute; width:  0px;"
                 } ]
             }, {
                 name: "field-53",
@@ -685,7 +689,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
         sortArrow($$, fld) {
             return {
                 class: 'header-button',
-                get: () => shapes.arrow('white', $$('.sortInverse').indexOf(fld) == -1 ? 'up' : 'down'),
+                get: $$ => shapes.cssShape($$, 'css-arrow-' + ($$('.sortInverse').indexOf(fld) == -1 ? 'up' : 'down')),
                 events: {
                     click: function() {
                         let si = $$.get('.sortInverse'), so = $$.get('.sortOrder');
@@ -806,34 +810,19 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
     		        width: 100%;
     		    }
     		    
-    		    .note-icon {
-				    font-family: Arial, Tahoma, sans-serif;
-				    font-weight: 300;
-				    display: inline-block;
-				    width: 10px;
-				    height: 12px;
-				    position: relative;
-				    border-radius: 2px;
-				    text-align: left;
-				    -webkit-font-smoothing: antialiased;
-				    background: #f4b400;
-				    cursor: pointer;
-				}
+    		    /*.note-icon {width: 16px;height: 16px;background: url('/images/icon-file-text.svg');display: inline-block;}*/
+    		    /*.note-icon {font-family: Arial, Tahoma, sans-serif;font-weight: 300;display: inline-block;width: 10px;height: 12px;position: relative;border-radius: 2px;text-align: left;-webkit-font-smoothing: antialiased;background: #f4b400;cursor: pointer;}.note-icon::before {display: block;content: "";position: absolute;top: 0;right: 0;width: 0;height: 0;border-bottom-left-radius: 1px;border-width: 2px;border-style: solid;border-color: #fff #fff rgba(255,255,255,.35) rgba(255,255,255,.35);box-sizing: inherit;}*/
 				
-				.note-icon::before {
-				    display: block;
-				    content: "";
-				    position: absolute;
-				    top: 0;
-				    right: 0;
-				    width: 0;
-				    height: 0;
-				    border-bottom-left-radius: 1px;
-				    border-width: 2px;
-				    border-style: solid;
-				    border-color: #fff #fff rgba(255,255,255,.35) rgba(255,255,255,.35);
-				    box-sizing: inherit;
-				}
+				.note-icon svg {
+            		width: 100%;
+            		height: 100%;
+            	}
+            	
+            	.note-icon .display-on-hover {
+            		left: -220px;
+            		top: 3px;
+            		width: 200px;
+            	}
 				
 				.ui-widget-header{
 				    background: #97a47a;

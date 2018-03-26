@@ -1,4 +1,4 @@
-defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/css-shapes", "dfe-field-helper", "components/div", "components/label", "components/textarea", "components/html" ], function(require, cmn, uiUtils, shapes, fields, __c_div, __c_label, __c_textarea, __c_html) {
+defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/div", "components/label", "components/textarea", "components/html" ], function(require, cmn, uiUtils, shapes, fields, __c_div, __c_label, __c_textarea, __c_html) {
     return new class {
         constructor() {
             this.dfe = [ {
@@ -33,7 +33,7 @@ defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/css-shapes", 
                 component: __c_html,
                 parent: "root",
                 class: "header",
-                get: $$ => shapes.sign('plus', 'green'),
+                get: $$ => shapes.cssShape($$, 'css-button-plus'),
                 atr: $$ => ({
                     events: {
                         click: () => $$.append('.note', {
@@ -54,7 +54,7 @@ defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/css-shapes", 
         	return str;
         }
         formatAsDate(s){
-        	return `${s.substring(0,4)}/${s.substring(4,6)}/${s.substring(6,8)} ${s.substring(8,10)}:${s.substring(10,12)}`   
+        	return `${s.substring(4,6)}/${s.substring(6,8)}/${s.substring(0,4)} ${s.substring(8,10)}:${s.substring(10,12)}`   
         }
         setup(){
         	uiUtils.setDfeCustomStyle(`

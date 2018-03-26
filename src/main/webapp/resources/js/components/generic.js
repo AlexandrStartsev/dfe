@@ -306,9 +306,9 @@
                         uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, control.ui.value);}, true);
                         control.parentNode && control.parentNode.appendChild(control.ui);
                     }
-                    control.ui.value = data;
                     this.setAttributes(control, data, errs, attrs);
                     this.appendError(control, control.parentNode, errs, attrs);
+                    control.ui.value = data;
                 }
 	        },
 	        appendError: function(control, ui, errs, attrs) {
@@ -763,15 +763,22 @@
 	    return _extend({
 	        name: 'html',
 	        render: function (control, data, errs, attrs, events) {
-	            if(!control.ui) {
-	                control.ui = document.createElement('div');
-	                control.ui._dfe_ = control;
-	                control.parentNode && control.parentNode.appendChild(control.ui);
-                    this.setEvents(control.ui, control, data, errs, attrs);
-	            }
-	            control.ui.innerHTML = data;
-	            this.setAttributes(control, data, errs, attrs);
-                this.appendError(control, control.parentNode, errs, attrs);
+	        	if(!defer(control, data, errs, attrs, events)) {
+		            if(!control.ui) {
+		                control.ui = document.createElement('div');
+		                control.ui._dfe_ = control;
+		                control.parentNode && control.parentNode.appendChild(control.ui);
+	                    this.setEvents(control.ui, control, data, errs, attrs);
+		            }
+		            if(typeof data == 'string') {
+		            	control.ui.innerHTML = data;
+		            } else {
+		            	while(control.ui.firstChild) control.ui.removeChild(control.ui.firstChild);
+		            	(Array.isArray(data) ? data : [data]).forEach( function(node) { control.ui.appendChild(node) }  )
+		            }
+		            this.setAttributes(control, data, errs, attrs);
+	                this.appendError(control, control.parentNode, errs, attrs);
+	        	}
             }
         }, Component, {})
     })
@@ -1133,5 +1140,5 @@
 	        name: 'c-radiolist',
             renderingComponent: _extend({skipattrs: DWC.skipattrs}, Radiolist, {}),
         }, DWC, {})
-    })  
+    })
 })()

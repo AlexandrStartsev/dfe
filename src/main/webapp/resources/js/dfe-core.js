@@ -122,8 +122,8 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    	for(var i in path) this.set('.' + i, path[i]);
 	    	return ;
 	    }
+	    if(Array.isArray(value)) value=value[0];
 	    value || (value = '');
-	    if(value.length && Array.isArray(value)) value=value[0];
 	    if(typeof value == 'number') value = value.toString();
 	    var listener = this.listener, le, va, maintained = true, sb = 0, sd;
 	    if(path.charAt(0) == '.') {
@@ -300,7 +300,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	}
 	
 	DfeRuntime.prototype.store = function (control, value, method) {
-	   var f = control.field.data.set || control.model.attrs.set, self = this;
+	   var f = control.field.data.set || control.model.attrs.set;//, self = this;
 	   typeof f == 'function' && f.call(this.form, control.model.unbound, /*control.model.value = */value, method); // i forgot why i did this. probably old times where "set" wasn't receiving it as separate argument
 	   //setTimeout(function() { self.processInterceptors() }, 1);
 	}

@@ -3683,7 +3683,7 @@ exports.loadModule = function(moduleName, onLoad) {
     }
 
     try {
-        module = require(moduleName);
+        module = require(moduleName, 0, function(){arguments[0] == 'notloaded' || console.warn(arguments)});
     } catch (e) {}
     if (module && !exports.$loading[moduleName])
         return onLoad && onLoad(module);
