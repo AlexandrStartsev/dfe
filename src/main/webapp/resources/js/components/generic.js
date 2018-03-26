@@ -161,11 +161,13 @@
 	                            t[i] = t[i]||' ';
 	                        data = t.join('');
 	                    }
+                        delete control.inputLock;
 	                    control.notifications.push({ action : 'self' }); 
 	                    control.component.store(control, data); 
 	                }
-	                uiUtils.addEventListener(control.ui, attrs.trigger||'keyup', store, false);
-	                uiUtils.addEventListener(control.ui, 'change', store, false);
+                    uiUtils.addEventListener(control.ui, 'keydown', function() { control.inputLock = true; })
+	                uiUtils.addEventListener(control.ui, attrs.trigger||'keyup', store);
+	                attrs.trigger == 'change' || uiUtils.addEventListener(control.ui, 'change', store);
 	                this.setEvents(control.ui, control, data, errs, attrs);
 	            }
 	            Array.isArray(data) && (data=data[0]), data || (data=''), data = data.toString();
@@ -175,7 +177,7 @@
 	                data = t.join('');
 	            }
 	            data = Patterning(Formatting(data, control.formatting), control.pattern);
-	            if(data != control.ui.value) {
+	            if(data != control.ui.value && !control.inputLock) {
 	                var v = control.ui.value, ss = control.ui.selectionStart;
 	                control.ui.value = data;
 	                if(control.formatting && ss >= control.ca && ss <= v.length && v != control.ui.value) {
@@ -185,7 +187,6 @@
 	                }
 	                control.ca = 0;
 	            }
-	
 	            this.setAttributes(control, data, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        },
@@ -224,25 +225,29 @@
 	                    !e.ctrlKey && e.key && e.key.length == 1 && control.ui.selectionStart == control.ui.selectionEnd && (e.key < '0' || e.key > '9' || ml) && e.preventDefault();
 	                }, false);
 	                var store = function() { 
+                        delete control.inputLock;
 	                    var v = Formatting(control.ui.value, control.nodollar, control.maxlength);
 	                    control.notifications.push({ action : 'self' }); control.component.store(control, v.replace(/[^\d]/g,'')); 
 	                }
-	                uiUtils.addEventListener(control.ui, attrs.trigger||'keyup', store, false);
-	                uiUtils.addEventListener(control.ui, 'change', store, false);
+                    uiUtils.addEventListener(control.ui, 'keydown', function() { control.inputLock = true; })
+	                uiUtils.addEventListener(control.ui, attrs.trigger||'keyup', store);
+	                attrs.trigger == 'change' || uiUtils.addEventListener(control.ui, 'change', store);
 	                this.setEvents(control.ui, control, data, errs, attrs);
 	            }
 	            Array.isArray(data) && (data=data[0]);
-	            if(typeof data == 'string' || typeof data == 'number') {
-	                var ss = control.ui.selectionStart, ov = control.ui.value, nv = Formatting(data, control.nodollar, control.maxlength), o = 0;
-	                if(ov != nv) {
-	                    control.ui.value = nv;
-	                    if(control.ui == document.activeElement) {
-	                        for(i=0;i<ss;i++) (nv.charAt(i) == ',' || nv.charAt(i) == '$') && o++, (ov.charAt(i) == ',' || ov.charAt(i) == '$') && o--;
-	                        if(control.ui.ownerDocument.activeElement == control.ui)
-	                        	control.ui.selectionStart = control.ui.selectionEnd = ss + o - (ov.charAt(ss) == ',' && nv.charAt(ss + o - 1) == ',' ? 1 : 0);
-	                    }
-	                }
-	            } else control.ui.value = '';
+                if(!control.inputLock) {
+                    if(typeof data == 'string' || typeof data == 'number') {
+                        var ss = control.ui.selectionStart, ov = control.ui.value, nv = Formatting(data, control.nodollar, control.maxlength), o = 0;
+                        if(ov != nv) {
+                            control.ui.value = nv;
+                            if(control.ui == document.activeElement) {
+                                for(i=0;i<ss;i++) (nv.charAt(i) == ',' || nv.charAt(i) == '$') && o++, (ov.charAt(i) == ',' || ov.charAt(i) == '$') && o--;
+                                if(control.ui.ownerDocument.activeElement == control.ui)
+                                    control.ui.selectionStart = control.ui.selectionEnd = ss + o - (ov.charAt(ss) == ',' && nv.charAt(ss + o - 1) == ',' ? 1 : 0);
+                            }
+                        }
+                    } else control.ui.value = '';
+                }
 	
 	            this.setAttributes(control, data, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
@@ -776,19 +781,23 @@
 	        name: 'textarea',
 	        render: function (control, data, errs, attrs, events) {
 	            if(!control.ui) {
+                    control.storeFlag = 0;
 	                control.ui = document.createElement('textarea');
 	                control.ui._dfe_ = control;
 	                control.parentNode && control.parentNode.appendChild(control.ui);
-	                uiUtils.addEventListener(control.ui, attrs.trigger||'keyup', function(e){ control.component.store(control, control.ui.value)});
+                    function store() { delete control.inputLock; control.component.store(control, control.ui.value);  }
+                    uiUtils.addEventListener(control.ui, 'keydown', function() { control.inputLock = true; })
+	                uiUtils.addEventListener(control.ui, attrs.trigger||'keyup', store );
+                    attrs.trigger == 'change' || uiUtils.addEventListener(control.ui, 'change', store);
 	                this.setEvents(control.ui, control, data, errs, attrs);
 	            }
-	            control.ui.value == data || (control.ui.value = data);
+	            if(control.ui.value != data && !control.inputLock) control.ui.value = data;
 	            this.setAttributes(control, data, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
 	    }, CEditbox, {})
 	})
-	
+    
 	define('components/editbox-P', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
 	    return _extend({
 	        name: 'editbox-P',
@@ -1124,5 +1133,5 @@
 	        name: 'c-radiolist',
             renderingComponent: _extend({skipattrs: DWC.skipattrs}, Radiolist, {}),
         }, DWC, {})
-    })
+    })  
 })()

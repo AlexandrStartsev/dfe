@@ -302,7 +302,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	DfeRuntime.prototype.store = function (control, value, method) {
 	   var f = control.field.data.set || control.model.attrs.set, self = this;
 	   typeof f == 'function' && f.call(this.form, control.model.unbound, /*control.model.value = */value, method); // i forgot why i did this. probably old times where "set" wasn't receiving it as separate argument
-	   setTimeout(function() { self.processInterceptors() }, 1);
+	   //setTimeout(function() { self.processInterceptors() }, 1);
 	}
 	
 	DfeRuntime.prototype.processInterceptors = function() {
