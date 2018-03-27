@@ -762,22 +762,30 @@
 	define('components/html', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
 	        name: 'html',
+            skipattrs: (function(c){ var r = new Set(); Component.skipattrs.forEach(function(a) {r.add(a)}); c.forEach(function(a) {r.add(a)}); return r})(['nowrap']),
 	        render: function (control, data, errs, attrs, events) {
 	        	if(!defer(control, data, errs, attrs, events)) {
-		            if(!control.ui) {
-		                control.ui = document.createElement('div');
-		                control.ui._dfe_ = control;
-		                control.parentNode && control.parentNode.appendChild(control.ui);
-	                    this.setEvents(control.ui, control, data, errs, attrs);
-		            }
-		            if(typeof data == 'string') {
-		            	control.ui.innerHTML = data;
-		            } else {
-		            	while(control.ui.firstChild) control.ui.removeChild(control.ui.firstChild);
-		            	(Array.isArray(data) ? data : [data]).forEach( function(node) { control.ui.appendChild(node) }  )
-		            }
-		            this.setAttributes(control, data, errs, attrs);
-	                this.appendError(control, control.parentNode, errs, attrs);
+                    if(attrs.nowrap && data instanceof Element ) {
+                        control.ui && control.parentNode && control.parentNode.removeChild(control.ui);
+                        control.parentNode && control.parentNode.appendChild(control.ui = data);
+                        this.setEvents(control.ui, control, data, errs, attrs);
+                        this.setAttributes(control, data, errs, attrs);
+                    } else {
+                        if(!control.ui) {
+                            control.ui = document.createElement('div');
+                            control.ui._dfe_ = control;
+                            control.parentNode && control.parentNode.appendChild(control.ui);
+                            this.setEvents(control.ui, control, data, errs, attrs);
+                        }
+                        if(typeof data == 'string') {
+                            control.ui.innerHTML = data;
+                        } else {
+                            while(control.ui.firstChild) control.ui.removeChild(control.ui.firstChild);
+                            (Array.isArray(data) ? data : [data]).forEach( function(node) { control.ui.appendChild(node) }  )
+                        }
+                        this.setAttributes(control, data, errs, attrs);
+                        this.appendError(control, control.parentNode, errs, attrs);
+                    }
 	        	}
             }
         }, Component, {})

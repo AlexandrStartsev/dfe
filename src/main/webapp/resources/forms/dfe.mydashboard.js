@@ -607,7 +607,11 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 component: __c_html,
                 parent: "field-51",
                 class: 'header',
-                get: $$ => shapes.svgShape($$, 'svg-icon-file-text')
+                get: $$ => shapes.svgShape($$, 'svg-icon-file-text'),
+                atr: $$ => ({
+                    style: 'width: 16px; height: 16px',
+                    nowrap: 1
+                })
             }, {
                 name: "field-52",
                 component: __c_label,
@@ -689,7 +693,8 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
         sortArrow($$, fld) {
             return {
                 class: 'header-button',
-                get: $$ => shapes.cssShape($$, 'css-arrow-' + ($$('.sortInverse').indexOf(fld) == -1 ? 'up' : 'down')),
+                nowrap: true,
+                get: $$ => shapes.svgShape($$, 'svg-arrow-' + ($$('.sortInverse').indexOf(fld) == -1 ? 'up' : 'down')),
                 events: {
                     click: function() {
                         let si = $$.get('.sortInverse'), so = $$.get('.sortOrder');
@@ -767,14 +772,15 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
     		        border-collapse: collapse;
     		    }
 
-                .header-button > .css-arrow {
-                    transform: scale(0.6);
-                    -webkit-transform: scale(0.6);
+                .header-button {
+                    width:16px;
+                    height: 16px;
+                    fill: white;
+                    display: flex;
                 }
 
-                .header-button:active > .css-arrow {
-                    transform: scale(0.5);
-                    -webkit-transform: scale(0.5);
+                .header-button:active {
+                    transform: scale(0.9);
                 }
     		    
                 .dollar-prefix::before {
@@ -813,11 +819,6 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
     		    /*.note-icon {width: 16px;height: 16px;background: url('/images/icon-file-text.svg');display: inline-block;}*/
     		    /*.note-icon {font-family: Arial, Tahoma, sans-serif;font-weight: 300;display: inline-block;width: 10px;height: 12px;position: relative;border-radius: 2px;text-align: left;-webkit-font-smoothing: antialiased;background: #f4b400;cursor: pointer;}.note-icon::before {display: block;content: "";position: absolute;top: 0;right: 0;width: 0;height: 0;border-bottom-left-radius: 1px;border-width: 2px;border-style: solid;border-color: #fff #fff rgba(255,255,255,.35) rgba(255,255,255,.35);box-sizing: inherit;}*/
 				
-				.note-icon svg {
-            		width: 100%;
-            		height: 100%;
-            	}
-            	
             	.note-icon .display-on-hover {
             		left: -220px;
             		top: 3px;

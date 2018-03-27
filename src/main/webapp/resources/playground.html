@@ -8,22 +8,38 @@
                 require(['babel', 'uglify', 'ui/jquery'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
-                    $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
+                    $.get('/test/test-db.json', function(arf) { resolve(arf) })
                 })
             });
             
             require.config({ baseUrl: '/js', paths: { forms : '../forms' } })
-            require(['ui/utils'])
+            require(['ui/utils', 'ui/shapes']).then(function(m){
+                m[1].load().then(function(){
+                    
+                })
+            })
             
         </script>     
+        <!--  -->
+        
+        <style>
+            #abc {
+               width:16px; 
+               height: 16px; 
+               background: url('data:image/svg+xml;cp1252,<svg viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g><path d="M27 0h-24c-1.65 0-3 1.35-3 3v26c0 1.65 1.35 3 3 3h24c1.65 0 3-1.35 3-3v-26c0-1.65-1.35-3-3-3zM26 28h-22v-24h22v24zM8 14h14v2h-14zM8 18h14v2h-14zM8 22h14v2h-14zM8 10h14v2h-14z"></path></g></svg>') 
+            }
+        </style>
     </head>
-
+    
+    
     
         
     <body> 
-        <div style="width:16px; height: 16px; background-image: url(test/i1.svg)">
-        </div>
-        <div id='dfe' dfe-form='a' dfe-model='window.model' dfe-edit-target ></div>
+        <!--<img src="test/i1.svg#svg-icon-file-text"></div>-->
+        <svg style="width:16px; height: 16px; fill: red;">
+            <use href="#svg-arrow-down"></use>
+        </svg>
+        <div id='dfe' dfe-form='dfe.mydashboard' dfe-model='window.model' dfe-edit-target ></div>
         <br>
         <br>
         <br>
