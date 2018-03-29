@@ -1,10 +1,11 @@
 (function (){
 	function _test(a, b) { if(a == 0) return b == 0; if(typeof a != 'object') return a == b; for(var i in a) if(a[i] != b[i]) return false; return true; }
 	function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
-    function defer(c, d, e, a, t) { return c._deferred = c.allParentNodes ? 0 : function() {c.component.render(c, d, e, a, t)} }
+    function defer(c, d, e, a, t) { return c._deferred = c.allParentNodes ? 0 : function() {c.component.render(c, d, e, a, t)} }  
+    function _base() { return function (n, f, c) { return _extend({name:n,children:c||[],component:arguments.callee},f) } }
 	define('components/component', ['ui/utils'], function(uiUtils) {
-	    return {
-	        name: 'component',
+	    return _extend({
+	        cname: 'component',
 	        isContainer: false,
             slots: 1,
 	        skipattrs: (function(c){ var r = new Set(); c.forEach(function(a) {r.add(a)}); return r})([
@@ -93,8 +94,9 @@
 	                        uiUtils.addEventListener(t, nm, function(event) { return e.call(control.model.runtime.form, event, control) }, false);
 	                    }
 	                })(n, attrs.events[n]);
-	        } 
-	    }
+	        },
+            base: _base
+	    }, _base())
 	})
     
 	define('components/editbox', ['components/component', 'ui/utils', 'components/date-picker-polyfill'], function(Component, uiUtils) {
@@ -114,7 +116,7 @@
 	        return value||'';
 	    }
 	    return _extend({
-	        name: 'editbox',
+	        cname: 'editbox',
 	        render: function (control, data, errs, attrs, events) {
 	            if(attrs.transform) {
 	                control.transform = [];
@@ -200,7 +202,7 @@
 	            else 
 	                Component.appendError.call(this, control, ui, errs, attrs);
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
 	
 	define('components/editbox-$', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
@@ -211,7 +213,7 @@
 	        return v;
 	    }
 	    return _extend({
-	        name: 'editbox-$',
+	        cname: 'editbox-$',
 	        render: function (control, data, errs, attrs, events) {
 	            control.maxlength = attrs.formatting && attrs.formatting.length;
 	            control.nodollar = attrs.formatting && attrs.formatting.charAt(0) != '$';
@@ -252,12 +254,12 @@
 	            this.setAttributes(control, data, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
-	    }, CEditbox, {})
+	    }, CEditbox, _base())
 	})
     
 	define('components/dropdown', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
-	        name: 'dropdown',
+	        cname: 'dropdown',
 	        render: function (control, data, errs, attrs, events) {
 	            if(!control.ui) {
 	                control.ui = document.createElement('select');
@@ -291,12 +293,12 @@
 	            this.setAttributes(control, data, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
     
 	define('components/button', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
-	        name: 'button',
+	        cname: 'button',
 	        render: function (control, data, errs, attrs, events) {
                 if(!defer(control, data, errs, attrs, events)) {
                     if(!control.ui) {
@@ -314,12 +316,12 @@
 	        appendError: function(control, ui, errs, attrs) {
 	            attrs.estyle ? uiUtils.setAttribute(control.ui, 'style', (attrs.style||'') + ';' + (errs && attrs.estyle || '')) : Component.appendError.call(this, control, ui, errs, attrs);
 	        }
-	    }, Component, {})    
+	    }, Component, _base())    
 	})
 	
 	define('components/container', ['components/dropdown', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
-	        name: 'container',
+	        cname: 'container',
 	        layout: 'tpos',
 	        isContainer: true,
 	        runtime: function(control) {
@@ -484,12 +486,12 @@
 	            }
 	            return (typeof attrs.order == 'function' ? newRows.sort(attrs.order) : newRows).map(function(r) { return r.data; });
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
 	
 	define('components/div', ['components/component', 'components/container', 'ui/utils'], function(Component, CContainer, uiUtils) {
 	    return _extend({
-	        name: 'div',
+	        cname: 'div',
 	        layout: 'dpos',
 	        buildFieldData: function(control, previousData, attrs) {
 	            var ret = [], nd, dp, i=0, cls, match = true; 
@@ -498,7 +500,7 @@
 	            (control.field.data.children||[]).forEach(function(cf) {
                     if( !attrs.skip || attrs.skip.indexOf(cf.name) == -1 ) {
                     	nd = { field: cf, clazz: cf['class'] || '', pos: cf.pos };
-                        if( cf.name == attrs.hfield ) {
+                        if( cf.name && cf.name == attrs.hfield ) {
 	                        pd = previousData.headField;
                             ret.headField = nd;
                         } else {
@@ -533,12 +535,12 @@
 	            var rt = this.runtime(control), hf = rt.fieldData.filter(function(fd) { return fd.clazz!='' });
 	            hf.length > 0 && this.positionChildren(control, rt.headAlloc = this.allocateNodes(control, control.ui, attrs, hf), hf);
 	        }
-	    }, CContainer, {})
+	    }, CContainer, _base())
 	})
 	
 	define('components/form', ['components/div'], function(CDiv) {
 	   return _extend({
-	        name: 'form',
+	        cname: 'form',
 	        toAttribute: (function(c){ var r = new Set(); c.forEach(function(a) {r.add(a)}); return r})(['action', 'method', 'target', 'class', 'style', 'id', 'name']),
 	        renderFx: function(control, data, errs, attrs) {
 	            control.ui = document.createElement('form');
@@ -547,12 +549,12 @@
 	            var rt = this.runtime(control), hf = rt.fieldData.filter(function(fd) { return fd.clazz!='' });
 	            hf.length > 0 && this.positionChildren(control, rt.headAlloc = this.allocateNodes(control, control.ui, attrs, hf), hf);
 	        }
-	    }, CDiv, {})
+	    }, CDiv, _base())
 	})
 	
 	define('components/div-r', ['components/container', 'components/div', 'ui/utils'], function(CContainer, CDiv, uiUtils) {
 	   return _extend({
-	        name: 'div-r',
+	        cname: 'div-r',
 	        setAttributes: CContainer.setAttributes,
 	        allocateNodes: function(control, ui, attrs, fieldData, nextAllocs) {
 	            var ret = { nodes: [], rows: [] }, nodes, rdiv, div, ib = nextAllocs && nextAllocs.rows[0];
@@ -569,12 +571,12 @@
 	            }); 
 	            return ret;
 	        }
-	    }, CDiv, {})
+	    }, CDiv, _base())
 	})
 	
 	define('components/tab-s', ['components/div-r', 'ui/utils'], function(CDivR, uiUtils) {
 	    return _extend({
-	        name: 'tab-s',
+	        cname: 'tab-s',
 	        render: function(control, data, errs, attrs, events) {
                 if(!defer(control, data, errs, attrs, events)) {
                     var rt = this.runtime(control);
@@ -612,12 +614,12 @@
 	            control.parentNode && control.parentNode.appendChild(control.ui);
 	            this.runtime(control).headAlloc = { rows: [control.ui.appendChild(document.createElement('div'))] };
 	        }
-	    }, CDivR, {})
+	    }, CDivR, _base())
 	})
 	
 	define('components/div-c', ['components/div', 'ui/utils'], function(CDiv, uiUtils) {
 	    return _extend({
-	        name: 'div-c',
+	        cname: 'div-c',
 	        allocateNodes: function(control, ui, attrs, fieldData, nextAllocs) {
 	            var ret = { nodes: [], rows: [] }, nodes;
 	            for(var columns = this.runtime(control).columns, i = 0, j = 0; i < fieldData.length; i++) {
@@ -662,12 +664,12 @@
                 for(var columns = this.runtime(control).columns, i = orA.rows.length-1; i>=0; i--)
 	                columns[i].insertBefore(nrA.rows[i], orA.rows[i])
             }
-	    }, CDiv, {})
+	    }, CDiv, _base())
 	})
 	
 	define('components/checkbox', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
-	        name: 'checkbox',
+	        cname: 'checkbox',
 	        render: function (control, data, errs, attrs, events) {
 	            if(!control.ui) {
                     control.ui = document.createElement('div'); 
@@ -687,13 +689,13 @@
 	            this.setAttributes(control, data, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
     
 	define('components/radiolist', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    var incId = 0;
 	    return _extend({
-	        name: 'radiolist',
+	        cname: 'radiolist',
 	        render: function (control, data, errs, attrs, events) {
 	            if(!control.ui) {
 	                control.ui = document.createElement('div');
@@ -736,12 +738,12 @@
 	            this.setAttributes(control, data, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
 	 
 	define('components/label', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
-	        name: 'label',
+	        cname: 'label',
 	        render: function (control, data, errs, attrs, events) {    
                 if(!defer(control, data, errs, attrs, events)) {
                     if(!control.ui) {
@@ -756,12 +758,12 @@
                     this.appendError(control, control.parentNode, errs, attrs);
                 }
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
 	
 	define('components/html', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
-	        name: 'html',
+	        cname: 'html',
             skipattrs: (function(c){ var r = new Set(); Component.skipattrs.forEach(function(a) {r.add(a)}); c.forEach(function(a) {r.add(a)}); return r})(['nowrap']),
 	        render: function (control, data, errs, attrs, events) {
 	        	if(!defer(control, data, errs, attrs, events)) {
@@ -788,12 +790,12 @@
                     }
 	        	}
             }
-        }, Component, {})
+        }, Component, _base())
     })
 	
 	define('components/textarea', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
 	    return _extend({
-	        name: 'textarea',
+	        cname: 'textarea',
 	        render: function (control, data, errs, attrs, events) {
 	            if(!control.ui) {
                     control.storeFlag = 0;
@@ -810,12 +812,12 @@
 	            this.setAttributes(control, data, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
-	    }, CEditbox, {})
+	    }, CEditbox, _base())
 	})
     
 	define('components/editbox-P', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
 	    return _extend({
-	        name: 'editbox-P',
+	        cname: 'editbox-P',
 	        render: function (control, data, errs, attrs, events) {
 	            var rt = this.runtime(control), self = this;
 	            if(!control.ui) {
@@ -930,12 +932,12 @@
 	                w && (st.width = w), h && (st.height = h), t && (st.top = t), l && (st.left = l);
 	            }
 	        }
-	    }, CEditbox, {})
+	    }, CEditbox, _base())
 	})
 	
 	define('components/div-button', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
-	        name: 'div-button',
+	        cname: 'div-button',
 	        render: function (control, data, errs, attrs, events) {
 	        	if(!defer(control, data, errs, attrs, events)) {
 		            if(!control.ui) {
@@ -955,12 +957,12 @@
 		            this.setAttributes(control, data, errs, attrs);
 	        	}
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
 	
 	define('components/multioption', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({
-	        name: 'multioption',
+	        cname: 'multioption',
 	        render: function (control, data, errs, attrs, events) {
 	            data.value = Array.isArray(data.value) ? data.value[0] : data.value;
 	            control.ui && this.emptyUI(control);
@@ -990,12 +992,12 @@
 	                control.parentNode && control.parentNode.appendChild(control.ui);
 	            }
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
 	
 	define('components/typeahead', ['components/component', 'ui/utils', 'ui/jquery', 'ui/jquery-typeahead'], function(Component, uiUtils, jQuery) {
 	    return _extend({
-	        name: 'typeahead',
+	        cname: 'typeahead',
 	        defaultOPTS: { source : {}, minLength: 1, maxItem: 8, maxItemPerGroup: 6, order: "asc", hint: true, searchOnFocus: true, debug: false, display: ['value','description'], template: '{{value}}: {{description}}', emptyTemplate: 'no result for {{query}}' },
 	        render: function (control, data, errs, attrs, events) {
 	            var rt = this.runtime(control), prevValue = '', self = this, s;
@@ -1038,12 +1040,12 @@
 	                Component.emptyUI(control);
 	            }
 	        }
-	    }, Component, {})
+	    }, Component, _base())
 	})
 	
 	define('components/div-button-x', ['components/div-button', 'ui/utils'], function(CDivButton, uiUtils) {
 	    return _extend({ 
-	        name: 'div-button-x',
+	        cname: 'div-button-x',
 	        render: function (control, data, errs, attrs, events) {
 	            CDivButton.render.call(this, control, data, errs, attrs, events);
 	            control.ui.style.position = 'relative';
@@ -1058,12 +1060,12 @@
 	           }
 	           control.ui_x.style.visibility = (attrs.ta && !attrs.ta.visible) ? 'hidden' : 'visible';
 	        }
-	    }, CDivButton, {})
+	    }, CDivButton, _base())
 	})
 
     define('components/dual-with-label', ['components/component', 'ui/utils'], function(Component, uiUtils) {
         return _extend({
-	        name: 'dual-with-label',
+	        cname: 'dual-with-label',
             slots: 2,
             skipattrs: (function(c){ var r = new Set(); Component.skipattrs.forEach(function(a) {r.add(a)}); c.forEach(function(a) {r.add(a)}); return r})(['text', 'html', 'cstyle', 'errorPos']),
             renderingComponent: null,
@@ -1111,42 +1113,42 @@
                     }
                 }
             }
-        }, Component, {});
+        }, Component, _base());
     })
 	
     define('components/c-checkbox', ['components/dual-with-label', 'components/checkbox', 'ui/utils'], function(DWC, Checkbox, uiUtils) {
         return _extend({
-	        name: 'c-checkbox',
+	        cname: 'c-checkbox',
             renderingComponent: _extend({skipattrs: DWC.skipattrs}, Checkbox, {}),
-        }, DWC, {})
+        }, DWC, _base())
     })    
 	
     define('components/c-dropdown', ['components/dual-with-label', 'components/dropdown', 'ui/utils'], function(DWC, Dropdown, uiUtils) { 	
         return _extend({
-	        name: 'c-dropdown',
+	        cname: 'c-dropdown',
             renderingComponent: _extend({skipattrs: DWC.skipattrs}, Dropdown, {}),
-        }, DWC, {})
+        }, DWC, _base())
     })
 	
     define('components/c-editbox', ['components/dual-with-label', 'components/editbox', 'ui/utils'], function(DWC, Editbox, uiUtils) {
         return _extend({
-	        name: 'c-editbox',
+	        cname: 'c-editbox',
             captureError: function(data, errs, attrs) { return !attrs.eclass },
             renderingComponent: _extend({skipattrs: DWC.skipattrs}, Editbox, {}),
-        }, DWC, {})
+        }, DWC, _base())
     })  
     
     define('components/c-editbox-$', ['components/dual-with-label', 'components/editbox-$', 'ui/utils'], function(DWC, Editbox$, uiUtils) {
         return _extend({
-	        name: 'c-editbox-$',
+	        cname: 'c-editbox-$',
             renderingComponent: _extend({skipattrs: DWC.skipattrs}, Editbox$, {}),
-        }, DWC, {})
+        }, DWC, _base())
     })     
 	
     define('components/c-radiolist', ['components/dual-with-label', 'components/radiolist', 'ui/utils'], function(DWC, Radiolist, uiUtils) {
         return _extend({
-	        name: 'c-radiolist',
+	        cname: 'c-radiolist',
             renderingComponent: _extend({skipattrs: DWC.skipattrs}, Radiolist, {}),
-        }, DWC, {})
+        }, DWC, _base())
     })
 })()

@@ -128,20 +128,7 @@ global.define.amd = { jQuery: false };
 
 // TODO: rid of this, unify with client side -- when session scope config is in place because if we use "define" like this we'll override form for everyone
 function defineForm(n, d, f) {
-    var fx = function() {
-        var a = f.apply(this, arguments), m = new Map(), i;
-        a.name = n;
-        a.dependencies = {};
-        f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').slice(1).forEach(function(n, i){
-            a.dependencies[n] = d[i + 1];
-        })
-        a.dfe.forEach(function(row) {
-            m.get(row.parent) ? m.get(row.parent).push(row) : m.set(row.parent, [ row ]);
-            (row.children = m.get(row.name)) || m.set(row.name, row.children = []);
-        });
-        return a;
-    }
-    return fx.apply(global, d.map( function(d) { return global.require(d) }));
+    return (function() { var a = f.apply(this, arguments); a.name = n; a.dfe = [a.dfe]; return a; }).apply(global, d.map( function(d) { return global.require(d) }));
 }
 
 var ajaxCache = (function() {

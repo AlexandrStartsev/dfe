@@ -1,31 +1,35 @@
-defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/container", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/form", "components/button", "components/html", "components/label", "components/editbox-$" ], function(require, core, notesForm, jq, cmn, uiUtils, shapes, fields, __c_container, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_form, __c_button, __c_html, __c_label, __c_editbox_$) {
+defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/container", "components/button", "components/form", "components/editbox-$" ], function(require, core, notesForm, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_container, __c_button, __c_form, __c_editbox_$) {
     return new class {
         constructor() {
-            this.dfe = [ {
-                name: "root",
-                component: __c_container,
+            this.dfe = __c_container("root", {
                 get: $$ => [ $$ ],
                 atr: () => ({
                     style: 'background-color: white; width: 900px'
                 })
-            }, {
-                name: "filtr",
-                component: __c_container,
-                parent: "root",
+            }, [ __c_container("filtr", {
                 get: $$ => $$('filterCollapsed') == 'Y' ? [] : [ $$ ]
-            }, {
-                name: "field-2",
-                component: __c_div,
-                parent: "filtr",
+            }, [ __c_div("field-2", {
                 class: "header",
                 get: $$ => [ $$ ],
                 pos: [ {
                     w: "4"
                 } ]
-            }, {
-                name: "field-4",
-                component: __c_c_editbox,
-                parent: "filtr",
+            }, [ __c_html("field-49", {
+                get: $$ => shapes.cssShape($$, $$('filterCollapsed') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
+                atr: $$ => ({
+                    events: {
+                        click: () => $$.set('filterCollapsed', $$('filterCollapsed') == 'Y' ? 'N' : 'Y')
+                    }
+                }),
+                pos: [ {
+                    colstyle: "display: inline-block; float: left; padding: 1px; background: white; border-radius: 3px;"
+                } ]
+            }), __c_label("field-48", {
+                get: () => 'Report Filter',
+                pos: [ {
+                    colstyle: "display: inline-block; padding: 0px 100px"
+                } ]
+            }) ]), __c_c_editbox("field-4", {
                 set: function($$, value) {
                     $$.set('effFrom', value);
                     let to = cmn.ARFtoDate($$('effTo')), fr = cmn.ARFtoDate(value);
@@ -38,10 +42,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                     eclass: 'wrong-date',
                     type: 'datepicker'
                 })
-            }, {
-                name: "field-6",
-                component: __c_c_editbox,
-                parent: "filtr",
+            }), __c_c_editbox("field-6", {
                 set: function($$, value) {
                     $$.set('effTo', value);
                     let fr = cmn.ARFtoDate($$('effFrom')), to = cmn.ARFtoDate(value);
@@ -54,10 +55,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                     eclass: 'wrong-date',
                     type: 'datepicker'
                 })
-            }, {
-                name: "field-8",
-                component: __c_c_dropdown,
-                parent: "filtr",
+            }), __c_c_dropdown("field-8", {
                 get: function($$) {
                     var uniq = new Set();
                     $$('result.rows.companyCode').forEach(c => uniq.add(c));
@@ -78,10 +76,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 }, {
                     w: "3"
                 } ]
-            }, {
-                name: "field-10",
-                component: __c_c_dropdown,
-                parent: "filtr",
+            }), __c_c_dropdown("field-10", {
                 get: $$ => ({
                     value: $$('newRenewal'),
                     items: [ {
@@ -98,10 +93,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 }, {
                     w: "3"
                 } ]
-            }, {
-                name: "field-12",
-                component: __c_c_dropdown,
-                parent: "filtr",
+            }), __c_c_dropdown("field-12", {
                 get: $$ => ({
                     value: $$('optional'),
                     items: [ {
@@ -139,20 +131,14 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 }, {
                     w: "2"
                 } ]
-            }, {
-                name: "field-19",
-                component: __c_editbox,
-                parent: "filtr",
+            }), __c_editbox("field-19", {
                 get: $$ => $$('optionalValue'),
                 set: ($$, value) => $$.set('optionalValue', value),
                 atr: $$ => ({
                     pattern: this.optPattern($$('optional')),
                     disabled: $$('optional') == 0
                 })
-            }, {
-                name: "qs",
-                component: __c_form,
-                parent: "root",
+            }) ]), __c_form("qs", {
                 get: $$ => [ $$ ],
                 atr: $$ => ({
                     action: '/tools/work/QuoteSearch.do',
@@ -161,10 +147,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     s: "float: right"
                 } ]
-            }, {
-                name: "qs-crit",
-                component: __c_c_dropdown,
-                parent: "qs",
+            }, [ __c_c_dropdown("qs-crit", {
                 get: $$ => ({
                     value: $$('qs-crit'),
                     items: [ {
@@ -188,10 +171,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 }, {
                     colstyle: "display: inline"
                 } ]
-            }, {
-                name: "qs-value",
-                component: __c_editbox,
-                parent: "qs",
+            }), __c_editbox("qs-value", {
                 get: $$ => $$('qs-' + $$('qs-crit')),
                 set: ($$, value) => $$.set('qs-' + $$('qs-crit'), value),
                 atr: $$ => ({
@@ -201,10 +181,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     colstyle: "display: inline; padding: 2px 2px"
                 } ]
-            }, {
-                name: "qs-submit",
-                component: __c_button,
-                parent: "qs",
+            }), __c_button("qs-submit", {
                 get: $$ => 'Search',
                 atr: $$ => ({
                     type: 'submit',
@@ -213,10 +190,23 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     colstyle: "display: inline"
                 } ]
-            }, {
-                name: "report",
-                component: __c_div,
-                parent: "root",
+            }), __c_editbox("field-53", {
+                get: $$ => 'com.arrow.tools.reports.app.commercial.workerscomp.SubmittedApplicationsReport',
+                atr: $$ => ({
+                    name: 'com.arrow.reports.reportId'
+                }),
+                pos: [ {
+                    colstyle: "display: none"
+                } ]
+            }), __c_editbox("field-54", {
+                get: $$ => '/tools/commercial/workerscomp/application_search.jsp',
+                atr: $$ => ({
+                    name: 'com.arrow.reports.referrer'
+                }),
+                pos: [ {
+                    colstyle: "display: none"
+                } ]
+            }) ]), __c_div("report", {
                 get: function($$) {
                     let effFrom = $$('effFrom'), effTo = $$('effTo');
                     cmn.ARFtoDate(effFrom) instanceof Date && cmn.ARFtoDate(effTo) instanceof Date && this.loadDateRange($$.unbound, effFrom, effTo);
@@ -229,27 +219,18 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                     n: "Y",
                     w: "2"
                 } ]
-            }, {
-                name: "loading",
-                component: __c_html,
-                parent: "report",
+            }, [ __c_html("loading", {
                 get: $$ => shapes.cssShape($$, 'css-loading-anim-circle'),
                 atr: $$ => ({
                     style: `display: ${$$('loading') == 0 ? 'none' : ''}; align-content: center; justify-content: center; position: absolute; width: 100%; height: 100%; min-height: 200px; min-width: 200px; background: lightgray; opacity: 0.3`
                 })
-            }, {
-                name: "filtered",
-                component: __c_container,
-                parent: "report",
+            }), __c_container("filtered", {
                 get: $$ => $$('result'),
                 atr: () => ({
                     filter: res => res.get('.rows').filter(row => this.shouldShow(row)).length > 0,
                     order: (res1, res2) => Number(res1.get('.order')) - Number(res2.get('.order'))
                 })
-            }, {
-                name: "field-18",
-                component: __c_html,
-                parent: "filtered",
+            }, [ __c_html("field-18", {
                 get: $$ => shapes.cssShape($$, $$('.expanded') == 'Y' ? 'css-button-minus' : 'css-button-plus'),
                 atr: $$ => ({
                     style: 'width: 12px; height: 12px; margin: 3px',
@@ -257,10 +238,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                         click: () => $$.set('.expanded', $$('.expanded') == 'Y' ? 'N' : 'Y')
                     }
                 })
-            }, {
-                name: "field-14",
-                component: __c_label,
-                parent: "filtered",
+            }), __c_label("field-14", {
                 get: $$ => $$('.status') + ' (' + $$('.rows').filter(row => this.shouldShow(row)).length + ')',
                 atr: $$ => ({
                     style: 'white-space: nowrap'
@@ -268,25 +246,16 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     s: "padding-top: 3px;"
                 } ]
-            }, {
-                name: "field-15",
-                component: __c_label,
-                parent: "filtered",
+            }), __c_label("field-15", {
                 class: "header",
                 get: $$ => 'Status',
                 pos: [ {
                     w: "2"
                 } ]
-            }, {
-                name: "field-16",
-                component: __c_label,
-                parent: "filtered",
+            }), __c_label("field-16", {
                 class: "header",
                 get: $$ => 'Details'
-            }, {
-                name: "rwrap",
-                component: __c_container,
-                parent: "filtered",
+            }), __c_container("rwrap", {
                 get: $$ => [ $$ ],
                 atr: $$ => ({
                     style: 'width:100%',
@@ -295,18 +264,12 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     s: "justify-content: center; display: flex;"
                 } ]
-            }, {
-                name: "field-21",
-                component: __c_label,
-                parent: "rwrap",
+            }, [ __c_label("field-21", {
                 get: $$ => '...',
                 atr: $$ => ({
                     style: 'display:block; text-align: center;'
                 })
-            }, {
-                name: "rbody",
-                component: __c_container,
-                parent: "rwrap",
+            }), __c_container("rbody", {
                 get: $$ => $$('.rows'),
                 atr: $$ => ({
                     filter: row => this.shouldShow(row),
@@ -320,161 +283,101 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                         return 0;
                     }
                 })
-            }, {
-                name: "field-24",
-                component: __c_label,
-                parent: "rbody",
+            }, [ __c_label("field-24", {
                 class: "header",
                 get: $$ => 'QuoteId',
                 pos: [ {
                     s: "padding: 2px 15px"
                 } ]
-            }, {
-                name: "field-23",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-23", {
                 class: "header",
                 get: () => 'Account Name',
                 atr: () => ({
                     style: 'width: 300px; display: block; margin-top: 2px'
                 })
-            }, {
-                name: "field-25",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-25", {
                 class: "header",
                 get: () => 'Program',
                 pos: [ {
                     s: "padding: 2px 15px;"
                 } ]
-            }, {
-                name: "field-26",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-26", {
                 class: "header",
                 get: $$ => 'Producer Code',
                 pos: [ {
                     s: "padding-left: 15px; border:0px"
                 } ]
-            }, {
-                name: "field-26a",
-                component: __c_html,
-                parent: "rbody",
+            }), __c_html("field-26a", {
                 class: "header",
                 atr: $$ => this.sortArrow($$, '.producerCode')
-            }, {
-                name: "field-27",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-27", {
                 class: "header",
                 get: $$ => 'Effective Date',
                 pos: [ {
                     s: "padding-left: 15px; border:0px"
                 } ]
-            }, {
-                name: "field-36",
-                component: __c_html,
-                parent: "rbody",
+            }), __c_html("field-36", {
                 class: "header",
                 atr: $$ => this.sortArrow($$, '.effectiveDate')
-            }, {
-                name: "field-28",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-28", {
                 class: "header",
                 get: $$ => 'Written Premium',
                 pos: [ {
                     s: "padding-left: 15px; border:0px"
                 } ]
-            }, {
-                name: "field-37",
-                component: __c_html,
-                parent: "rbody",
+            }), __c_html("field-37", {
                 class: "header",
                 atr: $$ => this.sortArrow($$, '.writtenPremium')
-            }, {
-                name: "field-38",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-38", {
                 class: "header",
                 get: () => 'GOV CC',
                 pos: [ {
                     s: "padding-left: 15px; border:0px"
                 } ]
-            }, {
-                name: "field-39",
-                component: __c_html,
-                parent: "rbody",
+            }), __c_html("field-39", {
                 class: "header",
                 atr: $$ => this.sortArrow($$, '.govClass')
-            }, {
-                name: "field-40",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-40", {
                 class: "header",
                 get: () => 'Grade',
                 pos: [ {
                     s: "padding-left: 15px; border:0px"
                 } ]
-            }, {
-                name: "field-40a",
-                component: __c_html,
-                parent: "rbody",
+            }), __c_html("field-40a", {
                 class: "header",
                 atr: $$ => this.sortArrow($$, '.grade')
-            }, {
-                name: "field-41",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-41", {
                 class: "header",
                 get: () => 'Type',
                 pos: [ {
                     s: "padding-left: 15px; border:0px"
                 } ]
-            }, {
-                name: "field-42",
-                component: __c_html,
-                parent: "rbody",
+            }), __c_html("field-42", {
                 class: "header",
                 atr: $$ => this.sortArrow($$, '.newRenewal')
-            }, {
-                name: "field-50",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-50", {
                 class: "header",
                 get: $$ => 'Notes',
                 pos: [ {
                     s: "padding: 2px 15px"
                 } ]
-            }, {
-                name: "field-29",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-29", {
                 get: $$ => `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$('.quoteid')}">${$$('.quoteid')}</a>`,
                 atr: () => ({
                     class: 'label-centered',
                     html: true
                 })
-            }, {
-                name: "field-30",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-30", {
                 get: $$ => $$('.accountName'),
                 pos: [ {
                     s: "min-width: 300px; width: 300px"
                 } ]
-            }, {
-                name: "field-31",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-31", {
                 get: $$ => $$('.companyCode'),
                 atr: () => ({
                     class: 'label-centered'
                 })
-            }, {
-                name: "field-46",
-                component: __c_div,
-                parent: "rbody",
+            }), __c_div("field-46", {
                 get: $$ => [ $$ ],
                 atr: () => ({
                     class: 'hoverable'
@@ -482,18 +385,12 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     w: "2"
                 } ]
-            }, {
-                name: "field-32",
-                component: __c_label,
-                parent: "field-46",
+            }, [ __c_label("field-32", {
                 get: $$ => $$('.producerCode'),
                 atr: () => ({
                     class: 'label-centered'
                 })
-            }, {
-                name: "field-47",
-                component: __c_label,
-                parent: "field-46",
+            }), __c_label("field-47", {
                 get: $$ => $$('.producerName'),
                 atr: $$ => ({
                     class: 'display-on-hover'
@@ -501,10 +398,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     colstyle: "position: absolute"
                 } ]
-            }, {
-                name: "field-33",
-                component: __c_editbox,
-                parent: "rbody",
+            }) ]), __c_editbox("field-33", {
                 get: $$ => $$('.effectiveDate'),
                 atr: () => ({
                     formatting: 'MM/DD/YYYY',
@@ -516,10 +410,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     w: "2"
                 } ]
-            }, {
-                name: "field-34",
-                component: __c_editbox_$,
-                parent: "rbody",
+            }), __c_editbox_$("field-34", {
                 get: $$ => $$('.writtenPremium'),
                 atr: () => ({
                     formatting: '9,999,999,999',
@@ -530,10 +421,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                     s: ".dollar-prefix",
                     w: "2"
                 } ]
-            }, {
-                name: "field-43",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-43", {
                 get: $$ => $$('.govClass'),
                 atr: () => ({
                     class: 'label-centered'
@@ -541,10 +429,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     w: "2"
                 } ]
-            }, {
-                name: "field-44",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-44", {
                 get: $$ => $$('.grade'),
                 atr: () => ({
                     style: 'margin-left: 5px'
@@ -552,10 +437,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     w: "2"
                 } ]
-            }, {
-                name: "field-45",
-                component: __c_label,
-                parent: "rbody",
+            }), __c_label("field-45", {
                 get: $$ => $$('.newRenewal'),
                 atr: () => ({
                     style: 'margin-left: 5px'
@@ -563,31 +445,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     w: "2"
                 } ]
-            }, {
-                name: "field-49",
-                component: __c_html,
-                parent: "field-2",
-                get: $$ => shapes.cssShape($$, $$('filterCollapsed') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
-                atr: $$ => ({
-                    events: {
-                        click: () => $$.set('filterCollapsed', $$('filterCollapsed') == 'Y' ? 'N' : 'Y')
-                    }
-                }),
-                pos: [ {
-                    colstyle: "display: inline-block; float: left; padding: 1px; background: white; border-radius: 3px;"
-                } ]
-            }, {
-                name: "field-48",
-                component: __c_label,
-                parent: "field-2",
-                get: () => 'Report Filter',
-                pos: [ {
-                    colstyle: "display: inline-block; padding: 0px 100px"
-                } ]
-            }, {
-                name: "field-51",
-                component: __c_div,
-                parent: "rbody",
+            }), __c_div("field-51", {
                 atr: function($$) {
                     let n = this.firstUserNote($$);
                     return {
@@ -602,20 +460,14 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     s: ".label-centered"
                 } ]
-            }, {
-                name: "field-52a",
-                component: __c_html,
-                parent: "field-51",
-                class: 'header',
+            }, [ __c_html("field-52a", {
+                class: "header",
                 get: $$ => shapes.svgShape($$, 'svg-icon-file-text'),
                 atr: $$ => ({
                     style: 'width: 16px; height: 16px',
-                    nowrap: 1
+                    nowrap: true
                 })
-            }, {
-                name: "field-52",
-                component: __c_label,
-                parent: "field-51",
+            }), __c_label("field-52", {
                 get: $$ => $$('.subject'),
                 atr: $$ => ({
                     class: 'display-on-hover'
@@ -623,29 +475,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 pos: [ {
                     colstyle: "position: absolute; width:  0px;"
                 } ]
-            }, {
-                name: "field-53",
-                component: __c_editbox,
-                parent: "qs",
-                get: $$ => 'com.arrow.tools.reports.app.commercial.workerscomp.SubmittedApplicationsReport',
-                atr: $$ => ({
-                    name: 'com.arrow.reports.reportId'
-                }),
-                pos: [ {
-                    colstyle: "display: none"
-                } ]
-            }, {
-                name: "field-54",
-                component: __c_editbox,
-                parent: "qs",
-                get: $$ => '/tools/commercial/workerscomp/application_search.jsp',
-                atr: $$ => ({
-                    name: 'com.arrow.reports.referrer'
-                }),
-                pos: [ {
-                    colstyle: "display: none"
-                } ]
-            } ];
+            }) ]) ]) ]) ]) ]) ]);
         }
         loadDateRange(px, effFrom, effTo) {
             let f = this, url = `/AJAXServlet.srv?method=DashboardScriptHelper&action=geninfo&lob=WORK&eff=${effFrom}&effTo=${effTo}&idKey=${++f.idKey}`, toLoad = [], curRep = px('result'), matched = new Set();
@@ -692,7 +522,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
         }
         sortArrow($$, fld) {
             return {
-                class: 'header-button',
+                class: 'arrow-button',
                 nowrap: true,
                 get: $$ => shapes.svgShape($$, 'svg-arrow-' + ($$('.sortInverse').indexOf(fld) == -1 ? 'up' : 'down')),
                 events: {
@@ -772,15 +602,15 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
     		        border-collapse: collapse;
     		    }
 
-                .header-button {
-                    width:16px;
-                    height: 16px;
+                .arrow-button {
+                    width:14px;
+                    height: 14px;
                     fill: white;
                     display: flex;
                 }
 
-                .header-button:active {
-                    transform: scale(0.9);
+                .arrow-button:active {
+                    transform: scale(0.8);
                 }
     		    
                 .dollar-prefix::before {
@@ -816,9 +646,6 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
     		        width: 100%;
     		    }
     		    
-    		    /*.note-icon {width: 16px;height: 16px;background: url('/images/icon-file-text.svg');display: inline-block;}*/
-    		    /*.note-icon {font-family: Arial, Tahoma, sans-serif;font-weight: 300;display: inline-block;width: 10px;height: 12px;position: relative;border-radius: 2px;text-align: left;-webkit-font-smoothing: antialiased;background: #f4b400;cursor: pointer;}.note-icon::before {display: block;content: "";position: absolute;top: 0;right: 0;width: 0;height: 0;border-bottom-left-radius: 1px;border-width: 2px;border-style: solid;border-color: #fff #fff rgba(255,255,255,.35) rgba(255,255,255,.35);box-sizing: inherit;}*/
-				
             	.note-icon .display-on-hover {
             		left: -220px;
             		top: 3px;

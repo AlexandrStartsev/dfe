@@ -6,7 +6,7 @@ define('components/editbox-dropdown-switch', ['components/dual-with-label', 'com
     sa.add('editbox');
     e.skipattrs = d.skipattrs = sa;
     return _extend({
-        name: 'editbox-dropdown-switch',
+        cname: 'editbox-dropdown-switch',
         skipattrs: sa,
         renderingComponent: e,
         render: function(control, data, errs, attrs, events) { 
@@ -20,5 +20,5 @@ define('components/editbox-dropdown-switch', ['components/dual-with-label', 'com
                 DWC.render.call(this, control, attrs.editbox ? data.value : data, errs, attrs, events);
             }
         }
-    }, DWC, {});
+    }, DWC, Editbox.base());
 })

@@ -301,19 +301,20 @@ require.config({
 
 define('ui/utils', ['dfe-core', 'module'], function(core, m) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
+    
     (function(f) {this.defineForm = f})(function (n, d, f) {
     	define("forms/" + n, d, function() {
     	    var a = f.apply(this, arguments), m = new Map();
     	    a.name = n;
     	    a.dependencies = {};
-    	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').slice(1).forEach(function(n, i){a.dependencies[n] = d[i + 1]})
-    	    a.dfe.forEach(function(row) {
-    	        m.get(row.parent) ? m.get(row.parent).push(row) : m.set(row.parent, [ row ]);
-    	        (row.children = m.get(row.name)) || m.set(row.name, row.children = []);
-    	        row.pos || (row.pos = []);
-    	        Array.isArray(row.pos) || (row.pos = [row.pos]);
-                for(var i = row.component.slots - row.pos.length; i; i > 0 ? (row.pos.push({}), i--) : (row.pos.pop(), i++)) ;
-    	    });
+    	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').forEach(function(n, i){a.dependencies[n] = d[i]});
+            (function _f(dfes) {
+                dfes.forEach(function(dfe) {
+                    Array.isArray(dfe.pos) || (dfe.pos = dfe.pos?[dfe.pos]:[]);
+                    for(var i = dfe.component.slots - dfe.pos.length; i; i > 0 ? (dfe.pos.push({}), i--) : (dfe.pos.pop(), i++)) ;
+                    _f(dfe.children);
+                })
+            })(a.dfe = [a.dfe])
     	    return a;
     	}); 
     })

@@ -1,5 +1,5 @@
 define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils', 'ui/jquery', 'uglify', 'dfe-common'], function(CEditPopup, ace, uiUtils, $, uglify, cmn) {
-	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
+	function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
     //little how-to: https://ace.c9.io/#nav=howto&api=virtual_renderer
     //https://github.com/ajaxorg/ace
     //https://github.com/ajaxorg/ace/wiki/Syntax-validation
@@ -77,7 +77,7 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
         return '';
     }
     return _extend({
-        name: 'editbox-code',
+        cname: 'editbox-code',
         skipattrs: (function(){ 
                         var ret = new Set(); 
                         CEditPopup.skipattrs.forEach(function(k) { ret.add(k)}); 
@@ -138,5 +138,5 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
             CEditPopup.setPopupAttributes.call(this, control, attrs, errs);
             this.runtime(control).ta && (this.getPopupUi(control).style.fontSize = attrs.fontSize||'14px', aceEditor.resize());
         }
-    }, _extend(CEditPopup, {}))
+    }, CEditPopup, CEditPopup.base())
 })

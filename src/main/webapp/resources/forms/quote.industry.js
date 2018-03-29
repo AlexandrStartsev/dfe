@@ -1,18 +1,13 @@
-defineForm("quote.industry", [ "require", "dfe-common", "components/div", "components/label", "components/radiolist", "components/editbox", "components/typeahead", "components/multioption", "components/textarea" ], function(require, cmn, __c_div, __c_label, __c_radiolist, __c_editbox, __c_typeahead, __c_multioption, __c_textarea) {
+defineForm("quote.industry", [ "require", "dfe-common", "components/label", "components/radiolist", "components/editbox", "components/typeahead", "components/multioption", "components/div", "components/textarea" ], function(require, cmn, __c_label, __c_radiolist, __c_editbox, __c_typeahead, __c_multioption, __c_div, __c_textarea) {
     return new class {
         constructor() {
-            this.dfe = [ {
-                name: "root",
-                component: __c_div,
+            this.dfe = __c_div("root", {
                 get: $$ => $$('.policy'),
                 atr: () => ({
                     class: 'div-alt-color2-3',
                     style: 'border: 1px solid darkgrey; border-radius: 5px; display: flex; flex-flow : row wrap; width: 700px; overflow: hidden'
                 })
-            }, {
-                name: "field-1",
-                component: __c_label,
-                parent: "root",
+            }, [ __c_label("field-1", {
                 get: () => 'Override Effective Date Limit',
                 atr: () => ({
                     style: 'color: red'
@@ -20,10 +15,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-2",
-                component: __c_radiolist,
-                parent: "root",
+            }), __c_radiolist("field-2", {
                 get: $$ => ({
                     value: $$('control.overrideeffectivelimit'),
                     items: [ {
@@ -41,10 +33,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-3",
-                component: __c_label,
-                parent: "root",
+            }), __c_label("field-3", {
                 get: () => 'Coverage Effective Date',
                 val: function($$) {
                     var eff;
@@ -53,10 +42,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-4",
-                component: __c_editbox,
-                parent: "root",
+            }), __c_editbox("field-4", {
                 get: $$ => $$('.effective'),
                 set: function($$, value) {
                     $$.set('.effective', value), $$.set('.common.effective', value);
@@ -69,10 +55,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-5",
-                component: __c_label,
-                parent: "root",
+            }), __c_label("field-5", {
                 get: () => 'Coverage Expiration Date',
                 val: function($$) {
                     var eff, exp;
@@ -82,10 +65,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-6",
-                component: __c_editbox,
-                parent: "root",
+            }), __c_editbox("field-6", {
                 get: $$ => $$('.expiration'),
                 set: function($$, value) {
                     $$.set('.expiration', value), $$.set('.common.expiration', value);
@@ -98,19 +78,13 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-7",
-                component: __c_label,
-                parent: "root",
+            }), __c_label("field-7", {
                 get: () => 'Company name',
                 val: $$ => $$.required('insured.compname'),
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-8",
-                component: __c_editbox,
-                parent: "root",
+            }), __c_editbox("field-8", {
                 get: $$ => $$('insured.compname'),
                 set: ($$, value) => $$.set('insured.compname', value),
                 atr: () => ({
@@ -119,28 +93,13 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-9",
-                component: __c_label,
-                parent: "root",
+            }), __c_label("field-9", {
                 get: $$ => 'DBA',
                 val: $$ => $$.required('insured.dba'),
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-11",
-                component: __c_label,
-                parent: "common",
-                get: () => 'Year Business Started',
-                val: $$ => $$.required('.YearBizStarted', '(18|19|20)\\d{2}'),
-                pos: [ {
-                    colclass: "dfe-field-std-p5"
-                } ]
-            }, {
-                name: "field-10",
-                component: __c_editbox,
-                parent: "root",
+            }), __c_editbox("field-10", {
                 get: $$ => $$('insured.dba'),
                 set: ($$, value) => $$.set('insured.dba', value),
                 atr: () => ({
@@ -149,10 +108,22 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-12",
-                component: __c_editbox,
-                parent: "common",
+            }), __c_div("common", {
+                get: $$ => $$('.common'),
+                atr: () => ({
+                    class: 'div-alt-color2-1',
+                    style: 'overflow: visible;'
+                }),
+                pos: [ {
+                    colstyle: "background: white; display: flex; width: 100%"
+                } ]
+            }, [ __c_label("field-11", {
+                get: () => 'Year Business Started',
+                val: $$ => $$.required('.YearBizStarted', '(18|19|20)\\d{2}'),
+                pos: [ {
+                    colclass: "dfe-field-std-p5"
+                } ]
+            }), __c_editbox("field-12", {
                 get: $$ => $$('.YearBizStarted'),
                 set: ($$, value) => $$.set('.YearBizStarted', value),
                 atr: () => ({
@@ -162,25 +133,24 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-13",
-                component: __c_label,
-                parent: "common",
+            }), __c_label("field-13", {
                 get: () => 'Industry Segment',
                 val: $$ => $$.required('.SICCd'),
                 pos: [ {
                     colclass: "dfe-field-std-p0",
                     colstyle: "padding: 3px 0px 0px 4px; z-index: 1"
                 } ]
-            }, {
-                name: "field-14",
-                component: __c_typeahead,
-                parent: "common",
+            }), __c_typeahead("field-14", {
                 get: $$ => cmn.ajaxFeed($$, {
-                    query: { action: 'getSicNaics', state: $$('.StateofDomicile'), effdate: $$('.effective'), method: 'BBOPClassCodeScriptHelper' },
+                    query: {
+                        action: 'getSicNaics',
+                        state: $$('.StateofDomicile'),
+                        effdate: $$('.effective'),
+                        method: 'BBOPClassCodeScriptHelper'
+                    },
                     value: {
-                    	sicCode: $$('.SICCd'),
-                    	naicsCode: $$('.NAICSCd')
+                        sicCode: $$('.SICCd'),
+                        naicsCode: $$('.NAICSCd')
                     }
                 }),
                 set: function($$, value) {
@@ -191,29 +161,27 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                     options: {
                         searchOnFocus: 'true',
                         template: 'SIC: {{sicCode}} / NAICS: {{naicsCode}} ({{naicsDescription}})',
-                        display: ['naicsCode', 'sicCode', 'naicsDescription']
+                        display: [ 'naicsCode', 'sicCode', 'naicsDescription' ]
                     },
                     display: 'naicsDescription',
                     filter: function(items) {
-                    	var o = {}; 
-                    	return items.filter(function(v) { var key=v.sicCode+v.naicsCode+v.naicsDescription, p = o[key]; o[key]=1; return !p})
-                    } 
+                        var o = {};
+                        return items.filter(function(v) {
+                            var key = v.sicCode + v.naicsCode + v.naicsDescription, p = o[key];
+                            o[key] = 1;
+                            return !p;
+                        });
+                    }
                 }),
                 pos: [ {
                     colclass: "dfe-field-std-p0"
                 } ]
-            }, {
-                name: "field-15",
-                component: __c_label,
-                parent: "common",
+            }), __c_label("field-15", {
                 get: () => 'SIC',
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-16",
-                component: __c_editbox,
-                parent: "common",
+            }), __c_editbox("field-16", {
                 get: $$ => $$('.SICCd'),
                 atr: () => ({
                     disabled: 'y',
@@ -222,18 +190,12 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-17",
-                component: __c_label,
-                parent: "common",
+            }), __c_label("field-17", {
                 get: () => 'NAICS',
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-18",
-                component: __c_editbox,
-                parent: "common",
+            }), __c_editbox("field-18", {
                 get: $$ => $$('.NAICSCd'),
                 atr: () => ({
                     disabled: 'y',
@@ -242,18 +204,12 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-19",
-                component: __c_label,
-                parent: "common",
+            }), __c_label("field-19", {
                 get: () => 'State of Domicile',
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-20",
-                component: __c_editbox,
-                parent: "common",
+            }), __c_editbox("field-20", {
                 get: $$ => $$('.StateofDomicile'),
                 set: ($$, value) => $$.set('.StateofDomicile', value),
                 atr: () => ({
@@ -263,32 +219,14 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "common",
-                component: __c_div,
-                parent: "root",
-                get: $$ => $$('.common'),
-                atr: () => ({
-                    class: 'div-alt-color2-1',
-                    style: 'overflow: visible;'
-                }),
-                pos: [ {
-                    colstyle: "background: white; display: flex; width: 100%"
-                } ]
-            }, {
-                name: "field-21",
-                component: __c_label,
-                parent: "common",
+            }), __c_label("field-21", {
                 get: () => 'Mark any location states:',
                 val: $$ => $$.required('.ApplicableStates'),
                 pos: [ {
                     colclass: "dfe-field-std-p0",
                     colstyle: "padding: 3px 0px 0px 4px; z-index: 1"
                 } ]
-            }, {
-                name: "field-22",
-                component: __c_multioption,
-                parent: "common",
+            }), __c_multioption("field-22", {
                 get: $$ => ({
                     value: $$('.ApplicableStates'),
                     options: cmn.statesPattern.split('|')
@@ -301,10 +239,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p0"
                 } ]
-            }, {
-                name: "producer",
-                component: __c_div,
-                parent: "root",
+            }) ]), __c_div("producer", {
                 get: $$ => $$('.producer'),
                 atr: () => ({
                     class: 'div-alt-color2-4',
@@ -313,10 +248,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colstyle: "display: flex; width: 100%; background: white;"
                 } ]
-            }, {
-                name: "field-24",
-                component: __c_label,
-                parent: "producer",
+            }, [ __c_label("field-24", {
                 get: () => 'Producer Contact Information',
                 atr: () => ({
                     style: 'color: white;'
@@ -325,19 +257,13 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                     colclass: "div-section-header",
                     colstyle: "background: slategrey;"
                 } ]
-            }, {
-                name: "field-26",
-                component: __c_label,
-                parent: "producer",
+            }), __c_label("field-26", {
                 get: () => 'Producer Contact Name',
                 val: $$ => $$.required('.name'),
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-27",
-                component: __c_editbox,
-                parent: "producer",
+            }), __c_editbox("field-27", {
                 get: $$ => $$('.name'),
                 set: ($$, value) => $$.set('.name', value),
                 atr: () => ({
@@ -346,19 +272,13 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-28",
-                component: __c_label,
-                parent: "producer",
+            }), __c_label("field-28", {
                 get: () => 'Producer Contact Email',
                 val: $$ => $$.required('.email', '[^@ ]+@[^@ ]+\\.[^@ ]{1,4}'),
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-29",
-                component: __c_editbox,
-                parent: "producer",
+            }), __c_editbox("field-29", {
                 get: $$ => $$('.email'),
                 set: ($$, value) => $$.set('.email', value),
                 atr: () => ({
@@ -368,19 +288,13 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-30",
-                component: __c_label,
-                parent: "producer",
+            }), __c_label("field-30", {
                 get: () => 'Confirm Producer Contact Email',
                 val: $$ => $$.required('.emailconfirm', '[^@ ]+@[^@ ]+\\.[^@ ]{1,4}') && $$('.emailconfirm') != $$('.email') && $$.error("Email doesn't match"),
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-31",
-                component: __c_editbox,
-                parent: "producer",
+            }), __c_editbox("field-31", {
                 get: $$ => $$('.emailconfirm'),
                 set: ($$, value) => $$.set('.emailconfirm', value),
                 atr: () => ({
@@ -390,19 +304,13 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-32",
-                component: __c_label,
-                parent: "producer",
+            }), __c_label("field-32", {
                 get: () => 'Producer Additional CC Email',
                 val: $$ => $$('.emailcc') != 0 && $$.required('.emailcc', '[^@ ]+@[^@ ]+\\.[^@ ]{1,4}'),
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-33",
-                component: __c_editbox,
-                parent: "producer",
+            }), __c_editbox("field-33", {
                 get: $$ => $$('.emailcc'),
                 set: ($$, value) => $$.set('.emailcc', value),
                 atr: () => ({
@@ -412,19 +320,13 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-34",
-                component: __c_label,
-                parent: "producer",
+            }), __c_label("field-34", {
                 get: () => 'Phone Number',
                 val: $$ => $$.required('.phone', '^\\d{3}-\\d{3}-\\d{4}$'),
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "field-35",
-                component: __c_editbox,
-                parent: "producer",
+            }), __c_editbox("field-35", {
                 get: $$ => $$('.phone'),
                 set: ($$, value) => $$.set('.phone', value),
                 atr: () => ({
@@ -434,10 +336,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colclass: "dfe-field-std-p5"
                 } ]
-            }, {
-                name: "notes",
-                component: __c_div,
-                parent: "producer",
+            }), __c_div("notes", {
                 get: $$ => [ $$ ],
                 atr: () => ({
                     class: 'div-alt-color3-4'
@@ -445,23 +344,14 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colstyle: "padding: 4px; background: white; display: flex; width: 100%; box-sizing: border-box;"
                 } ]
-            }, {
-                name: "field-36",
-                component: __c_label,
-                parent: "notes",
+            }, [ __c_label("field-36", {
                 get: () => '<b>Note:</b> this contact information will be used to communicate with your agency regarding questions about this submission, for delivery of quotes and binders, and any other contact necessay related to this submission.'
-            }, {
-                name: "field-37",
-                component: __c_label,
-                parent: "notes",
+            }), __c_label("field-37", {
                 get: () => 'Comments to the Underwriter:',
                 pos: [ {
                     colclass: "dfe-field-std-p0"
                 } ]
-            }, {
-                name: "field-38",
-                component: __c_textarea,
-                parent: "notes",
+            }), __c_textarea("field-38", {
                 get: $$ => $$('.comments'),
                 set: ($$, value) => $$.set('.comments', value),
                 atr: () => ({
@@ -470,7 +360,7 @@ defineForm("quote.industry", [ "require", "dfe-common", "components/div", "compo
                 pos: [ {
                     colstyle: "width: 100%;"
                 } ]
-            } ];
+            }) ]) ]) ]);
         }
         onstart($$) {
             $$.defaultSubset('policy.producer');

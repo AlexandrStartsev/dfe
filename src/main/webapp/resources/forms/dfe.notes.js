@@ -1,26 +1,20 @@
-defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/div", "components/label", "components/textarea", "components/html" ], function(require, cmn, uiUtils, shapes, fields, __c_div, __c_label, __c_textarea, __c_html) {
+defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/label", "components/textarea", "components/html", "components/div" ], function(require, cmn, uiUtils, shapes, fields, __c_label, __c_textarea, __c_html, __c_div) {
     return new class {
         constructor() {
-            this.dfe = [ {
-                name: "root",
-                component: __c_div,
+            this.dfe = __c_div("root", {
                 get: $$ => $$('.note'),
                 atr: () => ({
                     order: (n1, n2) => n2.index() - n1.index()
                 })
-            }, {
-                name: "field-1",
-                component: __c_label,
-                parent: "root",
+            }, [ __c_label("field-1", {
                 get: $$ => `by <b>${$$('.user')}</b> on <i>${this.formatAsDate($$('.datetime'))}</i>`,
+                atr: () => ({
+                    html: true
+                }),
                 pos: [ {
                     colstyle: "padding-left:20px; display: block;"
-                } ],
-                atr: () => ({html: true})
-            }, {
-                name: "field-2",
-                component: __c_textarea,
-                parent: "root",
+                } ]
+            }), __c_textarea("field-2", {
                 atr: $$ => fields.simple('.subject', [], {
                     class: 'note-edit-ta',
                     disabled: $$('.isnew') == 0
@@ -28,17 +22,14 @@ defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/shapes", "dfe
                 pos: [ {
                     colstyle: "display: block; width: calc(100% - 8px)"
                 } ]
-            }, {
-                name: "field-3",
-                component: __c_html,
-                parent: "root",
+            }), __c_html("field-3", {
                 class: "header",
                 get: $$ => shapes.cssShape($$, 'css-button-plus'),
                 atr: $$ => ({
                     events: {
                         click: () => $$.append('.note', {
-                        	user: $$('currentUser'),
-                        	datetime: this.now(),
+                            user: $$('currentUser'),
+                            datetime: this.now(),
                             isnew: 1
                         })
                     }
@@ -46,18 +37,18 @@ defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/shapes", "dfe
                 pos: [ {
                     colstyle: "position: absolute; margin: 2px"
                 } ]
-            } ];
+            }) ]);
         }
         now() {
-        	let dt = new Date(), str = cmn.yyyymmdd(dt);
-        	[dt.getHours(), dt.getMinutes()].forEach(e => str += e > 9 ? e : '0' + e)
-        	return str;
+            let dt = new Date(), str = cmn.yyyymmdd(dt);
+            [ dt.getHours(), dt.getMinutes() ].forEach(e => str += e > 9 ? e : '0' + e);
+            return str;
         }
-        formatAsDate(s){
-        	return `${s.substring(4,6)}/${s.substring(6,8)}/${s.substring(0,4)} ${s.substring(8,10)}:${s.substring(10,12)}`   
+        formatAsDate(s) {
+            return `${s.substring(4, 6)}/${s.substring(6, 8)}/${s.substring(0, 4)} ${s.substring(8, 10)}:${s.substring(10, 12)}`;
         }
-        setup(){
-        	uiUtils.setDfeCustomStyle(`
+        setup() {
+            uiUtils.setDfeCustomStyle(`
         		.note-edit-ta {
         			display: block; 
         			width: 100%; 
@@ -67,7 +58,7 @@ defineForm("dfe.notes", [ "require", "dfe-common", "ui/utils", "ui/shapes", "dfe
         			outline: none;
         			overflow: auto;
         		}
-        	`, this.name)
+        	`, this.name);
         }
     }();
 });

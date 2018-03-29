@@ -1414,6 +1414,10 @@ var requirejs, require, define;
                     }
 
                     if (typeof deps === 'string') {
+                        if( deps === 'require' ) {
+                            return arguments.callee;
+                        }
+                        
                         if (isFunction(callback)) {
                             //Invalid call
                             return typeof errback == 'function' ? errback('requireargs', 'Invalid require call') : onError(makeError('requireargs', 'Invalid require call'), errback);

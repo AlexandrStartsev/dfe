@@ -505,17 +505,20 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	return { JsonProxy: JsonProxy, DfeRuntime: DfeRuntime, startRuntime: startRuntime }
 });
 
-define('validation/component', function() {
-    return {
-        name: 'validator',
-        render: function(control, data, errs, attrs, events) {
-            control.ui = true;
-        },
-        doValidation: function(control, events, attrs) { 
-            return attrs ? !(attrs['disabled'] || attrs['hidden'] || (attrs.vstrategy && attrs.vstrategy.indexOf('none') != -1)) : true;
-        },
-        purge: function() {},
-        setParentNode: function() {}
+define('validation/component', ['dfe-common'], function(cmn) {
+    return function(n, f, c) {
+        return cmn.extend( {name:n, children:c||[], component: {
+                cname: 'validator',
+                render: function(control, data, errs, attrs, events) {
+                    control.ui = true;
+                },
+                doValidation: function(control, events, attrs) { 
+                    return attrs ? !(attrs['disabled'] || attrs['hidden'] || (attrs.vstrategy && attrs.vstrategy.indexOf('none') != -1)) : true;
+                },
+                purge: function() {},
+                setParentNode: function() {}
+            }
+        },f );
     }
 })
 

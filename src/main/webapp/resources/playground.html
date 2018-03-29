@@ -8,14 +8,14 @@
                 require(['babel', 'uglify', 'ui/jquery'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
-                    $.get('/test/test-db.json', function(arf) { resolve(arf) })
+                    $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
                 })
             });
             
             require.config({ baseUrl: '/js', paths: { forms : '../forms' } })
             // https://docs.angularjs.org/guide/component
             
-            model = {list : [
+            smodel = {list : [
                 {
                   name: 'Superman',
                   location: ''
@@ -29,23 +29,20 @@
         </script>     
 
     </head>
-    
-    
-    
-        
+            
     <body> 
         <!--<img src="test/i1.svg#svg-icon-file-text"></div>-->
-        <div id='dfe' dfe-form='a' dfe-model='window.model' dfe-edit-target ></div>
+        <div id='dfe' dfe-form='dfe.mydashboard' dfe-model='window.model' dfe-edit-target ></div>
         <br>
         <br>
         <br>
         <div id ="edit"></div>
-        <!--<script>
+        <script>
             setTimeout(function(){
                 var node = document.getElementById('edit');
                 node.setAttribute('dfe-form', 'dfe.edit.dfe');
                 node.setAttribute('dfe-arguments', '(function(r){ return {params: {target_runtime: r}, model: r.form, listener: r.listener} })(document.querySelector("div[dfe-edit-target]")._dfe_runtime)');
             }, 1000)
-        </script> -->
+        </script> 
     </body>
 </html>
