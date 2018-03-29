@@ -27,6 +27,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     ppx.append('.children', {
                         name: this.generateName($$),
                         get: this.textToCode($$.runtime, '$$ => [$$]'),
+                        children: [],
                         pos: [ {} ]
                     })[0].data.component = require('components/editbox');
                 },
@@ -383,20 +384,14 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     return {
                         value: $$('..name'),
                         items: this.allFields($$).filter(function(px) {
-                            return px.get('.component').isContainer;
+                            return px.get('.component').isContainer && px.get('.name') != $$.get('.name');
                         }).map(function(px) {
                             return px.get('.name');
                         }).sort()
                     };
                 },
-                set: function($$, value) {
-                    this.changeParent($$, value);
-                },
-                atr: function($$) {
-                    return {
-                        style: $$('..component') == 0 ? 'visibility:hidden;' : ''
-                    };
-                },
+                set: ($$, value) => this.changeParent($$, value),
+                atr: $$ => ({ style: $$('..component') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
                 pos: [ {
                     colclass: "div-flex-col"
                 } ]
@@ -407,9 +402,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                         items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'form', 'html', 'label', 'multioption', /*'placeholder',*/ 'radiolist', 'tab-s', 'textarea', 'typeahead' ]
                     };
                 },
-                set: function($$, value) {
-                    this.changeType($$, value);
-                },
+                set: ($$, value)  => this.changeType($$, value),
                 pos: [ {
                     colclass: "div-flex-col editbox-col"
                 } ]
@@ -421,9 +414,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     $$.listener.set($$.data, 'get', this.textToCode($$.runtime, value));
                     $$.listener.notify($$.data, 'component');
                 },
-                val: function($$) {
-                    $$('.get') == this.compilationerror && $$.error('Compilation error');
-                },
+                val: ($$) => $$('.get') == this.compilationerror && $$.error('Compilation error'),
                 atr: function($$) {
                     return {
                         style: 'margin: 0px',
@@ -916,14 +907,12 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 return p.get('.name') == value;
             }).pop();
             px.detach();
-            par.data.children.push(px.data);
-            px.listener.notify(par.data, 'children', 'm');
+            par.append('.children', px.data);
         }
         changePos(px, prop, value) {
             if (px) {
                 var fpx = px.get('..');
-                // dfe
-                                px.listener.notify(fpx.get('..').data, 'children');
+                px.listener.notify(fpx.get('..').data, 'children');
                 prop && px.set(prop, value);
                 fpx.data.pos = cmn.extend(fpx.data.pos, []);
             }
