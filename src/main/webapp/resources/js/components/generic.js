@@ -17,7 +17,7 @@
 	        toAttribute: (function(c){ var r = new Set(); c.forEach(function(a) {r.add(a)}); return r})([
 	                                                                'name', 'id', 'disabled', 'hidden', 'readonly', 'maxlength', 'placeholder', 'spellcheck', 
 	                                                                'class', 'style', 'type']),
-	        setAttributesUI: function(ui, data, errs, attrs) { 
+	        setAttributesUI: function(ui, errs, attrs) { 
 	            for(var i in attrs) {
 	                if(! this.skipattrs.has(i)) {
 	                    if( this.toAttribute.has(i) ) 
@@ -27,8 +27,8 @@
 	                }
 	            }
 	        },
-	        setAttributes: function(control, data, errs, attrs) { 
-	            this.setAttributesUI(control.ui, data, errs, attrs);
+	        setAttributes: function(control, errs, attrs) { 
+	            this.setAttributesUI(control.ui, errs, attrs);
 	        },
 	        setParentNode: function(control, pnode) {
 	            if(control.allParentNodes = pnode) {
@@ -90,8 +90,9 @@
 	                (function(a, e) { 
 	                    if(typeof e == 'function') {
 	                        var nm = a, t = ui, id, i=a.indexOf('$'); 
-	                        //if(i != -1 && !isNaN(id=+a.substr(i+1)) && (id==0||control.errorUi[id])) { t = id==0?control.ui:errorUi[id-1]; nm=a.substr(0,i)}
-	                        uiUtils.addEventListener(t, nm, function(event) { return e.call(control.model.runtime.form, event, control) }, false);
+	                        uiUtils.addEventListener(t, nm, function(event) { 
+	                        	return e.call(control.model.runtime.form, event, control) 
+	                        }, false);
 	                    }
 	                })(n, attrs.events[n]);
 	        },
@@ -115,6 +116,36 @@
 	        }
 	        return value||'';
 	    }
+        var prepData = function(control) {
+        	var f = control.formatting, p = control.pattern, data = Patterning(Formatting(control.ui.value, f), p); 
+            if(control.transform) { 
+                var t = []; for(var i=0;i<control.transform.length; i++)
+                    data.length > control.transform[i] && (t[i] = data.charAt(control.transform[i]));
+                for(var i=0;i<t.length; i++) 
+                    t[i] = t[i]||' ';
+                data = t.join('');
+            }
+            return data;
+        }
+        var displayData = function(control, data) {
+            Array.isArray(data) && (data=data[0]), data || (data=''), data = data.toString();
+            if(control.transform) { 
+                var t = []; for(var i=0;i<data.length; i++) 
+                    control.transform.length > i && (t[control.transform[i]] = data.charAt(i));
+                data = t.join('');
+            }
+            data = Patterning(Formatting(data, control.formatting), control.pattern);
+            if(data != control.ui.value && !control.inputLock) {
+                var v = control.ui.value, ss = control.ui.selectionStart;
+                control.ui.value = data;
+                if(control.formatting && ss >= control.ca && ss <= v.length && v != control.ui.value) {
+                   var over = control.formatting.substr(ss-control.ca, control.ca).replace(/[_XdDmMyY9]/g,'').length;
+                   if(control.ui.ownerDocument.activeElement == control.ui)
+                	   control.ui.selectionEnd = control.ui.selectionStart = ss + over; 
+                }
+                control.ca = 0;
+            }        	
+        }
 	    return _extend({
 	        cname: 'editbox',
 	        render: function (control, data, errs, attrs, events) {
@@ -130,6 +161,7 @@
 	                control.parentNode && control.parentNode.appendChild(control.ui);
 	                control.ca = 0;
 	                uiUtils.addEventListener(control.ui, 'keydown', function(e) {
+	                	control.inputLock = true;
 	                    var s = control.ui.selectionStart, v = control.ui.value, m; 
 	                    if((e.key == 'Backspace' || e.key == 'Delete' || e.key == 'Del') && control.formatting && v.length != control.ui.selectionEnd) {
 	                        e.preventDefault();
@@ -154,47 +186,22 @@
 	                        (!m || m[0] != v) && (control.ca--, e.preventDefault());
 	                    }
 	                }, false);
-	                var store = function() { 
-	                    var f = control.formatting, p = control.pattern, data = Patterning(Formatting(control.ui.value, f), p); 
-	                    if(control.transform) { 
-	                        var t = []; for(var i=0;i<control.transform.length; i++)
-	                            data.length > control.transform[i] && (t[i] = data.charAt(control.transform[i]));
-	                        for(var i=0;i<t.length; i++) 
-	                            t[i] = t[i]||' ';
-	                        data = t.join('');
-	                    }
-                        delete control.inputLock;
-	                    control.notifications.push({ action : 'self' }); 
-	                    control.component.store(control, data); 
-	                }
-                    uiUtils.addEventListener(control.ui, 'keydown', function() { control.inputLock = true; })
-	                uiUtils.addEventListener(control.ui, attrs.trigger||'keyup', store);
-	                attrs.trigger == 'change' || uiUtils.addEventListener(control.ui, 'change', store);
+	                var trigger = attrs.trigger||'keyup', store = function() { control.component.store(control, prepData(control)); };
+	                uiUtils.addEventListener(control.ui, 'keyup', function(){
+	                	delete control.inputLock;
+	                	displayData(control, prepData(control));
+	                	trigger == 'keyup' && store();
+	                }, false);
+	                trigger == 'change' || uiUtils.addEventListener(control.ui, 'change', store);
 	                this.setEvents(control.ui, control, data, errs, attrs);
 	            }
-	            Array.isArray(data) && (data=data[0]), data || (data=''), data = data.toString();
-	            if(control.transform) { 
-	                var t = []; for(var i=0;i<data.length; i++) 
-	                    control.transform.length > i && (t[control.transform[i]] = data.charAt(i));
-	                data = t.join('');
-	            }
-	            data = Patterning(Formatting(data, control.formatting), control.pattern);
-	            if(data != control.ui.value && !control.inputLock) {
-	                var v = control.ui.value, ss = control.ui.selectionStart;
-	                control.ui.value = data;
-	                if(control.formatting && ss >= control.ca && ss <= v.length && v != control.ui.value) {
-	                   var over = control.formatting.substr(ss-control.ca, control.ca).replace(/[_XdDmMyY9]/g,'').length;
-	                   if(control.ui.ownerDocument.activeElement == control.ui)
-	                	   control.ui.selectionEnd = control.ui.selectionStart = ss + over; 
-	                }
-	                control.ca = 0;
-	            }
-	            this.setAttributes(control, data, errs, attrs);
+	            displayData(control, data);
+	            this.setAttributes(control, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        },
-	        setAttributes: function(control, data, errs, attrs) { 
+	        setAttributes: function(control, errs, attrs) { 
 	            attrs.placeholder = attrs.disabled ? '' : control.formatting || attrs.placeholder;
-	            Component.setAttributes.call(this, control, data, errs, attrs);
+	            Component.setAttributes.call(this, control, errs, attrs);
 	        },
 	        appendError: function(control, ui, errs, attrs) {
 	            if(attrs.eclass) 
@@ -251,7 +258,7 @@
                     } else control.ui.value = '';
                 }
 	
-	            this.setAttributes(control, data, errs, attrs);
+	            this.setAttributes(control, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
 	    }, CEditbox, _base())
@@ -290,7 +297,7 @@
 	            });
 	            while(currentNode) { nx = currentNode.nextSibling; control.ui.removeChild(currentNode); currentNode = nx }
 	            control.ui.selectedIndex = s; 
-	            this.setAttributes(control, data, errs, attrs);
+	            this.setAttributes(control, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
 	    }, Component, _base())
@@ -308,7 +315,7 @@
                         uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, control.ui.value);}, true);
                         control.parentNode && control.parentNode.appendChild(control.ui);
                     }
-                    this.setAttributes(control, data, errs, attrs);
+                    this.setAttributes(control, errs, attrs);
                     this.appendError(control, control.parentNode, errs, attrs);
                     control.ui.value = data;
                 }
@@ -386,8 +393,8 @@
                     this.setAttributes(control, data, errs, attrs);
                 }
 	        },
-	        setAttributes: function(control, data, errs, attrs) {
-	            Component.setAttributes.call(this, control, data, errs, attrs);
+	        setAttributes: function(control, errs, attrs) {
+	            Component.setAttributes.call(this, control, errs, attrs);
 	            var rt = this.runtime(control), ha = rt.headAlloc, fa = rt.footAlloc, body = rt.allocs;
 	            ha && ha.rows.forEach(function(r) { uiUtils.setAttribute(r, 'class', attrs['rowclass$header']); uiUtils.setAttribute(r, 'style', attrs['rowstyle$header']); });
 	            fa && fa.rows.forEach(function(r) { uiUtils.setAttribute(r, 'class', attrs['rowclass$footer']); uiUtils.setAttribute(r, 'style', attrs['rowstyle$footer']); });
@@ -646,8 +653,8 @@
 	            }
 	            hf.length > 0 && this.positionChildren(control, rt.headAlloc = this.allocateNodes(control, control.ui, attrs, hf), hf);
 	        },
-	        setAttributes: function(control, data, errs, attrs) {
-	            CDiv.setAttributes.call(this, control, data, errs, attrs);
+	        setAttributes: function(control, errs, attrs) {
+	            CDiv.setAttributes.call(this, control, errs, attrs);
 	            var rt = this.runtime(control);
 	            for(var i = 0; i < rt.columns.length; i++) {
 	                uiUtils.setAttribute(rt.columns[i], 'class', attrs['rowclass$'+i]||attrs['rowclass$header']);
@@ -686,7 +693,7 @@
 	            control.inputUi.checked =  typeof data == 'object' ? (data.checked != 0 && 'Yy'.indexOf(data.checked) != -1) : ('Yy'.indexOf(data) != -1);
 	            control.labelUi.innerText = data.text||'';
 	
-	            this.setAttributes(control, data, errs, attrs);
+	            this.setAttributes(control, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
 	    }, Component, _base())
@@ -735,7 +742,7 @@
 	                });
 	            }
 	            //control.ui.innerHTML = innerHTML;
-	            this.setAttributes(control, data, errs, attrs);
+	            this.setAttributes(control, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
 	    }, Component, _base())
@@ -754,7 +761,7 @@
                         this.setEvents(control.ui, control, data, errs, attrs);
                     }
                     attrs.html ? (control.ui.innerHTML = data) : (control.ui.innerText = data);
-                    this.setAttributes(control, data, errs, attrs);
+                    this.setAttributes(control, errs, attrs);
                     this.appendError(control, control.parentNode, errs, attrs);
                 }
 	        }
@@ -771,7 +778,7 @@
                         control.ui && control.parentNode && control.parentNode.removeChild(control.ui);
                         control.parentNode && control.parentNode.appendChild(control.ui = data);
                         this.setEvents(control.ui, control, data, errs, attrs);
-                        this.setAttributes(control, data, errs, attrs);
+                        this.setAttributes(control, errs, attrs);
                     } else {
                         if(!control.ui) {
                             control.ui = document.createElement('div');
@@ -785,7 +792,7 @@
                             while(control.ui.firstChild) control.ui.removeChild(control.ui.firstChild);
                             (Array.isArray(data) ? data : [data]).forEach( function(node) { control.ui.appendChild(node) }  )
                         }
-                        this.setAttributes(control, data, errs, attrs);
+                        this.setAttributes(control, errs, attrs);
                         this.appendError(control, control.parentNode, errs, attrs);
                     }
 	        	}
@@ -809,7 +816,7 @@
 	                this.setEvents(control.ui, control, data, errs, attrs);
 	            }
 	            if(control.ui.value != data && !control.inputLock) control.ui.value = data;
-	            this.setAttributes(control, data, errs, attrs);
+	            this.setAttributes(control, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	        }
 	    }, CEditbox, _base())
@@ -834,7 +841,7 @@
 	                });
 	            }
 	            this.setValue(control, data, errs, attrs);
-	            this.setAttributes(control, data, errs, attrs);
+	            this.setAttributes(control, errs, attrs);
 	            this.appendError(control, control.parentNode, errs, attrs);
 	            this.setPopupAttributes(control, attrs.ta||{}, errs);
 	            this.updatePopupContent(control, data, attrs);
@@ -928,7 +935,7 @@
 	                var st = rt.ta.style, w = st.width||rt.ta_w, h = st.height||rt.ta_h, t = st.top, l = st.left;
 	                rt.ta_l = attrs.offsetLeft, rt.ta_t = attrs.offsetTop; 
 	                attrs['class'] = (attrs['class']||'') + (errs && attrs.eclass ? ' ' + attrs.eclass : '');
-	                this.setAttributesUI(rt.ta, control.data, errs, attrs);
+	                this.setAttributesUI(rt.ta, errs, attrs);
 	                w && (st.width = w), h && (st.height = h), t && (st.top = t), l && (st.left = l);
 	            }
 	        }
@@ -954,7 +961,7 @@
 		            var e = errs ? 'error' : '';
 		            if(control.ui_text.innerHTML != data) control.ui_text.innerHTML = data;
 		            if(control.ui_error.innerHTML != e) control.ui_error.innerHTML = e;
-		            this.setAttributes(control, data, errs, attrs);
+		            this.setAttributes(control, errs, attrs);
 	        	}
 	        }
 	    }, Component, _base())
@@ -969,7 +976,7 @@
 	            if( data && Array.isArray(data.options) ) {
 	                control.ui = document.createElement('div');
 	                control.ui._dfe_ = control;
-	                this.setAttributes(control, data, errs, attrs);
+	                this.setAttributes(control, errs, attrs);
 	                this.setEvents(control.ui, control, data, errs, attrs);
 	                var select = new Set(), d, c, cc = [];
 	                (typeof data.value == 'string' ? data.value.split(';') : []).forEach(function(a) { select.add(a) });
