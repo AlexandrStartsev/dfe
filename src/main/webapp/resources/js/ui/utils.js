@@ -301,7 +301,6 @@ require.config({
 
 define('ui/utils', ['dfe-core', 'module'], function(core, m) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
-    
     (function(f) {this.defineForm = f})(function (n, d, f) {
     	define("forms/" + n, d, function() {
     	    var a = f.apply(this, arguments), m = new Map();

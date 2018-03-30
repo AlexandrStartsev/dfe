@@ -31,14 +31,12 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 } ]
             }) ]), __c_c_editbox("field-4", {
                 set: function($$, value) {
-                    $$.set('effFrom', value);
+                	$$.set('effFrom', value);
                     let to = cmn.ARFtoDate($$('effTo')), fr = cmn.ARFtoDate(value);
-                    fr.setDate(fr.getDate() + 90);
-                    to - fr > 0 && $$.set('effTo', cmn.yyyymmdd(fr));
+                    fr instanceof Date && to instanceof Date && (fr > to || to - fr.setDate(fr.getDate() + 90) > 0) && $$.set('effTo', cmn.yyyymmdd(fr));
                 },
                 atr: () => fields.date('Effective Date Range:', 'effFrom', {
                     vstrategy: 'notified',
-                    trigger: 'change',
                     eclass: 'wrong-date',
                     type: 'datepicker'
                 })
@@ -46,12 +44,10 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                 set: function($$, value) {
                     $$.set('effTo', value);
                     let fr = cmn.ARFtoDate($$('effFrom')), to = cmn.ARFtoDate(value);
-                    to.setDate(to.getDate() - 90);
-                    to - fr > 0 && $$.set('effFrom', cmn.yyyymmdd(to));
+                    fr instanceof Date && to instanceof Date && (to < fr || to.setDate(to.getDate() - 90) - fr > 0) && $$.set('effFrom', cmn.yyyymmdd(to));
                 },
                 atr: () => fields.date('to:', 'effTo', {
                     vstrategy: 'notified',
-                    trigger: 'change',
                     eclass: 'wrong-date',
                     type: 'datepicker'
                 })
@@ -523,7 +519,6 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
         sortArrow($$, fld) {
             return {
                 class: 'arrow-button',
-                nowrap: true,
                 get: $$ => shapes.svgShape($$, 'svg-arrow-' + ($$('.sortInverse').indexOf(fld) == -1 ? 'up' : 'down')),
                 events: {
                     click: function() {
