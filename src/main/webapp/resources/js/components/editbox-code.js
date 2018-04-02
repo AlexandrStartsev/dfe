@@ -78,12 +78,6 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
     }
     return _extend({
         cname: 'editbox-code',
-        skipattrs: (function(){ 
-                        var ret = new Set(); 
-                        CEditPopup.skipattrs.forEach(function(k) { ret.add(k)}); 
-                        ['func', 'lang', 'fontSize'].forEach(function(k) { ret.add(k)});
-                        return ret  
-                    })(),
         setValue: function(control, data, errs, attrs) {
             var val = formatInlineCode(data, attrs.ta && attrs.ta.func);
             if( !errs && control.ui != control.ui.ownerDocument.activeElement ) {

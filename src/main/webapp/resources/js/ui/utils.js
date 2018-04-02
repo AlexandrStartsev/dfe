@@ -283,7 +283,6 @@ DFE.nav = function () {
         submitForm = function (form) {
         	dfe_navigate(form, 'next'); 
         };
-    
     return {
         postForm:      postForm,
         backNav:       backNav,
@@ -293,17 +292,18 @@ DFE.nav = function () {
 } ();
 
 require.config({
-	waitSeconds : 3600,
+	waitSeconds : 100,
     bundles: {
-        'components/generic' : ['components/dual-with-label', 'components/component', 'components/editbox', 'components/c-editbox', 'components/editbox-$', 'components/c-editbox-$', 'components/dropdown', 'components/c-dropdown', 'components/button', 'components/container', 'components/div', 'components/form', 'components/div-r', 'components/tab-s','components/div-c','components/checkbox','components/c-checkbox','components/c-radiolist','components/radiolist','components/label','components/html','components/textarea','components/editbox-P','components/div-button','components/multioption','components/typeahead',/*'components/placeholder',*/'components/div-button-x'],
+        'dfe-core' : ['dfe-core', 'component-maker'],
+        'components/generic' : ['components/component', 'components/dfe-runtime', 'components/labeled-component', 'components/switch', 'components/editbox', 'components/c-editbox', 'components/editbox-$', 'components/c-editbox-$', 'components/dropdown', 'components/c-dropdown', 'components/button', 'components/container', 'components/div', 'components/form', 'components/div-r', 'components/tab-d', 'components/tab-s', 'components/div-c', 'components/checkbox', 'components/c-checkbox', 'components/c-radiolist', 'components/radiolist', 'components/label', 'components/html', 'components/textarea', 'components/editbox-P', 'components/div-button', 'components/multioption', 'components/div-button-x'],
     },            
 });
 
 define('ui/utils', ['dfe-core', 'module'], function(core, m) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
     (function(f) {this.defineForm = f})(function (n, d, f) {
-    	define("forms/" + n, d, function() {
-    	    var a = f.apply(this, arguments), m = new Map();
+        define("forms/" + n, (d||[]).concat(['component-maker']), function() {
+    	    var cm = arguments[arguments.length-1], a = f.apply(this, arguments);
     	    a.name = n;
     	    a.dependencies = {};
     	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').forEach(function(n, i){a.dependencies[n] = d[i]});
@@ -313,14 +313,14 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
                     for(var i = dfe.component.slots - dfe.pos.length; i; i > 0 ? (dfe.pos.push({}), i--) : (dfe.pos.pop(), i++)) ;
                     _f(dfe.children);
                 })
-            })(a.dfe = [a.dfe])
-    	    return a;
+            })(Array.isArray(a.dfe)?a.dfe:(a.dfe=[a.dfe]))
+    	    return cm.fromForm(a);
     	}); 
     })
     function setupNode(node) {
 		var formName = node.getAttribute('dfe-form'), args = eval(node.getAttribute('dfe-arguments')), model = eval(node.getAttribute('dfe-model'))||{}, pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
 		Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
-			var dfe = values[0], arf = values[1], cur = node._dfe_runtime;
+			var dfe = values[0].form, arf = values[1], cur = node._dfe_runtime;
 			if(cur && cur.form.name != formName) {
 				cur.shutdown();
 				cur = null;
@@ -341,7 +341,7 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
     document_head.appendChild(link);
     function lookup() { for(var n = document.querySelectorAll('div[dfe-form]'), i = 0; i < n.length; setupNode(n[i++])); }
     setInterval(lookup, 100);
-    setTimeout(lookup, 0);  
+    setTimeout(lookup, 0);
     return {
         setAttribute: function (node, name, value) { 
             if(value && value != 0) { /*_isIE7 ? jq(node).attr(name, value) :*/ node.setAttribute(name, value); return true; } else node.removeAttribute(name); 
@@ -363,7 +363,8 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
 				e.innerHTML = css;
 			}
 		},
-		setupNode: setupNode
+		setupNode: setupNode,
+        //createComponent: createComponent
     }
 });
 

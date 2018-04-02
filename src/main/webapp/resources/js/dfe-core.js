@@ -258,7 +258,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	DfeListener.prototype.get = function (data, element) { this.depend(data, element); return data[element]; }
 	//###############################################################################################################################
 	function DfeRuntime(rootUI, listener) {
-	   this.rootUI = rootUI;
+	   this.rootUI = Array.isArray(rootUI)?rootUI:[rootUI];
 	   this.listener = (listener || new DfeListener()).For(); 
 	   this.controls = new Set();
 	}
@@ -266,7 +266,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	DfeRuntime.prototype.setDfeForm = function(form) {
 	    this.form = form;
 	    typeof form.setup == 'function' && form.setup.call(this.form, this);
-	    this.root_field_proxy = new JsonProxy(form, [], [], this.listener).get('dfe')[0];
+	    this.root_field_proxy = new JsonProxy(form, [], [], this.listener).get('dfe');
 	    return this;
 	}
 	
@@ -282,7 +282,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	DfeRuntime.prototype.shutdown = function () { 
 	    clearInterval(this.processor);
 	    this.controls.forEach(function(c) { this.evict(c) }, this);
-	    delete this.rootControl;
+	    delete this.rootControls;
 	}
 	
 	DfeRuntime.prototype.restart = function(initAction, suppressOnstart) {
@@ -291,8 +291,12 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    var self = this, px = this.model_proxy;
 	    if(px && this.root_field_proxy) {
 	    	suppressOnstart || typeof this.form.onstart == 'function' && this.form.onstart.call(this.form, cmn.extend(px, function(p) { return px.get(p) }), this);
-	        this.rootControl = this.addControl(0, this.model_proxy, this.root_field_proxy);
-            this.rootControl.allParentNodes = [this.rootControl.parentNode = this.rootUI];
+            var i = 0;
+            this.rootControls = this.root_field_proxy.map(function(px) { 
+                var c = this.addControl(0, this.model_proxy, px); 
+                c._allParentNodes = this.rootUI.slice(i, i += c.component.slots);
+                return c; 
+            }, this);
 	        this.processInterceptors();
 	        this.processor=setInterval(function() { self.processInterceptors(); }, 50);
 	    }
@@ -374,15 +378,20 @@ define('dfe-core', ['dfe-common'], function(cmn) {
         model.unbound.runtime = model.runtime = this;
 	    model.unbound.control = model.control = control;
 	    model.result = function(data) {
-	        runtime.processChildren(control, data || [], model.attrs.hmodel, field.get('.children'));
-	        control.component.render(control, control.data = data, control.error, model.attrs, model.events);
+            var fpx = field.get('.children');
+            if(fpx.length && typeof data == 'object') {
+                Array.isArray(data)||(data=[data]);
+                data[0] && typeof data[0].withListener != 'function' && (data=data.map(function(r){return new JsonProxy(r)}))
+            }
+            runtime.processChildren(control, data || [], model.attrs.hmodel, fpx);
+	        control.component.render(control._allParentNodes, control, control.data = data, control.error, model.attrs, model.events);
 	    }
 	    model.error = function(error, data) {
             data && (control.data = data);
 	        if( control.doVal && (control.error = error) ) {
                 control.stickyError = error;
                 error == 'Simulated error' || runtime.notifyErroring(control);
-                control.component.render(control, control.data, control.error, model.attrs, model.events);
+                control.component.render(control._allParentNodes, control, control.data, control.error, model.attrs, model.events);
 	        }
 	        return error;
 	    }
@@ -509,16 +518,37 @@ define('validation/component', ['dfe-common'], function(cmn) {
     return function(n, f, c) {
         return cmn.extend( {name:n, children:c||[], component: {
                 cname: 'validator',
-                render: function(control, data, errs, attrs, events) {
-                    control.ui = true;
-                },
+                render: function(nodes, control, data, errs, attrs, events) {},
                 doValidation: function(control, events, attrs) { 
-                    return attrs ? !(attrs['disabled'] || attrs['hidden'] || (attrs.vstrategy && attrs.vstrategy.indexOf('none') != -1)) : true;
+                     return attrs ? !(attrs['disabled'] || attrs['hidden'] || (attrs.vstrategy && attrs.vstrategy.indexOf('none') != -1)) : true;
                 },
                 purge: function() {},
                 setParentNode: function() {}
             }
         },f );
+    }
+})
+
+define('component-maker', ['dfe-common', 'components/div'], function(cmn, div) {
+    return {
+        fromForm: function(dfe_form) {
+            dfe_form.store = function($$, data, method) {
+                for(var ctrl = $$.control; dfe_form.dfe.indexOf(ctrl.field.data) == -1; ctrl = ctrl.parentControl);
+                ctrl = ctrl.parentControl||$$.runtime.parentRuntimeControl;
+                ctrl.component.store(ctrl, data, method)
+            }
+            return cmn.extend({form: dfe_form}, function(name, attrs) {
+                var wrapper = attrs.wrapper||div;
+                return cmn.extend( { name: name, children: dfe_form.dfe, component: cmn.extend({ 
+                    render: function(nodes, control, data, errs, attrs, events) {
+                        data && typeof dfe_form.onstart == 'function' && (Array.isArray(data)?data:[data]).forEach(function(d) { dfe_form.onstart(d) });
+                        wrapper.render(nodes, control, data, errs, attrs, events);
+                    },
+                    cname: dfe_form.name,
+                    slots: wrapper.slots //dfe_form.dfe.length
+                }, wrapper, {}) }, attrs)
+            })
+        }
     }
 })
 
@@ -541,7 +571,7 @@ define('validation/validator', ['dfe-core', 'validation/component'], function(co
         validate: function(model, form) { //model, form
             console.time('Nashorn validation took');
             var rt = new core.DfeRuntime(null, listener()).setDfeForm(form).setModel(model).restart('validate', true), errors = [];
-            rt.rootControl.erroringControls.forEach(function(c) {errors.push(c)});
+            rt.rootControls.forEach(function(r) {r.erroringControls.forEach(function(c) {errors.push(c)})});
             rt.stop(); //shutdown(); //GC will do it for us?  - but stopping is necessary on client side since they have processInterceptors loop going
             var e = errors.map(function(c) { return {field: c.field.data.name, error: c.error}});
             console.timeEnd('Nashorn validation took');

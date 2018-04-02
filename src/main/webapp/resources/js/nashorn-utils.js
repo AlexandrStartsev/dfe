@@ -128,7 +128,7 @@ global.define.amd = { jQuery: false };
 
 // TODO: rid of this, unify with client side -- when session scope config is in place because if we use "define" like this we'll override form for everyone
 function defineForm(n, d, f) {
-    return (function() { var a = f.apply(this, arguments); a.name = n; a.dfe = [a.dfe]; return a; }).apply(global, d.map( function(d) { return global.require(d) }));
+    return (function() { var a = f.apply(this, arguments); a.name = n; Array.isArray(a.dfe)||(a.dfe = [a.dfe]); return require('component-maker').fromForm(a) }).apply(global, d.map( function(d) { return global.require(d) }));
 }
 
 var ajaxCache = (function() {

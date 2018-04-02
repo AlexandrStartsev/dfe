@@ -301,7 +301,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
             }), __c_dropdown("type_field", {
                 get: $$ => ({
                         value: $$('.component').cname,
-                        items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'form', 'html', 'label', 'multioption', /*'placeholder',*/ 'radiolist', 'tab-s', 'textarea', 'typeahead' ]
+                        items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'dfe-runtime', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'form', 'html', 'label', 'multioption', /*'placeholder',*/ 'radiolist', 'switch', 'tab-d', 'tab-s', 'textarea', 'typeahead' ]
                     }),
                 set: ($$, value)  => this.changeType($$, value),
                 pos: [ {
@@ -672,7 +672,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
         highlightField(e, control) {
             var rt = control.model.runtime && control.model.runtime.target_runtime;
             if (!rt) return;
-            var cc, doc = rt.rootControl.ui.ownerDocument, clazz = '__marker__', ui, r, sp, hl = 'background: peru;', body = doc.getElementsByTagName('body')[0], mrk = doc.getElementsByClassName(clazz);
+            var cc, doc = rt.rootControls[0].ui.ownerDocument, clazz = '__marker__', ui, r, sp, hl = 'background: peru;', body = doc.getElementsByTagName('body')[0], mrk = doc.getElementsByClassName(clazz);
             for (var i = mrk.length; i > 0; i--, mrk[i].parentElement.removeChild(mrk[i])) ;
             var dom = document.elementFromPoint(e.clientX, e.clientY), c, proxy;
             while (dom && !dom._dfe_) dom = dom.parentNode;

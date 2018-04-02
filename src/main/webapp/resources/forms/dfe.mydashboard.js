@@ -1,4 +1,4 @@
-defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/container", "components/button", "components/form", "components/editbox-$" ], function(require, core, notesForm, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_container, __c_button, __c_form, __c_editbox_$) {
+defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/container", "components/button", "components/form", "components/editbox-$" ], function(require, core, notes, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_container, __c_button, __c_form, __c_editbox_$) {
     return new class {
         constructor() {
             this.dfe = __c_container("root", {
@@ -215,12 +215,12 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
                     n: "Y",
                     w: "2"
                 } ]
-            }, [ __c_html("loading", {
+            }, [ /*__c_html("loading", {
                 get: $$ => shapes.cssShape($$, 'css-loading-anim-circle'),
                 atr: $$ => ({
                     style: `display: ${$$('loading') == 0 ? 'none' : ''}; align-content: center; justify-content: center; position: absolute; width: 100%; height: 100%; min-height: 200px; min-width: 200px; background: lightgray; opacity: 0.3`
                 })
-            }), __c_container("filtered", {
+            }),*/ __c_container("filtered", {
                 get: $$ => $$('result'),
                 atr: () => ({
                     filter: res => res.get('.rows').filter(row => this.shouldShow(row)).length > 0,
@@ -545,7 +545,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
             let qid = $$('.quoteid'), map = this.noteRt, rt = map.get(qid);
             if (!rt) {
                 map.set(qid, rt = core.startRuntime({
-                    form: notesForm,
+                    form: notes.form,
                     model: $$,
                     node: jq('<div>').dialog({
                         title: 'Notes for quote #' + $$.get('.quoteid'),
@@ -572,7 +572,7 @@ defineForm("dfe.mydashboard", [ "require", "dfe-core", "forms/dfe.notes", "ui/jq
             }
         }
         onstart($$) {
-            let tsUpdate = () => $$.get('result.rows.note').forEach(n => n.get('.isnew') != 0 && n.set('.datetime', notesForm.now()));
+            let tsUpdate = () => $$.get('result.rows.note').forEach(n => n.get('.isnew') != 0 && n.set('.datetime', notes.form.now()));
             setTimeout(() => {
                 tsUpdate(), setInterval(tsUpdate, 6e4);
             }, (61 - new Date().getSeconds()) * 1e3);

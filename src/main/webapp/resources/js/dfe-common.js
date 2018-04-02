@@ -1,5 +1,5 @@
 define('dfe-common', ['exports'], function(exports) {
-	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
+    function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
 	//#################################################################################################################
 	
 	function yyyymmdd(dt) {
@@ -8,7 +8,7 @@ define('dfe-common', ['exports'], function(exports) {
 	}
 	
 	function ARFtoDate(ad) { 
-		ad = (Array.isArray(ad) ? ad[0] : ad).toString();
+		ad = ((Array.isArray(ad) ? ad[0] : ad)||'').toString();
 	    var dt = new Date(ad.substr(0, 4),ad.substr(4, 2)-1,ad.substr(6, 2)); 
 	    return dt instanceof Date && yyyymmdd(dt) == ad ? dt : 'Invalid Date';
 	}
@@ -41,7 +41,7 @@ define('dfe-common', ['exports'], function(exports) {
 	        	r.status = 'error';
 	            if($$.control.doVal && !o.noerror) {
 	                var msg = 'Error retrieving data\n' + (fail.exception ? fail.exception.message : fail.xhr.statusText);
-	                fail.xhr.responseText && (msg += '\n' + fail.xhr.responseText.substr(0, 200));
+	                fail.xhr.responseText && (msg = fail.xhr.responseText.substr(0, 50) + '...');
 	                $$.error(msg, r);
 	            } else
 	                $$.result(r)
