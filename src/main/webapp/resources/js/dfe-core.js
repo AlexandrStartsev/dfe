@@ -505,7 +505,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	function startRuntime(arg) {
 		var m = arg.model, j = m instanceof JsonProxy || typeof m.shadow == 'function', listener = j && m.listener || arg.listener ||new DfeListener(), runtime = new DfeRuntime(arg.node, listener);
 	    for(var v in arg.params) runtime[v] = arg.params[v];
-	    j ? runtime.model_proxy = m : runtime.setModel(m);
+	    j ? runtime.model_proxy = m.withListener(runtime.listener.For()) : runtime.setModel(m);
 	    runtime.setDfeForm(arg.form).restart(arg.initAction);
         arg.ready && arg.ready(runtime, dfe, arg.model);
 	    return runtime;

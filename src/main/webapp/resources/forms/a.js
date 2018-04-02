@@ -59,14 +59,15 @@ defineForm("editable-field", [ "dfe-field-helper", "components/switch", "compone
     }();
 });*/
 
-defineForm("a", [ "components/div", "components/tab-d", "components/label" ], function(__c_div, __c_tab_d, __c_label) {
+defineForm("a", [ "components/dfe-runtime", "components/tab-d", "components/label" ], function(__c_dfe_runtime, __c_tab_d, __c_label) {
     return new class {
         constructor() {
             this.dfe = 
                 __c_tab_d("a", { get: $$ => [{ caption: 'header-1', hfield: 'b'}, { caption: 'header-2', hfield: 'c'}], atr: () => ({haclass: 'tab-item-active'}) }, [
                     __c_label("hdr", { get: $$ => $$('.caption') }), 
-                    __c_label("b", { class: "header", get: () => 'Heroes' }), 
-                    __c_label("c", { class: "header", get: $$ => `value: ${$$('.value')}`})
+                    //__c_label("b", { class: "header", get: () => 'Heroes' }), 
+                    __c_label("b", { class: "header", get: $$ => `value: ${$$('.value')}`}),
+                    __c_dfe_runtime("c", {class: "header", get: $$ => $$, set: ($$, v) => $$.set('.value', v), atr: () => ({form: 'editable-field'}) }),
                 ]);
         }
     }();

@@ -26,7 +26,7 @@
 	        },
 	        setParentNode: function(control, nodes) {
 	            if(control._allParentNodes = nodes)
-                    control._deferred ? control.notifications == 0 && control._deferred(nodes) : this.attachUI(control, nodes)
+                    control._deferred ? ( control.ui && this.attachUI(control, nodes), control.notifications == 0 && control._deferred(nodes)) : this.attachUI(control, nodes)
                 else
 	            	this.detachUI(control);
 	        },
