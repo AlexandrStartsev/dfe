@@ -515,21 +515,19 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 });
 
 define('validation/component', ['dfe-common'], function(cmn) {
-    return function(n, f, c) {
-        return cmn.extend( {name:n, children:c||[], component: {
-                cname: 'validator',
-                render: function(nodes, control, data, errs, attrs, events) {},
-                doValidation: function(control, events, attrs) { 
-                     return attrs ? !(attrs['disabled'] || attrs['hidden'] || (attrs.vstrategy && attrs.vstrategy.indexOf('none') != -1)) : true;
-                },
-                purge: function() {},
-                setParentNode: function() {}
-            }
-        },f );
-    }
+    return cmn.extend({
+            cname: 'validator',
+           // slots: 1,
+            render: function(nodes, control, data, errs, attrs, events) {},
+            doValidation: function(control, events, attrs) { 
+                 return attrs ? !(attrs['disabled'] || attrs['hidden'] || (attrs.vstrategy && attrs.vstrategy.indexOf('none') != -1)) : true;
+            },
+            purge: function() {},
+            setParentNode: function() {}
+        }, function(n, f, c) { return cmn.extend( {name: n, children: c||[], component: arguments.callee }, f) });
 })
 
-define('component-maker', ['dfe-common', 'components/div'], function(cmn, div) {
+define('component-maker', ['dfe-common', 'components/pass-through'], function(cmn, pt) {
     return {
         fromForm: function(dfe_form) {
             dfe_form.store = function($$, data, method) {
@@ -537,16 +535,18 @@ define('component-maker', ['dfe-common', 'components/div'], function(cmn, div) {
                 ctrl = ctrl.parentControl||$$.runtime.parentRuntimeControl;
                 ctrl.component.store(ctrl, data, method)
             }
+            var slots = Array.prototype.concat.apply([], dfe_form.dfe.map(function(d){ return d.pos })).length;
             return cmn.extend({form: dfe_form}, function(name, attrs) {
-                var wrapper = attrs.wrapper||div;
+                //attrs.pos = Array.prototype.concat.apply([],dfe_form.dfe.map(function(d){ return d.pos}));
+                //dfe_form.dfe.forEach(function(dfe){ dfe['class'] = 'header'; });
                 return cmn.extend( { name: name, children: dfe_form.dfe, component: cmn.extend({ 
                     render: function(nodes, control, data, errs, attrs, events) {
                         data && typeof dfe_form.onstart == 'function' && (Array.isArray(data)?data:[data]).forEach(function(d) { dfe_form.onstart(d) });
-                        wrapper.render(nodes, control, data, errs, attrs, events);
+                        pt.render(nodes, control, data, errs, attrs, events);
                     },
                     cname: dfe_form.name,
-                    slots: wrapper.slots //dfe_form.dfe.length
-                }, wrapper, {}) }, attrs)
+                    slots: slots
+                }, pt, {}) }, attrs)
             })
         }
     }

@@ -696,6 +696,33 @@
 	    }, Component, _base())
 	})
     
+    define('components/pass-through', ['components/component', 'ui/utils'], function(Component, uiUtils) {
+        return _extend({
+	        cname: 'pass-through',
+            isContainer: true,
+            slots: 0,
+            // TODO: ...
+            attachUI: function (control, nodes) {
+                control.children.forEach(function(m){ 
+                    var i = 0;
+                    m.forEach(function(c) { 
+                        c.component.setParentNode(c, [nodes[i++]])
+                    })
+                })
+            },
+            detachUI: function (control) {
+                control.children.forEach(function(m){ 
+                    m.forEach(function(c) { 
+                        c.component.detachUI(c)
+                    })
+                })
+            },            
+	        render: function (nodes, control, data, errs, attrs, events) {
+                this.attachUI(control, nodes);
+	        }
+	    }, Component, {});//function (n, f, c) { return _extend({ name: n, children: c||[], component: _extend({ slots: 1 }, arguments.callee) }, f) })
+    })
+    
 	define('components/radiolist', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    var incId = 0;
 	    return _extend({

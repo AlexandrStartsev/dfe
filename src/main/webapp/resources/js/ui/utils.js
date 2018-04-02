@@ -295,7 +295,7 @@ require.config({
 	waitSeconds : 100,
     bundles: {
         'dfe-core' : ['dfe-core', 'component-maker'],
-        'components/generic' : ['components/component', 'components/dfe-runtime', 'components/labeled-component', 'components/switch', 'components/editbox', 'components/c-editbox', 'components/editbox-$', 'components/c-editbox-$', 'components/dropdown', 'components/c-dropdown', 'components/button', 'components/container', 'components/div', 'components/form', 'components/div-r', 'components/tab-d', 'components/tab-s', 'components/div-c', 'components/checkbox', 'components/c-checkbox', 'components/c-radiolist', 'components/radiolist', 'components/label', 'components/html', 'components/textarea', 'components/editbox-P', 'components/div-button', 'components/multioption', 'components/div-button-x'],
+        'components/generic' : ['components/component', 'components/dfe-runtime', 'components/labeled-component', 'components/switch', 'components/editbox', 'components/c-editbox', 'components/editbox-$', 'components/c-editbox-$', 'components/dropdown', 'components/c-dropdown', 'components/button', 'components/container', 'components/pass-through', 'components/div', 'components/form', 'components/div-r', 'components/tab-d', 'components/tab-s', 'components/div-c', 'components/checkbox', 'components/c-checkbox', 'components/c-radiolist', 'components/radiolist', 'components/label', 'components/html', 'components/textarea', 'components/editbox-P', 'components/div-button', 'components/multioption', 'components/div-button-x'],
     },            
 });
 

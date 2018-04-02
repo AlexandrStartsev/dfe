@@ -1,3 +1,34 @@
+defineForm("editable-field", [ "dfe-field-helper", "components/switch", "components/label", "components/editbox", "components/button", "components/div" ], function(fields, __c_switch, __c_label, __c_editbox, __c_button, __c_div) {
+    return new class {
+        constructor() {
+            this.dfe = [ 
+                 __c_switch("ef-1", { atr: $$ => fields.simple('value', [], {component: $$('editMode')!=0?__c_editbox:__c_label}) }), 
+                 __c_button("ef-2", { get: $$ => $$('editMode')==0?'Edit':'Save', set: $$ => { let e = $$('editMode'); $$.set('editMode', e==0?1:0); e!=0 && this.store($$, $$('value')) }}),
+                 __c_button("ef-3", { get: $$ => 'Reset', set: $$ => $$.set('value', $$('initialValue')), atr: $$ => ({style: $$('editMode')==0?'display:none':''}) })
+                ];
+        }
+        onstart($$) {
+            $$.set('initialValue', $$.get('value'))
+        }
+    }();
+});
+
+defineForm("a", [ "dfe-field-helper", "ui/utils", "components/dfe-runtime", "components/editbox", "components/label", "forms/editable-field", "components/button", "components/div-r" ], function(fields, uiUtils, __c_dfe_runtime, __c_editbox, __c_label, __c_editable_field, __c_button, __c_div_r) {
+    return new class {
+        constructor() {
+            this.dfe = 
+                __c_div_r("a", { get: $$ => $$('list') }, [
+                    __c_label("b", { class: "header", get: () => 'Heroes' }), 
+                    __c_label("c", { get: $$ => `Name: ${$$('.name')}` }),
+                    __c_label("d", { get: $$ => `Location:` }),
+                    __c_editable_field("e", { get: $$ => ({value: $$('.location')}), set: ($$, v) => $$.set('.location', v) }), 
+                    __c_button("f", { get: () => 'Delete', set: $$ => $$.detach() }) 
+                ]);
+        }
+    }();
+});
+
+                    //__c_dfe_runtime("e", {get: $$ => ({value: $$('.location')}), set: ($$, v) => $$.set('.location', v), atr: () => ({form: 'editable-field'}) }),
 // https://docs.angularjs.org/guide/component
 
 /*define("components/editable-field", ['components/component' ], function(CComponent) {
@@ -21,45 +52,8 @@
 })
 
 */
-defineForm("editable-field", [ "dfe-field-helper", "components/switch", "components/label", "components/editbox", "components/button", "components/div" ], function(fields, __c_switch, __c_label, __c_editbox, __c_button, __c_div) {
-    return new class {
-        constructor() {
-            this.dfe = [ 
-                 __c_switch("ef-1", { atr: $$ => fields.simple('value', [], {component: $$('editMode')!=0?__c_editbox:__c_label}) }), 
-                 __c_button("ef-2", { get: $$ => $$('editMode')==0?'Edit':'Save', 
-                                      set: $$ => {
-                                          let e = $$('editMode');
-                                          $$.set('editMode', e==0?1:0);
-                                          e!=0 && this.store($$, $$('value'))
-                                     }}),
-                 __c_button("ef-3", { get: $$ => 'Reset', 
-                                   set: $$ => $$.set('value', $$('initialValue')),
-                                   atr: $$ => ({style: $$('editMode')==0?'display:none':''}) })
-                ];
-        }
-        onstart($$) {
-            $$.set('initialValue', $$.get('value'))
-        }
-    }();
-});
 
-/*defineForm("a", [ "dfe-field-helper", "ui/utils", "components/dfe-runtime", "components/editbox", "components/label", "forms/editable-field", "components/button", "components/div" ], function(fields, uiUtils, __c_dfe_runtime, __c_editbox, __c_label, __c_editable_field, __c_button, __c_div) {
-    return new class {
-        constructor() {
-            this.dfe = 
-                __c_div("a", { get: $$ => $$('list') }, [
-                    __c_label("b", { class: "header", get: () => 'Heroes' }), 
-                    __c_label("c", { get: $$ => `Name: ${$$('.name')}` }),
-                    __c_label("d", { get: $$ => `Location:` }),
-                    __c_dfe_runtime("e", {get: $$ => ({value: $$('.location')}), set: ($$, v) => $$.set('.location', v), atr: () => ({form: 'editable-field'}) }),
-                    //__c_editable_field("e", { get: $$ => ({value: $$('.location')}), set: ($$, v) => $$.set('.location', v) }), 
-                    __c_button("f", { get: () => 'Delete', set: $$ => $$.detach() }) 
-                ]);
-        }
-    }();
-});*/
-
-defineForm("a", [ "components/dfe-runtime", "components/tab-d", "components/label" ], function(__c_dfe_runtime, __c_tab_d, __c_label) {
+/*defineForm("a", [ "components/dfe-runtime", "components/tab-d", "components/label" ], function(__c_dfe_runtime, __c_tab_d, __c_label) {
     return new class {
         constructor() {
             this.dfe = 
@@ -71,4 +65,4 @@ defineForm("a", [ "components/dfe-runtime", "components/tab-d", "components/labe
                 ]);
         }
     }();
-});
+});*/
