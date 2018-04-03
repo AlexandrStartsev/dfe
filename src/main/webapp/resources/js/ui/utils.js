@@ -283,6 +283,7 @@ DFE.nav = function () {
         submitForm = function (form) {
         	dfe_navigate(form, 'next'); 
         };
+    
     return {
         postForm:      postForm,
         backNav:       backNav,
@@ -292,7 +293,7 @@ DFE.nav = function () {
 } ();
 
 require.config({
-	waitSeconds : 100,
+	waitSeconds : 3600,
     bundles: {
         'dfe-core' : ['dfe-core', 'component-maker'],
         'components/generic' : ['components/component', 'components/dfe-runtime', 'components/labeled-component', 'components/switch', 'components/editbox', 'components/c-editbox', 'components/editbox-$', 'components/c-editbox-$', 'components/dropdown', 'components/c-dropdown', 'components/button', 'components/container', 'components/pass-through', 'components/div', 'components/form', 'components/div-r', 'components/tab-d', 'components/tab-s', 'components/div-c', 'components/checkbox', 'components/c-checkbox', 'components/c-radiolist', 'components/radiolist', 'components/label', 'components/html', 'components/textarea', 'components/editbox-P', 'components/div-button', 'components/multioption', 'components/div-button-x'],
@@ -309,11 +310,13 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
     	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').forEach(function(n, i){a.dependencies[n] = d[i]});
             (function _f(dfes) {
                 dfes.forEach(function(dfe) {
+                	dfe.form||(dfe.form = a);
                     Array.isArray(dfe.pos) || (dfe.pos = dfe.pos?[dfe.pos]:[]);
                     for(var i = dfe.component.slots - dfe.pos.length; i; i > 0 ? (dfe.pos.push({}), i--) : (dfe.pos.pop(), i++)) ;
                     _f(dfe.children);
                 })
             })(Array.isArray(a.dfe)?a.dfe:(a.dfe=[a.dfe]))
+            typeof a.setup == 'function' && a.setup();
     	    return cm.fromForm(a);
     	}); 
     })
@@ -341,10 +344,11 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
     document_head.appendChild(link);
     function lookup() { for(var n = document.querySelectorAll('div[dfe-form]'), i = 0; i < n.length; setupNode(n[i++])); }
     setInterval(lookup, 100);
-    setTimeout(lookup, 0);
+    setTimeout(lookup, 0);  
     return {
         setAttribute: function (node, name, value) { 
-            if(value && value != 0) { /*_isIE7 ? jq(node).attr(name, value) :*/ node.setAttribute(name, value); return true; } else node.removeAttribute(name); 
+        	if(value===true) value = '';
+            if(typeof value=='string') { /*_isIE7 ? jq(node).attr(name, value) :*/ node.setAttribute(name, value); return true; } else node.removeAttribute(name); 
         },
         addEventListener: function (node, eventname, handler, capture) {
             typeof node.addEventListener === 'function' ? node.addEventListener(eventname, handler, capture) : node.attachEvent('on' + eventname, handler);
@@ -363,8 +367,7 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
 				e.innerHTML = css;
 			}
 		},
-		setupNode: setupNode,
-        //createComponent: createComponent
+		setupNode: setupNode
     }
 });
 

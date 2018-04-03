@@ -265,7 +265,6 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	
 	DfeRuntime.prototype.setDfeForm = function(form) {
 	    this.form = form;
-	    typeof form.setup == 'function' && form.setup.call(this.form, this);
 	    this.root_field_proxy = new JsonProxy(form, [], [], this.listener).get('dfe');
 	    return this;
 	}
@@ -293,7 +292,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    	suppressOnstart || typeof this.form.onstart == 'function' && this.form.onstart.call(this.form, cmn.extend(px, function(p) { return px.get(p) }), this);
             var i = 0;
             this.rootControls = this.root_field_proxy.map(function(px) { 
-                var c = this.addControl(0, this.model_proxy, px); 
+                var c = this.addControl(this.parentControl, this.model_proxy, px); 
                 c._allParentNodes = this.rootUI.slice(i, i += c.component.slots);
                 return c; 
             }, this);
@@ -304,9 +303,8 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	}
 	
 	DfeRuntime.prototype.store = function (control, value, method) {
-	   var f = control.field.data.set || control.model.attrs.set;//, self = this;
-	   typeof f == 'function' && f.call(this.form, control.model.unbound, /*control.model.value = */value, method); // i forgot why i did this. probably old times where "set" wasn't receiving it as separate argument
-	   //setTimeout(function() { self.processInterceptors() }, 1);
+	   var f = control.field.data.set || control.model.attrs.set;
+	   typeof f == 'function' && f.call(control.field.data.form, control.model.unbound, value, method);
 	}
 	
 	DfeRuntime.prototype.processInterceptors = function() {
@@ -427,12 +425,12 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	        if(this.verifyComponent(control)) {
 		        var m = control.model, d = control.field.data, l = m.listener, v, fg, fv;
 		        m.events = events;
-		        m.attrs = typeof d.atr != 'function' ? {} : d.atr.call(this.form, m);
+		        m.attrs = typeof d.atr != 'function' ? {} : d.atr.call(d.form, m);
 		        m.attrs.hmodel || (m.attrs.hmodel = m);
 		        m.control.doVal = control.component.doValidation(control, events, m.attrs);
 		        this.removeErroring(control);
-		        typeof (v = typeof (fg = d.get || m.attrs.get) != 'function' ? [] : fg.call(this.form, m)) == 'undefined' || m.result(v);
-		        m.control.doVal && typeof (fv = d.val || m.attrs.val) == 'function' && fv.call(this.form, m);
+		        typeof (v = typeof (fg = d.get || m.attrs.get) != 'function' ? [] : fg.call(d.form, m)) == 'undefined' || m.result(v);
+		        m.control.doVal && typeof (fv = d.val || m.attrs.val) == 'function' && fv.call(d.form, m);
 	        }
 	    } catch(e) { 
 	        control.doVal = 1; try{ control.model.error(e.message) } catch (e) { } console.error(control.field + '\n' + e.message + '\n' + e.stack); 
@@ -531,8 +529,7 @@ define('component-maker', ['dfe-common', 'components/pass-through'], function(cm
     return {
         fromForm: function(dfe_form) {
             dfe_form.store = function($$, data, method) {
-                for(var ctrl = $$.control; dfe_form.dfe.indexOf(ctrl.field.data) == -1; ctrl = ctrl.parentControl);
-                ctrl = ctrl.parentControl||$$.runtime.parentRuntimeControl;
+                for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
                 ctrl.component.store(ctrl, data, method)
             }
             var slots = Array.prototype.concat.apply([], dfe_form.dfe.map(function(d){ return d.pos })).length;

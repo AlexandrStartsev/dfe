@@ -18,12 +18,14 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                     var co = $$('childrenOf'), ppx = this.allFields($$).filter(function(px) {
                         return co == 0 || px.get('.name') == co;
                     }).shift();
-                    ppx.append('.children', {
+                    var d = ppx.append('.children', {
                         name: this.generateName($$),
                         get: this.textToCode($$.runtime, '$$ => [$$]'),
                         children: [],
                         pos: [ {} ]
-                    })[0].data.component = require('components/editbox');
+                    })[0].data;
+                    d.component = require('components/editbox');
+                    d.form = $$.runtime.target_runtime.form;
                 },
                 pos: [ {
                     colstyle: "display: inline; height: min-content;"
@@ -750,8 +752,8 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
             t.requirejs.undef('forms/' + formName);
             t.eval(script);
             t.require([ 'forms/' + formName ], function(dfe) {
-                tr.setDfeForm(dfe).restart();
-                $$.runtime.setModel(dfe).restart();
+                tr.setDfeForm(dfe.form).restart();
+                $$.runtime.setModel(dfe.form).restart();
             });
         }
         generateName(px) {

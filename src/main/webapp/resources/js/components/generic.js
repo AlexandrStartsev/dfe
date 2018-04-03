@@ -617,6 +617,7 @@
                     var d = rt.fieldData.filter(function(fd) { return fd.field.name == rt.activeTab.hfield });
                     rt.footAlloc || (rt.footAlloc = this.allocateNodes(control, control.ui, attrs, d));
                     this.positionChildren(control, rt.footAlloc, d);
+                    this.setAttributes(control, errs, attrs);
                 }
             },
 	        orderFilter: function(control, attrs, newRows) { CTabS.orderFilter.call(this, control, attrs, newRows); return [] },
@@ -1069,21 +1070,25 @@
 	        },
             cname: 'dfe-runtime',
             render: function(nodes, control, data, errs, attrs, events) {
-                var form = load(attrs.form, nodes, control, data, errs, attrs, events), rt = this.runtime(control);
+                var form = typeof attrs.form == 'object' ? attrs.form : load(attrs.form, nodes, control, data, errs, attrs, events), rt = this.runtime(control);
+                Array.isArray(data)&&(data=data[0]);
                 if(nodes && form) {
-                    form = form.form;
+                	form = form.form;
                     if(!control.ui) {
                         nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-                        rt.childNodes = [];
-                        form.dfe.forEach(function(dfe){
-                            for(var i = 0; i < dfe.component.slots; i++)
-                                rt.childNodes.push(control.ui.appendChild(document.createElement('div')));
-                        })
+                        if( form.dfe.length == 1 && form.dfe[0].component.slots == 1)
+                        	rt.nodes = [control.ui];
+                        else
+	                        form.dfe.forEach(function(dfe){
+	                            for(var i = 0; i < dfe.component.slots; i++)
+	                                rt.nodes.push(control.ui.appendChild(document.createElement('div')));
+	                        })
                     }
+                    uiUtils.setAttribute( control.ui, "dfe-form", form.name);
+                    uiUtils.setAttribute( control.ui, "dfe-edit-target", attrs.editTarget? "" : undefined);
                     this.setAttributes(control, errs, attrs);
                     rt.runtime && rt.runtime.shutdown();
-                    control.ui._dfe_runtime = rt.runtime = core.startRuntime({form: form, model: data, node: rt.childNodes});
-                    rt.runtime.parentRuntimeControl = control;
+                    control.ui._dfe_runtime = rt.runtime = core.startRuntime({params: {parentControl: control}, form: form, model: data||{}, node: rt.nodes});
                 }
             }
         }, Component, _base());
