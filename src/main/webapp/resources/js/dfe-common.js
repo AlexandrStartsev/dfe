@@ -2,9 +2,16 @@ define('dfe-common', ['exports'], function(exports) {
     function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
 	//#################################################################################################################
 	
-	function yyyymmdd(dt) {
+	function yyyymmdd(dt, j) {
+		typeof dt == 'number' && dt && (dt = new Date(dt));
 	    var mm = dt.getMonth() + 1, dd = dt.getDate();
-	    return [dt.getFullYear(),(mm>9 ? '' : '0') + mm,(dd>9 ? '' : '0') + dd].join('');
+	    return [dt.getFullYear(),(mm>9 ? '' : '0') + mm,(dd>9 ? '' : '0') + dd].join(j||'');
+	}
+	
+	function mmddyyyy(dt, j) {
+		typeof dt == 'number' && dt && (dt = new Date(dt));
+	    var mm = dt.getMonth() + 1, dd = dt.getDate();
+	    return [(mm>9 ? '' : '0') + mm, (dd>9 ? '' : '0') + dd, dt.getFullYear()].join(j||'');
 	}
 	
 	function ARFtoDate(ad) { 
@@ -53,6 +60,7 @@ define('dfe-common', ['exports'], function(exports) {
 	}
 	//###########################################################################################################
 	_extend({ yyyymmdd: yyyymmdd,
+		    mmddyyyy: mmddyyyy,
 			ARFtoDate: ARFtoDate,
 			today: today,
 			arfDatePattern: arfDatePattern,

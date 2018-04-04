@@ -1,8 +1,9 @@
-defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/container", "components/button", "components/editbox-$" ], function(require, core, notes, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_container, __c_button, __c_editbox_$) {
+defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/container", "components/button", "components/editbox-$", "components/label-i" ], function(require, core, notes, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_container, __c_button, __c_editbox_$, __c_label_i) {
     return new class {
         constructor() {
             this.dfe = __c_container("root", {
-                get: $$ => [ $$ ]
+                get: $$ => [ $$ ],
+                atr: $$ => ({style: 'width: 100%'})
             }, [ __c_container("filtr", {
                 get: $$ => $$('filterCollapsed') == 'Y' ? [] : [ $$ ]
             }, [ __c_div("field-2", {
@@ -198,6 +199,7 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 get: $$ => $$('.rows'),
                 atr: $$ => ({
                     filter: row => this.shouldShow(row),
+                    class: 'dashboard-rbody-tbl',
                     order: (row1, row2) => {
                         let si = row1.get('..sortInverse').toString().split('.'), so = row1.get('..sortOrder').split('.');
                         for (let i = 1; i < so.length; i++) {
@@ -286,22 +288,15 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 pos: [ {
                     s: "padding: 2px 15px"
                 } ]
-            }), __c_label("field-29", {
+            }), __c_label_i("field-29", {
                 get: $$ => `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$('.quoteid')}">${$$('.quoteid')}</a>`,
                 atr: () => ({
-                    class: 'label-centered',
                     html: true
                 })
-            }), __c_label("field-30", {
-                get: $$ => $$('.accountName'),
-                pos: [ {
-                    s: "min-width: 300px; width: 300px"
-                } ]
-            }), __c_label("field-31", {
-                get: $$ => $$('.companyCode'),
-                atr: () => ({
-                    class: 'label-centered'
-                })
+            }), __c_label_i("field-30", {
+                get: $$ => $$('.accountName')
+            }), __c_label_i("field-31", {
+                get: $$ => $$('.companyCode')
             }), __c_div("field-46", {
                 get: $$ => [ $$ ],
                 atr: () => ({
@@ -589,7 +584,21 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
 				.ui-dialog .ui-dialog-content{
             		text-align: left; 
             		padding: 4px;
-				}`, this.name);
+				}
+				
+				.dashboard-rbody-tbl td {
+				    font-size: 12px;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+2) {
+				    min-width: 300px;
+				    width: 300px;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+1), .dashboard-rbody-tbl td:nth-child(10n+3) {
+				    text-align: center;
+				}
+				`, this.name);
         }
     }();
 });

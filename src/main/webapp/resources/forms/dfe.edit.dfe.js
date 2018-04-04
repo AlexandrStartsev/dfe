@@ -303,7 +303,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
             }), __c_dropdown("type_field", {
                 get: $$ => ({
                         value: $$('.component').cname,
-                        items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'dfe-runtime', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'form', 'html', 'label', 'multioption', /*'placeholder',*/ 'radiolist', 'switch', 'tab-d', 'tab-s', 'textarea', 'typeahead' ]
+                        items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'dfe-runtime', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'form', 'html', 'label', 'label-i', 'multioption', /*'placeholder',*/ 'radiolist', 'switch', 'tab-d', 'tab-s', 'textarea', 'typeahead' ]
                     }),
                 set: ($$, value)  => this.changeType($$, value),
                 pos: [ {
@@ -722,7 +722,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 return p.get('.name') == value;
             }).pop();
             px.detach();
-            par.append('.children', px.data);
+            cmn.extend( px.data, par.append('.children')[0].data );
         }
         changePos(px, prop, value) {
             if (px) {

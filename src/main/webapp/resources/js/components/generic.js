@@ -567,8 +567,8 @@
 	        cname: 'tab-s',
 	        render: function(nodes, control, data, errs, attrs, events) {
                 if(!defer(nodes, control, data, errs, attrs, events)) {
-                    var rt = this.runtime(control);
-                    attrs.focusnew && events.forEach(function(e) { rt.activeTab = e.action == 'a' ? e.d1 : rt.activeTab });
+                    var rt = this.runtime(control), _this = this;
+                    attrs.focusnew && events.forEach(function(e) { /*TODO: _this.activeTabChange*/ rt.activeTab = e.action == 'a' ? e.d1 : rt.activeTab });
                     CDivR.render.call(this, nodes, control, data, errs, attrs, events);
                     var headAlloc = this.runtime(control).headAlloc.rows[0], headField = rt.fieldData.headField;
                     while(headAlloc.lastChild) headAlloc.removeChild(headAlloc.lastChild);
@@ -581,7 +581,11 @@
                                 uiUtils.setAttribute(div, 'class', (pos && pos.colclass||'') + (modelData == rt.activeTab && attrs.haclass ? ' ' + attrs.haclass : ''));
                                 uiUtils.setAttribute(div, 'style', pos && pos.colstyle);
                                 uiUtils.addEventListener(div, 'click', function(e) {
-                                    if(modelData != rt.activeTab) { rt.activeTab = modelData; control.notifications.push({ action : 'self' }); }
+                                    if(modelData != rt.activeTab) {
+                                    	_this.activeTabChange(control, attrs, modelData);
+                                    	rt.activeTab = modelData; 
+                                    	control.notifications.push({ action : 'self' }); 
+                                    }
                                 }, false);
                             })
                             c.component.setParentNode(c, pnode);
@@ -589,6 +593,7 @@
                     }
                 }
 	        },
+	        activeTabChange: function(control, attrs, modelData) {},
 	        orderFilter: function(control, attrs, newRows) {
 	            var l = control.model.listener, rt = this.runtime(control), nrS = new Set(), has, at = rt.activeTrack; rt.activeTrack = [];
 	            newRows.forEach(function(r) { nrS.add(r.data); has |= r.data == rt.activeTab });
@@ -608,10 +613,10 @@
 	        cname: 'tab-d',
             render: function(nodes, control, data, errs, attrs, events) {
                 if(!defer(nodes, control, data, errs, attrs, events)) {
-                    var ch = control.field.data.children||[], rt = this.runtime(control);
+                    var ch = control.field.data.children||[], rt = this.runtime(control), _a = typeof attrs.activeTab == 'function' ? attrs.activeTab() : rt.activeTab ? rt.activeTab.hfield : '';
                     attrs.hfield = ch.filter(function(cf) { return (cf.class||0) == 0 }).pop();
                     attrs.hfield && (attrs.hfield = attrs.hfield.name);
-                    (data||[]).forEach(function(r) { rt.activeTab && rt.activeTab.hfield == r.data.hfield && (rt.activeTab = r.data) });
+                    (data||[]).forEach(function(r) { _a == r.data.hfield && (rt.activeTab = r.data) });
                     CTabS.render.call(this, nodes, control, data, errs, attrs, events);
                     control.fixedChildren.forEach(function(cc) { cc.component.setParentNode(cc)})
                     var d = rt.fieldData.filter(function(fd) { return fd.field.name == rt.activeTab.hfield });
@@ -619,6 +624,9 @@
                     this.positionChildren(control, rt.footAlloc, d);
                     this.setAttributes(control, errs, attrs);
                 }
+            },
+            activeTabChange: function(control, attrs, modelData) {
+            	 typeof attrs.activeTab == 'function' && attrs.activeTab(modelData.hfield);
             },
 	        orderFilter: function(control, attrs, newRows) { CTabS.orderFilter.call(this, control, attrs, newRows); return [] },
         }, CTabS, CTabS.base())
@@ -776,7 +784,7 @@
                 if(!defer(nodes, control, data, errs, attrs, events)) {
                     if(!control.ui) {
                         nodes[0].appendChild(control.ui = document.createElement('label'))._dfe_ = control;
-                        //uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, 'clicked')});
+                        uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, undefined, 'click')});
                         this.setEvents(control.ui, control, data, errs, attrs);
                     }
                     attrs.html ? (control.ui.innerHTML = data) : (control.ui.innerText = data);
@@ -786,6 +794,63 @@
 	        }
 	    }, Component, _base())
 	})
+	
+	define('components/label-i', ['components/component', 'ui/utils'], function(Component, uiUtils) {
+	    return _extend({
+	        setEvents: function(ui, control, data, errs, attrs) {
+	            for(var n in attrs.events) 
+	                (function(a, e) { 
+	                    if(typeof e == 'function') {
+	                        var nm = a, t = ui, id, i=a.indexOf('$'), ev, m = control.events || (control.events = new Map()), p; 
+	                        uiUtils.addEventListener(t, nm, ev = function(event) { 
+	                        	return e.call(control.model.runtime.form, event, control) 
+	                        }, false);
+	                        (p = m.get(nm))||m.set(nm, p = []);
+	                        p.push(ev);
+	                    }
+	                })(n, attrs.events[n]);
+	        },
+	        clearEvents: function(control) {
+	        	control.events && (control.events.forEach(function(p, nm) {
+	        		p.forEach(function(f){ uiUtils.removeEventListener(control.ui, nm, f, false) })
+	        	}), control.events.clear());
+	        }, 
+	        setParentNode: function(control, nodes) {
+	        	if(control._allParentNodes = nodes) {
+	        		if(nodes[0] != control.ui) {
+	        			this.detachUI(control);
+	        			control._deferred && control._deferred(nodes);
+	        		}
+	        	} else 
+	        		this.detachUI(control);
+	        },
+	        setAttributes: function(control, errs, attrs) {},	        
+            attachUI: function (control, nodes) {},
+            detachUI: function (control) {
+            	var ui = control.ui;
+            	if(ui) {
+            		this.clearEvents(control);
+            		while(ui.firstChild) ui.removeChild(ui.firstChild);
+            		delete control.ui;
+            	}
+            },
+	        emptyUI: function (control) { this.detachUI(control) },            
+	        cname: 'label-i',
+	        render: function (nodes, control, data, errs, attrs, events) {
+	        	defer(null, control, data, errs, attrs, events);
+	        	var ui = nodes && nodes[0];
+	        	if(ui) {
+	        		if(ui != control.ui) {
+	        			this.clearEvents(control);
+	        			this.setEvents(control.ui = ui, control, data, errs, attrs);
+	        		}
+	        		while(ui.firstChild) ui.removeChild(ui.firstChild);
+	        		attrs.html ? (ui.innerHTML = data) : (ui.innerText = data);
+	        		this.setAttributesUI(ui, errs, attrs);
+	        	}
+	        }
+	    }, Component, _base())
+	})	
 	
 	define('components/html', ['components/component', 'ui/utils'], function(Component, uiUtils) {
 	    return _extend({

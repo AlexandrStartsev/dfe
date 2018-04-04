@@ -14,10 +14,11 @@ defineForm("dfe.mydashboard", [ "require", "ui/utils", "dfe-core", "dfe-common",
                     caption: 'Diaries',
                     hfield: 'diaries'
                 } ],
-                atr: () => ({
+                atr: $$ => ({
                     haclass: 'tab-item-active',
                     rowstyle$header: 'display: flex; align-items: flex-end;',
-                    rowstyle$footer: 'border: 1px solid #888; border-radius: 0px 5px 5px 5px; padding: 2px'
+                    rowstyle$footer: 'border: 1px solid #888; border-radius: 0px 5px 5px 5px; padding: 2px; min-height: 320px;',
+                    activeTab: tab => tab ? $$.set('currentTab', tab) : $$('currentTab') 
                 })
             }, [ __c_div_button("header", {
                 get: $$ => $$('.caption'),
@@ -28,14 +29,14 @@ defineForm("dfe.mydashboard", [ "require", "ui/utils", "dfe-core", "dfe-common",
                 class: "header",
                 get: $$ => $$,
                 atr: () => ({
-                    form: 'dashboard/quotes'
+                    form: 'dashboard/quotes',
+                    editTarget: true
                 })
             }), __c_dfe_runtime("diaries", {
                 class: "header",
                 get: $$ => $$,
                 atr: () => ({
-                    form: 'dashboard/diaries',
-                    editTarget: true
+                    form: 'dashboard/diaries'
                 })
             }) ]), __f_quicksearch("qs", {
                 get: () => ({}),
