@@ -1,36 +1,38 @@
 define('dfe-field-helper', ['dfe-common'], function(cmn) {
 	return {
         simple: function(field, val, attrs) {
-            return  cmn.extend(Array.isArray(val) ? attrs : val, {
+        	var hasVal = Array.isArray(val); hasVal || (attrs = val); attrs || (attrs = {});
+            return  cmn.extend(attrs, {
                 get: function(model) {
                     return model.get(field);
                 },
                 set: function(model, value) {
-                    model.set(field, value);
+                	attrs.nosetter || model.set(field, value);
                 },
                 val: function(model) {
                     var ok = 1;
-                    Array.isArray(val) ? val.forEach(function(v){
-                        ok = ok && (typeof v == 'string' ? model.required(field, v) : model.required(field, v[0], v[1]))
+                    hasVal ? val.forEach(function(v){
+                        ok = ok && (typeof v == 'function' ? v.call( model.control.field.data.form, model, field, attrs ) : typeof v == 'string' && model.required(field, v))
                     }) : model.required(field);
                 }
             });
         },
-        date: function(text, field, valFunc, attrs) {
-        	typeof field == 'string' || (attrs = valFunc, valFunc = text, field = text)
-            return  cmn.extend(typeof valFunc == 'function' ? attrs : valFunc, {
+        date: function(field, val, attrs) {
+        	var hasVal = Array.isArray(val); hasVal || (attrs = val); attrs || (attrs = {});
+            return  cmn.extend(attrs, {
             	formatting: 'MM/DD/YYYY',
                 transform: '67890134',
-                text: text,
                 get: function(model) {
                     return model.get(field);
                 },
                 set: function(model, value) {
-                    model.set(field, value);
+                	model.set(field, value);
                 },
                 val: function(model) {
                 	var value = cmn.ARFtoDate(model.get(field));
-                	model.error( value instanceof Date ? typeof valFunc == 'function' && valFunc(value, model, field) : 'Invalid format' ); 
+                	value instanceof Date ? hasVal && val.forEach(function(v){
+                        ok = ok && (typeof v == 'function' ? v.call( model.control.field.data.form, value, model, field, attrs ) : 1)
+                    }) : model.error( hasVal && val[0] || 'Invalid format' ); 
                 }
             });
         },

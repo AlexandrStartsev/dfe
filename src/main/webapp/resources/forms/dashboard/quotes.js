@@ -1,9 +1,11 @@
-defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/container", "components/button", "components/editbox-$", "components/label-i" ], function(require, core, notes, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_container, __c_button, __c_editbox_$, __c_label_i) {
+defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/container", "components/label-i" ], function(require, core, notes, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_container, __c_label_i) {
     return new class {
         constructor() {
             this.dfe = __c_container("root", {
                 get: $$ => [ $$ ],
-                atr: $$ => ({style: 'width: 100%'})
+                atr: $$ => ({
+                    style: 'width: 100%'
+                })
             }, [ __c_container("filtr", {
                 get: $$ => $$('filterCollapsed') == 'Y' ? [] : [ $$ ]
             }, [ __c_div("field-2", {
@@ -29,11 +31,12 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 } ]
             }) ]), __c_c_editbox("field-4", {
                 set: function($$, value) {
-                	$$.set('effFrom', value);
+                    $$.set('effFrom', value);
                     let to = cmn.ARFtoDate($$('effTo')), fr = cmn.ARFtoDate(value);
                     fr instanceof Date && to instanceof Date && (fr > to || to - fr.setDate(fr.getDate() + 90) > 0) && $$.set('effTo', cmn.yyyymmdd(fr));
                 },
-                atr: () => fields.date('Effective Date Range:', 'effFrom', {
+                atr: () => fields.date('effFrom', {
+                	text: 'Effective Date Range:',
                     vstrategy: 'notified',
                     eclass: 'wrong-date',
                     type: 'datepicker'
@@ -44,7 +47,8 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                     let fr = cmn.ARFtoDate($$('effFrom')), to = cmn.ARFtoDate(value);
                     fr instanceof Date && to instanceof Date && (to < fr || to.setDate(to.getDate() - 90) - fr > 0) && $$.set('effFrom', cmn.yyyymmdd(to));
                 },
-                atr: () => fields.date('to:', 'effTo', {
+                atr: () => fields.date('effTo', {
+                	text: 'to:',
                     vstrategy: 'notified',
                     eclass: 'wrong-date',
                     type: 'datepicker'
@@ -297,105 +301,67 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 get: $$ => $$('.accountName')
             }), __c_label_i("field-31", {
                 get: $$ => $$('.companyCode')
-            }), __c_div("field-46", {
-                get: $$ => [ $$ ],
-                atr: () => ({
-                    class: 'hoverable'
-                }),
-                pos: [ {
-                    w: "2"
-                } ]
-            }, [ __c_label("field-32", {
+            }), __c_label_i("field-46", {
                 get: $$ => $$('.producerCode'),
-                atr: () => ({
-                    class: 'label-centered'
-                })
-            }), __c_label("field-47", {
-                get: $$ => $$('.producerName'),
                 atr: $$ => ({
-                    class: 'display-on-hover'
-                }),
-                pos: [ {
-                    colstyle: "position: absolute"
-                } ]
-            }) ]), __c_editbox("field-33", {
-                get: $$ => $$('.effectiveDate'),
-                atr: () => ({
-                    formatting: 'MM/DD/YYYY',
-                    transform: '67890134',
-                    readonly: 1,
-                    style: 'border: none;',
-                    class: 'label-centered'
+                    events: {
+                        mouseenter: (event, control) => this.showPopup(control.ui, $$('.producerName')),
+                        mouseleave: (event, control) => this.hidePopup(control.ui)
+                    }
                 }),
                 pos: [ {
                     w: "2"
                 } ]
-            }), __c_editbox_$("field-34", {
-                get: $$ => $$('.writtenPremium'),
-                atr: () => ({
-                    formatting: '9,999,999,999',
-                    readonly: 1,
-                    style: 'border: none; width: 100%; text-align: right;'
-                }),
-                pos: [ {
-                    s: ".dollar-prefix",
-                    w: "2"
-                } ]
-            }), __c_label("field-43", {
-                get: $$ => $$('.govClass'),
-                atr: () => ({
-                    class: 'label-centered'
-                }),
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_label("field-44", {
-                get: $$ => $$('.grade'),
-                atr: () => ({
-                    style: 'margin-left: 5px'
-                }),
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_label("field-45", {
-                get: $$ => $$('.newRenewal'),
-                atr: () => ({
-                    style: 'margin-left: 5px'
-                }),
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_div("field-51", {
-                atr: function($$) {
-                    let n = this.firstUserNote($$);
-                    return {
-                        class: 'note-icon hoverable',
-                        style: `opacity: ${n.length ? 1 : .3}; display: inline-block; cursor: pointer; width: 16px; height: 16px;`,
-                        get: () => n,
-                        events: {
-                            click: () => this.showNotes($$)
-                        }
-                    };
+            }), __c_label_i("field-33", {
+                get: function($$) {
+                	let v = $$('.effectiveDate');
+                	if(typeof v == 'string') return v.replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1');
                 },
                 pos: [ {
-                    s: ".label-centered"
+                    w: "2"
                 } ]
-            }, [ __c_html("field-52a", {
-                class: "header",
-                get: $$ => shapes.svgShape($$, 'svg-icon-file-text'),
-                atr: $$ => ({
-                    style: 'width: 16px; height: 16px',
-                    nowrap: true
-                })
-            }), __c_label("field-52", {
-                get: $$ => $$('.subject'),
-                atr: $$ => ({
-                    class: 'display-on-hover'
-                }),
+            }), __c_label_i("field-34", {
+                get: function($$) {
+                	let v = $$('.writtenPremium');
+                	if(typeof v == 'string') return v.replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+                },
                 pos: [ {
-                    colstyle: "position: absolute; width:  0px;"
+                    w: "2"
                 } ]
-            }) ]) ]) ]) ]) ]) ]);
+            }), __c_label_i("field-43", {
+                get: $$ => $$('.govClass'),
+                pos: [ {
+                    w: "2"
+                } ]
+            }), __c_label_i("field-44", {
+                get: $$ => $$('.grade'),
+                pos: [ {
+                    w: "2"
+                } ]
+            }), __c_label_i("field-45", {
+                get: $$ => $$('.newRenewal'),
+                pos: [ {
+                    w: "2"
+                } ]
+            }), __c_label_i("field-51", {
+            	get: $$ => shapes.svgShape($$, 'svg-icon-file-text'),
+                atr: function($$) {
+                	let n = this.firstUserNote($$), s = n ? n.get('.subject') : '';
+                	return s ? {
+                		style: 'opacity: 1',
+                		events: {
+                            click: () => this.showNotes($$),
+                            mouseenter: (event, control) => this.showPopup(control.ui, s),
+                            mouseleave: (event, control) => this.hidePopup(control.ui)
+                        }
+                	} : {
+                		style: 'opacity: .3',
+                		events: {
+                            click: () => this.showNotes($$)
+                		}
+                	}
+                }
+            }) ]) ]) ]) ]) ]);
         }
         loadDateRange(px, effFrom, effTo) {
             let f = this, url = `/AJAXServlet.srv?method=DashboardScriptHelper&action=geninfo&lob=WORK&eff=${effFrom}&effTo=${effTo}&idKey=${++f.idKey}`, toLoad = [], curRep = px('quotes'), matched = new Set();
@@ -440,6 +406,12 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 }
             });
         }
+        showPopup(ui, text) {
+        	text && jq('<label>').appendTo(jq('<div>').appendTo(jq(ui)).attr({class: 'dashboard-quotes-popup'})).text(text)
+        }
+        hidePopup(ui) {
+        	jq(ui).find('.dashboard-quotes-popup').remove();
+        }
         sortArrow($$, fld) {
             return {
                 class: 'arrow-button',
@@ -462,16 +434,16 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
             return (cc == 0 || $$.get('.companyCode') == cc) && (newRenewal == 0 || $$.get('.newRenewal') == newRenewal);
         }
         firstUserNote(row) {
-            let user = row.get('currentUser'), note = row.get('.note').filter(n => n.get('.user') == user && n.get('.subject') != 0).pop();
-            return note ? [ note ] : [];
+            let user = row.get('currentUser');
+            return row.get('.note').filter(n => n.get('.user') == user && n.get('.subject') != 0).pop();
         }
         showNotes($$) {
             let qid = $$('.quoteid'), map = this.noteRt, rt = map.get(qid);
             if (!rt) {
                 map.set(qid, rt = core.startRuntime({
-                	params: {
-                		parentControl: $$.control
-                	},
+                    params: {
+                        parentControl: $$.control
+                    },
                     form: notes.form,
                     model: $$,
                     node: jq('<div>').dialog({
@@ -537,45 +509,10 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                     transform: scale(0.8);
                 }
     		    
-                .dollar-prefix::before {
-                    content: '$';
-                    position: absolute;
-                    font: 400 13.3333px Arial;
-                    padding-left: 15px;
-                }
-
     		    .wrong-date {
     		        background: antiquewhite;
     		    }
-    		    
-    		    .display-on-hover {
-    		        display: none;
-    		        position: relative;
-				    left: -20px;
-				    opacity: 0.9;
-				    background: antiquewhite;
-				    padding: 5px 10px;
-				    border-radius: 7px;
-				    box-shadow: 2px 2px lightgrey;
-				    z-index: 100;
-    		    }
-    		    
-    		    .hoverable:hover .display-on-hover {
-    		        display: block;
-    		    }
-    		    
-    		    .label-centered {
-    		        display: block; 
-    		        text-align: center; 
-    		        width: 100%;
-    		    }
-    		    
-            	.note-icon .display-on-hover {
-            		left: -220px;
-            		top: 3px;
-            		width: 200px;
-            	}
-				
+
 				.ui-widget-header{
 				    background: #97a47a;
 				    color: #fff;
@@ -586,8 +523,27 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
             		padding: 4px;
 				}
 				
+				.dashboard-quotes-popup {
+            		position: absolute;
+				}
+				
+				.dashboard-quotes-popup label {
+            		display: block;
+            		position: relative;
+				    opacity: 0.9;
+				    background: antiquewhite;
+				    padding: 5px 10px;
+				    border-radius: 7px;
+				    box-shadow: 2px 2px lightgrey;
+				    z-index: 100;
+    		    }
+    		    				
 				.dashboard-rbody-tbl td {
 				    font-size: 12px;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+1) {
+            		text-align: center;
 				}
 				
 				.dashboard-rbody-tbl td:nth-child(10n+2) {
@@ -595,8 +551,64 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
 				    width: 300px;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+1), .dashboard-rbody-tbl td:nth-child(10n+3) {
+				.dashboard-rbody-tbl td:nth-child(10n+3) {
 				    text-align: center;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+4) {
+            		text-align: center;
+            		position: relative;
+            		overflow: visible;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+4) > .dashboard-quotes-popup > label {
+				    top: -5px;
+				    left: -100px;
+				    width: 120px;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+5) {
+            		text-align: center;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+6) {
+            		text-align: right;
+            		position: relative;
+				}
+				
+                .dashboard-rbody-tbl td:nth-child(10n+6)::before {
+                    content: '$';
+                    position: absolute;
+                    font: 400 12px Arial;
+                    left: 15px;
+                }				
+				
+				.dashboard-rbody-tbl td:nth-child(10n+7) {
+            		text-align: center;
+				}
+
+				.dashboard-rbody-tbl td:nth-child(10n+8) {
+            		padding-left: 5px
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+9) {
+            		padding-left: 5px
+				}	
+					
+				.dashboard-rbody-tbl td:nth-child(10n+10) {
+            		text-align: center;
+            		cursor: pointer;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+10) > svg {
+            		width: 16px;
+            		height: 16px;
+				}
+				
+				.dashboard-rbody-tbl td:nth-child(10n+10) > .dashboard-quotes-popup > label {
+            		top: -5px;
+            		left: -110px;
+				    width: 120px;
 				}
 				`, this.name);
         }

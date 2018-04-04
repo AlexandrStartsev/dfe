@@ -303,8 +303,8 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	}
 	
 	DfeRuntime.prototype.store = function (control, value, method) {
-	   var f = control.field.data.set || control.model.attrs.set;
-	   typeof f == 'function' && f.call(control.field.data.form, control.model.unbound, value, method);
+	    var f = control.field.data.set || control.model.attrs.set;
+	    typeof f == 'function' && f.call(control.field.data.form, control.model.unbound, value, method);
 	}
 	
 	DfeRuntime.prototype.processInterceptors = function() {
@@ -382,14 +382,14 @@ define('dfe-core', ['dfe-common'], function(cmn) {
                 data[0] && typeof data[0].withListener != 'function' && (data=data.map(function(r){return new JsonProxy(r)}))
             }
             runtime.processChildren(control, data || [], model.attrs.hmodel, fpx);
-	        control.component.render(control._allParentNodes, control, control.data = data, control.error, model.attrs, model.events);
+	        control.component._render(control, control.data = data, control.error, model.attrs, model.events);
 	    }
 	    model.error = function(error, data) {
             data && (control.data = data);
 	        if( control.doVal && (control.error = error) ) {
                 control.stickyError = error;
                 error == 'Simulated error' || runtime.notifyErroring(control);
-                control.component.render(control._allParentNodes, control, control.data, control.error, model.attrs, model.events);
+                control.component._render(control, control.data, control.error, model.attrs, model.events);
 	        }
 	        return error;
 	    }
@@ -515,13 +515,11 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 define('validation/component', ['dfe-common'], function(cmn) {
     return cmn.extend({
             cname: 'validator',
-           // slots: 1,
-            render: function(nodes, control, data, errs, attrs, events) {},
+            _render: function(control, data, errs, attrs, events) {},
             doValidation: function(control, events, attrs) { 
                  return attrs ? !(attrs['disabled'] || attrs['hidden'] || (attrs.vstrategy && attrs.vstrategy.indexOf('none') != -1)) : true;
             },
-            purge: function() {},
-            setParentNode: function() {}
+            purge: function() {}
         }, function(n, f, c) { return cmn.extend( {name: n, children: c||[], component: arguments.callee }, f) });
 })
 
@@ -534,12 +532,10 @@ define('component-maker', ['dfe-common', 'components/pass-through'], function(cm
             }
             var slots = Array.prototype.concat.apply([], dfe_form.dfe.map(function(d){ return d.pos })).length;
             return cmn.extend({form: dfe_form}, function(name, attrs) {
-                //attrs.pos = Array.prototype.concat.apply([],dfe_form.dfe.map(function(d){ return d.pos}));
-                //dfe_form.dfe.forEach(function(dfe){ dfe['class'] = 'header'; });
                 return cmn.extend( { name: name, children: dfe_form.dfe, component: cmn.extend({ 
-                    render: function(nodes, control, data, errs, attrs, events) {
+                    _render: function(control, data, errs, attrs, events) {
                         data && typeof dfe_form.onstart == 'function' && (Array.isArray(data)?data:[data]).forEach(function(d) { dfe_form.onstart(d) });
-                        pt.render(nodes, control, data, errs, attrs, events);
+                        pt._render(control, data, errs, attrs, events);
                     },
                     cname: dfe_form.name,
                     slots: slots

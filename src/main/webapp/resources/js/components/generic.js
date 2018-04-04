@@ -77,6 +77,7 @@
                 delete control.errorUi;
 	        },
 	        store: function(control, value, method) { control.model.runtime.store(control, value, method) },
+	        _render: function(control, model_proxy, errs, attrs, events) { this.render(control._allParentNodes, control, model_proxy, errs, attrs, events) },
 	        render: function(nodes, control, model_proxy, errs, attrs, events) {},
 	        layout: 'none',
 	        runtime: function(control) { return control.runtime || (control.runtime={}) },
@@ -801,7 +802,7 @@
 	            for(var n in attrs.events) 
 	                (function(a, e) { 
 	                    if(typeof e == 'function') {
-	                        var nm = a, t = ui, id, i=a.indexOf('$'), ev, m = control.events || (control.events = new Map()), p; 
+	                        var nm = a, t = ui, id, i=a.indexOf('$'), ev, m = control._events || (control._events = new Map()), p; 
 	                        uiUtils.addEventListener(t, nm, ev = function(event) { 
 	                        	return e.call(control.model.runtime.form, event, control) 
 	                        }, false);
@@ -810,11 +811,20 @@
 	                    }
 	                })(n, attrs.events[n]);
 	        },
+	        setAttributes: function(control, errs, attrs) { 
+	        	for(var i in attrs) {
+	        		this.toAttribute.has(i) && uiUtils.setAttribute(control.ui, i, attrs[i]);
+                    //this.toAttribute.has(i) && ((control._attributes || (control._attributes = new Set())).add(i), uiUtils.setAttribute(control.ui, i, attrs[i]));
+	            }
+	        },
 	        clearEvents: function(control) {
-	        	control.events && (control.events.forEach(function(p, nm) {
+	        	control._events && (control._events.forEach(function(p, nm) {
 	        		p.forEach(function(f){ uiUtils.removeEventListener(control.ui, nm, f, false) })
-	        	}), control.events.clear());
+	        	}), control._events.clear());
 	        }, 
+	        /*clearAttributes: function(control) {
+	        	control._attributes && (control._attributes.forEach(function(a) { uiUtils.setAttribute(control.ui, a) }), control._attributes.clear());
+	        },*/ 
 	        setParentNode: function(control, nodes) {
 	        	if(control._allParentNodes = nodes) {
 	        		if(nodes[0] != control.ui) {
@@ -823,14 +833,15 @@
 	        		}
 	        	} else 
 	        		this.detachUI(control);
-	        },
-	        setAttributes: function(control, errs, attrs) {},	        
+	        },      
             attachUI: function (control, nodes) {},
             detachUI: function (control) {
             	var ui = control.ui;
             	if(ui) {
             		this.clearEvents(control);
+            		//this.clearAttributes(control);
             		while(ui.firstChild) ui.removeChild(ui.firstChild);
+            		delete control.ui._dfe_;
             		delete control.ui;
             	}
             },
@@ -839,14 +850,24 @@
 	        render: function (nodes, control, data, errs, attrs, events) {
 	        	defer(null, control, data, errs, attrs, events);
 	        	var ui = nodes && nodes[0];
-	        	if(ui) {
-	        		if(ui != control.ui) {
+	        	if(ui && typeof data != 'undefined') {
+        			this.clearEvents(control);
+        			this.setEvents(control.ui = ui, control, data, errs, attrs);
+        			control.ui._dfe_ = control;
+	        		/*if(ui != control.ui) {
 	        			this.clearEvents(control);
+	        			//this.clearAttributes(control);
 	        			this.setEvents(control.ui = ui, control, data, errs, attrs);
+	        			control.ui._dfe_ = control;
+	        		}*/	        		
+        			while(ui.firstChild) ui.removeChild(ui.firstChild);
+	        		var isArr = Array.isArray(data);
+	        		if( typeof (isArr && data[0] || data) == 'string' ) {
+	        			attrs.html ? (ui.innerHTML = isArr ? data.join('') : data) : (ui.innerText = isArr ? data.join('') : data);
+	        		} else {
+	        			isArr ? data.forEach( function(n) { ui.appendChild(n) } ) : ui.appendChild(data)
 	        		}
-	        		while(ui.firstChild) ui.removeChild(ui.firstChild);
-	        		attrs.html ? (ui.innerHTML = data) : (ui.innerText = data);
-	        		this.setAttributesUI(ui, errs, attrs);
+	        		this.setAttributes(control, errs, attrs);
 	        	}
 	        }
 	    }, Component, _base())
@@ -857,25 +878,19 @@
 	        cname: 'html',
 	        render: function (nodes, control, data, errs, attrs, events) {
 	        	if(!defer(nodes, control, data, errs, attrs, events)) {
-                    if(attrs.nowrap && data instanceof Element ) {
-                        control.ui && nodes[0].removeChild(control.ui);
-                        nodes[0].appendChild(control.ui = data);
+                    if(!control.ui) {
+                        nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
                         this.setEvents(control.ui, control, data, errs, attrs);
-                        this.setAttributes(control, errs, attrs);
-                    } else {
-                        if(!control.ui) {
-                            nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-                            this.setEvents(control.ui, control, data, errs, attrs);
-                        }
-                        if(typeof data == 'string') {
-                            control.ui.innerHTML = data;
-                        } else {
-                            while(control.ui.firstChild) control.ui.removeChild(control.ui.firstChild);
-                            (Array.isArray(data) ? data : [data]).forEach( function(node) { control.ui.appendChild(node) }  )
-                        }
-                        this.setAttributes(control, errs, attrs);
-                        this.appendError(control, nodes[0], errs, attrs);
                     }
+                    var isArr = Array.isArray(data);
+	        		if( typeof (isArr && data[0] || data) == 'string' ) {
+	        			control.ui.innerHTML = isArr ? data.join('') : data;
+                    } else {
+                        while(control.ui.firstChild) control.ui.removeChild(control.ui.firstChild);
+                        isArr ? data.forEach( function(n) { control.ui.appendChild(n) } ) : control.ui.appendChild(data);
+                    }
+                    this.setAttributes(control, errs, attrs);
+                    this.appendError(control, nodes[0], errs, attrs);
 	        	}
             }
         }, Component, _base())
