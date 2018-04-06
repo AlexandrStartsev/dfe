@@ -330,14 +330,12 @@
 	            delete rt.footAlloc;
 	        },
 	        buildFieldData: function(control, previousData, attrs) {
-	            var ret = [], match = true, nd, pd, i = 0; 
+	            var ret = [], match = true, nd, pd, i = 0, ch = this.orderFilterColumns(control, attrs); 
 	            previousData = previousData||[];
 	            ret.attrs = attrs;
-                (control.field.data.children||[]).forEach(function(cf) {
-                    if(!attrs.skip || attrs.skip.indexOf(cf.name) == -1) {
-                    	ret.push(nd = { field: cf, clazz: cf['class'] || '', pos: cf.pos });
-                        match = match && (pd = previousData[i++]) && nd.clazz == pd.clazz && nd.field == pd.field && nd.pos == pd.pos;
-                    }
+	            ch.forEach(function(cf) {
+	            	ret.push(nd = { field: cf, clazz: cf['class'] || '', pos: cf.pos });
+                    match = match && (pd = previousData[i++]) && nd.clazz == pd.clazz && nd.field == pd.field && nd.pos == pd.pos;
                 })
 	            ret.match = match && i == previousData.length;
 	            return ret;
@@ -467,7 +465,13 @@
 	            var pc = control.children.get(od), c;
 	            pc && fieldData.forEach(function(f) { var c = pc.get(f.field); c.component.setParentNode(c) });
 	            this.positionChildren(control, oldAlloc, fieldData, nd);
-	        },	        
+	        },
+	        orderFilterColumns: function(control, attrs) {
+	        	var d = control.field.data, ch = d.children||[], s = attrs.skip, o = attrs.colOrder, f = d.form, m = control.model, t = typeof s == 'function';
+	        	s && (ch = ch.filter(function(d) { return t ? s.call(f, d.name, m) : s.indexOf(d.name) == -1 }));
+	        	typeof o == 'function' && (ch = ch.sort(function(d1, d2) { return o.call(f, d1.name, d2.name, m) }));
+	        	return ch;
+	        },
 	        orderFilter: function(control, attrs, newRows) {
 	            if(typeof attrs.filter == 'function') {
 	                newRows = newRows.filter(attrs.filter);
@@ -487,21 +491,19 @@
 	        cname: 'div',
 	        layout: 'dpos',
 	        buildFieldData: function(control, previousData, attrs) {
-	            var ret = [], nd, dp, i=0, cls, match = true; 
+	            var ret = [], nd, dp, i=0, cls, match = true, ch = this.orderFilterColumns(control, attrs); 
 	            ret.attrs = attrs;
 	            previousData = previousData||[];
-	            (control.field.data.children||[]).forEach(function(cf) {
-                    if( !attrs.skip || attrs.skip.indexOf(cf.name) == -1 ) {
-                    	nd = { field: cf, clazz: cf['class'] || '', pos: cf.pos };
-                        if( cf.name && cf.name == attrs.hfield ) {
-	                        pd = previousData.headField;
-                            ret.headField = nd;
-                        } else {
-                            pd = previousData[i++];
-                            ret.push(nd);
-                        }
-                        match = match && pd && nd.clazz == pd.clazz && nd.field == pd.field && nd.pos == pd.pos;
+	            ch.forEach(function(cf) {
+                	nd = { field: cf, clazz: cf['class'] || '', pos: cf.pos };
+                    if( cf.name && cf.name == attrs.hfield ) {
+                        pd = previousData.headField;
+                        ret.headField = nd;
+                    } else {
+                        pd = previousData[i++];
+                        ret.push(nd);
                     }
+                    match = match && pd && nd.clazz == pd.clazz && nd.field == pd.field && nd.pos == pd.pos;
                 });
 	            ret.match = match && ret.length == previousData.length;
 	            return ret;
@@ -614,7 +616,7 @@
 	        cname: 'tab-d',
             render: function(nodes, control, data, errs, attrs, events) {
                 if(!defer(nodes, control, data, errs, attrs, events)) {
-                    var ch = control.field.data.children||[], rt = this.runtime(control), _a = typeof attrs.activeTab == 'function' ? attrs.activeTab() : rt.activeTab ? rt.activeTab.hfield : '';
+                    var ch = this.orderFilterColumns(control, attrs), rt = this.runtime(control), _a = typeof attrs.activeTab == 'function' ? attrs.activeTab() : rt.activeTab ? rt.activeTab.hfield : '';
                     attrs.hfield = ch.filter(function(cf) { return (cf.class||0) == 0 }).pop();
                     attrs.hfield && (attrs.hfield = attrs.hfield.name);
                     (data||[]).forEach(function(r) { _a == r.data.hfield && (rt.activeTab = r.data) });
@@ -713,7 +715,7 @@
             slots: 0,
             // TODO: ...
             attachUI: function (control, nodes) {
-                control.children.forEach(function(m){ 
+            	nodes && control.children.forEach(function(m){ 
                     var i = 0;
                     m.forEach(function(c) { 
                         c.component.setParentNode(c, [nodes[i++]])
@@ -728,7 +730,7 @@
                 })
             },            
 	        render: function (nodes, control, data, errs, attrs, events) {
-                this.attachUI(control, nodes);
+	        	this.attachUI(control, nodes);
 	        }
 	    }, Component, {});//function (n, f, c) { return _extend({ name: n, children: c||[], component: _extend({ slots: 1 }, arguments.callee) }, f) })
     })

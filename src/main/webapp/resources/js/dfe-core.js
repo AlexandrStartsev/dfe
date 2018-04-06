@@ -223,6 +223,40 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	 */
 	JsonProxy.prototype.defaultSubset = function (path, defaults) { var ret = this.get(path); if(ret == 0) { this.append(path, defaults); ret = this.get(path); } return ret; }
 
+	/*
+	 * @param {Object|JsonProxy} data to reflect onto current object. deep. notifications will dispatched, dependencies on data object field will not be made
+	 */
+	// TODO: flesh it out
+	JsonProxy.prototype.reflect = function(data) {
+		if(data instanceof JsonProxy) 
+			data = data.persisted;
+		if(typeof data != 'object')
+			this.detach();
+		else {
+			this.persist();
+			var s = new Set(), k, l = this.listener, dest = this.data;
+			for(k in dest) s.add(k);
+			for(k in data) {
+				var d = data[k], isA = Array.isArray(d); 
+				if(s.has(k)) {
+					var cd = dest[k];
+					if(cd != d) {// TODO
+						dest[k] = d;
+						l && l.notify(dest, k, 'm');
+					}
+					s['delete'](k);
+				} else {
+					dest[k] = d;
+					l && l.notify(dest, k, 'm');
+				}
+			}
+			s.forEach(function(k) {
+				delete dest[k];
+				l && l.notify(dest, k, 'r'); 
+			})
+		}
+	}
+	
     //###############################################################################################################################
 	function DfeListener(dependencyMap, control) {
 	    this.dpMap = dependencyMap || new Map();

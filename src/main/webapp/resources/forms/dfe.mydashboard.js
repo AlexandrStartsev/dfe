@@ -36,7 +36,8 @@ defineForm("dfe.mydashboard", [ "require", "ui/utils", "dfe-core", "dfe-common",
                 class: "header",
                 get: $$ => $$,
                 atr: () => ({
-                    form: 'dashboard/diaries'
+                    form: 'dashboard/diaries',
+                    editTarget: true
                 })
             }) ]), __f_quicksearch("qs", {
                 get: () => ({}),

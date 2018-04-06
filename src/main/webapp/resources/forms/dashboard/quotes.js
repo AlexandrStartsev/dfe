@@ -1,4 +1,4 @@
-defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/container", "components/label-i" ], function(require, core, notes, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_container, __c_label_i) {
+defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/button", "components/container", "components/label-i" ], function(require, core, notes, __f_sortableheader, dashboardCommon, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_button, __c_container, __c_label_i) {
     return new class {
         constructor() {
             this.dfe = __c_container("root", {
@@ -7,7 +7,10 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                     style: 'width: 100%'
                 })
             }, [ __c_container("filtr", {
-                get: $$ => $$('filterCollapsed') == 'Y' ? [] : [ $$ ]
+                get: $$ => $$('filterCollapsed') == 'Y' ? [] : $$('criteria'),
+                atr: () => ({
+                    class: 'dashboard-filtr'
+                })
             }, [ __c_div("field-2", {
                 class: "header",
                 get: $$ => [ $$ ],
@@ -31,24 +34,24 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 } ]
             }) ]), __c_c_editbox("field-4", {
                 set: function($$, value) {
-                    $$.set('effFrom', value);
-                    let to = cmn.ARFtoDate($$('effTo')), fr = cmn.ARFtoDate(value);
-                    fr instanceof Date && to instanceof Date && (fr > to || to - fr.setDate(fr.getDate() + 90) > 0) && $$.set('effTo', cmn.yyyymmdd(fr));
+                    $$.set('.effFrom', value);
+                    let to = cmn.ARFtoDate($$('.effTo')), fr = cmn.ARFtoDate(value);
+                    fr instanceof Date && to instanceof Date && (fr > to || to - fr.setDate(fr.getDate() + 90) > 0) && $$.set('.effTo', cmn.yyyymmdd(fr));
                 },
-                atr: () => fields.date('effFrom', {
-                	text: 'Effective Date Range:',
+                atr: () => fields.date('.effFrom', {
+                    text: 'Effective Date Range:',
                     vstrategy: 'notified',
                     eclass: 'wrong-date',
                     type: 'datepicker'
                 })
             }), __c_c_editbox("field-6", {
                 set: function($$, value) {
-                    $$.set('effTo', value);
-                    let fr = cmn.ARFtoDate($$('effFrom')), to = cmn.ARFtoDate(value);
-                    fr instanceof Date && to instanceof Date && (to < fr || to.setDate(to.getDate() - 90) - fr > 0) && $$.set('effFrom', cmn.yyyymmdd(to));
+                    $$.set('.effTo', value);
+                    let fr = cmn.ARFtoDate($$('.effFrom')), to = cmn.ARFtoDate(value);
+                    fr instanceof Date && to instanceof Date && (to < fr || to.setDate(to.getDate() - 90) - fr > 0) && $$.set('.effFrom', cmn.yyyymmdd(to));
                 },
-                atr: () => fields.date('effTo', {
-                	text: 'to:',
+                atr: () => fields.date('.effTo', {
+                    text: 'to:',
                     vstrategy: 'notified',
                     eclass: 'wrong-date',
                     type: 'datepicker'
@@ -58,14 +61,14 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                     var uniq = new Set();
                     $$('quotes.rows.companyCode').forEach(c => uniq.add(c));
                     return {
-                        value: $$('companyCode'),
+                        value: $$('.companyCode'),
                         items: [ {
                             value: '',
                             description: 'All'
                         } ].concat(Array.from(uniq).sort())
                     };
                 },
-                set: ($$, value) => $$.set('companyCode', value),
+                set: ($$, value) => $$.set('.companyCode', value),
                 atr: () => ({
                     text: 'Carrier:'
                 }),
@@ -76,13 +79,13 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 } ]
             }), __c_c_dropdown("field-10", {
                 get: $$ => ({
-                    value: $$('newRenewal'),
+                    value: $$('.newRenewal'),
                     items: [ {
                         value: '',
                         description: 'All'
                     }, 'New', 'Renewal' ]
                 }),
-                set: ($$, value) => $$.set('newRenewal', value),
+                set: ($$, value) => $$.set('.newRenewal', value),
                 atr: $$ => ({
                     text: 'New/Renewal:'
                 }),
@@ -93,7 +96,7 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 } ]
             }), __c_c_dropdown("field-12", {
                 get: $$ => ({
-                    value: $$('optional'),
+                    value: $$('.optional'),
                     items: [ {
                         value: '',
                         description: 'None'
@@ -124,21 +127,33 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                     text: 'Optional Filter:'
                 }),
                 pos: [ {
-                    n: "Y",
-                    s: "padding-bottom: 20px;"
+                    n: "Y"
                 }, {
                     w: "2"
                 } ]
             }), __c_editbox("field-19", {
-                get: $$ => $$('optionalValue'),
-                set: ($$, value) => $$.set('optionalValue', value),
-                atr: $$ => ({
+                atr: $$ => fields.simple('.optionalValue', [], {
                     pattern: this.optPattern($$('optional')),
-                    disabled: $$('optional') == 0
+                    disabled: $$('.optional') == 0
                 })
+            }), __c_button("field-3", {
+                get: $$ => 'Expand/Collapse All',
+                set: $$ => $$.set('quotes.expanded', $$('quotes.expanded').filter(v => v == 'Y') == 0 ? 'Y' : 'N'),
+                pos: [ {
+                    n: "Y"
+                } ]
+            }), __c_button("field-1", {
+                get: $$ => 'Reset',
+                set: $$ => jq.get('/AJAXServlet.srv?method=DashboardScriptHelper&action=getcriteria&default=true', r => $$.reflect(JSON.parse(r.result).criteria[0])),
+                atr: $$ => ({
+                    style: 'color: #000'
+                }),
+                pos: [ {
+                    s: "padding-bottom: 20px;"
+                } ]
             }) ]), __c_div("report", {
                 get: function($$) {
-                    let effFrom = $$('effFrom'), effTo = $$('effTo');
+                    let effFrom = $$('criteria.effFrom'), effTo = $$('criteria.effTo');
                     cmn.ARFtoDate(effFrom) instanceof Date && cmn.ARFtoDate(effTo) instanceof Date && this.loadDateRange($$.unbound, effFrom, effTo);
                     return [ $$ ];
                 },
@@ -152,11 +167,13 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
             }, [ __c_html("loading", {
                 get: $$ => shapes.cssShape($$, 'css-loading-anim-circle'),
                 atr: $$ => ({
-                    style: `display: ${$$('loading') == 0 ? 'none' : ''}; align-content: center; justify-content: center; position: absolute; width: 100%; height: 100%; min-height: 200px; min-width: 200px; background: lightgray; opacity: 0.3`
+                    class: 'loading-overlay',
+                    style: `display: ${$$('loading') == 0 ? 'none' : ''}`
                 })
             }), __c_container("filtered", {
                 get: $$ => $$('quotes'),
                 atr: () => ({
+                    class: 'dashboard-filtr',
                     filter: res => res.get('.rows').filter(row => this.shouldShow(row)).length > 0,
                     order: (res1, res2) => Number(res1.get('.order')) - Number(res2.get('.order'))
                 })
@@ -188,7 +205,7 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
             }), __c_container("rwrap", {
                 get: $$ => [ $$ ],
                 atr: $$ => ({
-                    style: 'width:100%',
+                    style: 'border-collapse: collapse; width:100%;',
                     skip: $$('.expanded') == 'Y' ? 'field-21' : 'rbody'
                 }),
                 pos: [ {
@@ -204,163 +221,76 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                 atr: $$ => ({
                     filter: row => this.shouldShow(row),
                     class: 'dashboard-rbody-tbl',
-                    order: (row1, row2) => {
-                        let si = row1.get('..sortInverse').toString().split('.'), so = row1.get('..sortOrder').split('.');
-                        for (let i = 1; i < so.length; i++) {
-                            let l = row1.get('.' + so[i]).toString(), r = row2.get('.' + so[i]).toString();
-                            let j = so[i] == 'writtenPremium' ? +l - +r : l.localeCompare(r);
-                            if (j != 0) return -j * si.indexOf(so[i]);
-                        }
-                        return 0;
-                    }
+                    order: dashboardCommon.makeSortFunction($$)
                 })
-            }, [ __c_label("field-24", {
+            }, [ __c_label("h.quoteid", {
                 class: "header",
-                get: $$ => 'QuoteId',
-                pos: [ {
-                    s: "padding: 2px 15px"
-                } ]
-            }), __c_label("field-23", {
+                get: $$ => 'QuoteId'
+            }), __c_label("h.accountName", {
                 class: "header",
                 get: () => 'Account Name',
                 atr: () => ({
                     style: 'width: 300px; display: block; margin-top: 2px'
                 })
-            }), __c_label("field-25", {
+            }), __c_label("h.companyCode", {
                 class: "header",
-                get: () => 'Program',
-                pos: [ {
-                    s: "padding: 2px 15px;"
-                } ]
-            }), __c_label("field-26", {
+                get: () => 'Program'
+            }), __f_sortableheader("h.producerCode", {
                 class: "header",
-                get: $$ => 'Producer Code',
-                pos: [ {
-                    s: "padding-left: 15px; border:0px"
-                } ]
-            }), __c_html("field-26a", {
+            	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'Producer Code', '.producerCode')
+            }), __f_sortableheader("h.effectiveDate", {
                 class: "header",
-                atr: $$ => this.sortArrow($$, '.producerCode')
-            }), __c_label("field-27", {
+            	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'Effective Date', '.effectiveDate')
+            }), __f_sortableheader("h.writtenPremium", {
                 class: "header",
-                get: $$ => 'Effective Date',
-                pos: [ {
-                    s: "padding-left: 15px; border:0px"
-                } ]
-            }), __c_html("field-36", {
+            	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'Written Premium', '.writtenPremium')
+            }), __f_sortableheader("h.govClass", {
                 class: "header",
-                atr: $$ => this.sortArrow($$, '.effectiveDate')
-            }), __c_label("field-28", {
+            	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'GOV CC', '.govClass')
+            }), __f_sortableheader("h.grade", {
                 class: "header",
-                get: $$ => 'Written Premium',
-                pos: [ {
-                    s: "padding-left: 15px; border:0px"
-                } ]
-            }), __c_html("field-37", {
+            	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'Grade', '.grade')
+            }), __f_sortableheader("h.newRenewal", {
                 class: "header",
-                atr: $$ => this.sortArrow($$, '.writtenPremium')
-            }), __c_label("field-38", {
-                class: "header",
-                get: () => 'GOV CC',
-                pos: [ {
-                    s: "padding-left: 15px; border:0px"
-                } ]
-            }), __c_html("field-39", {
-                class: "header",
-                atr: $$ => this.sortArrow($$, '.govClass')
-            }), __c_label("field-40", {
-                class: "header",
-                get: () => 'Grade',
-                pos: [ {
-                    s: "padding-left: 15px; border:0px"
-                } ]
-            }), __c_html("field-40a", {
-                class: "header",
-                atr: $$ => this.sortArrow($$, '.grade')
-            }), __c_label("field-41", {
-                class: "header",
-                get: () => 'Type',
-                pos: [ {
-                    s: "padding-left: 15px; border:0px"
-                } ]
-            }), __c_html("field-42", {
-                class: "header",
-                atr: $$ => this.sortArrow($$, '.newRenewal')
+            	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'Type', '.newRenewal')
             }), __c_label("field-50", {
                 class: "header",
-                get: $$ => 'Notes',
-                pos: [ {
-                    s: "padding: 2px 15px"
-                } ]
-            }), __c_label_i("field-29", {
+                get: $$ => 'Notes'
+            }), __c_label_i("quoteid", {
                 get: $$ => `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$('.quoteid')}">${$$('.quoteid')}</a>`,
                 atr: () => ({
                     html: true
                 })
-            }), __c_label_i("field-30", {
+            }), __c_label_i("accountName", {
                 get: $$ => $$('.accountName')
-            }), __c_label_i("field-31", {
+            }), __c_label_i("companyCode", {
                 get: $$ => $$('.companyCode')
-            }), __c_label_i("field-46", {
-                get: $$ => $$('.producerCode'),
-                atr: $$ => ({
-                    events: {
-                        mouseenter: (event, control) => this.showPopup(control.ui, $$('.producerName')),
-                        mouseleave: (event, control) => this.hidePopup(control.ui)
-                    }
-                }),
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_label_i("field-33", {
+            }), __c_label_i("producerCode", {
+                get: $$ => $$('.producerCode')
+            }), __c_label_i("effectiveDate", {
                 get: function($$) {
-                	let v = $$('.effectiveDate');
-                	if(typeof v == 'string') return v.replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1');
-                },
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_label_i("field-34", {
-                get: function($$) {
-                	let v = $$('.writtenPremium');
-                	if(typeof v == 'string') return v.replace(/(\d)(?=(\d{3})+$)/g, '$1,');
-                },
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_label_i("field-43", {
-                get: $$ => $$('.govClass'),
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_label_i("field-44", {
-                get: $$ => $$('.grade'),
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_label_i("field-45", {
-                get: $$ => $$('.newRenewal'),
-                pos: [ {
-                    w: "2"
-                } ]
-            }), __c_label_i("field-51", {
-            	get: $$ => shapes.svgShape($$, 'svg-icon-file-text'),
-                atr: function($$) {
-                	let n = this.firstUserNote($$), s = n ? n.get('.subject') : '';
-                	return s ? {
-                		style: 'opacity: 1',
-                		events: {
-                            click: () => this.showNotes($$),
-                            mouseenter: (event, control) => this.showPopup(control.ui, s),
-                            mouseleave: (event, control) => this.hidePopup(control.ui)
-                        }
-                	} : {
-                		style: 'opacity: .3',
-                		events: {
-                            click: () => this.showNotes($$)
-                		}
-                	}
+                    let v = $$('.effectiveDate');
+                    if (typeof v == 'string') return v.replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1');
                 }
+            }), __c_label_i("writtenPremium", {
+                get: function($$) {
+                    let v = $$('.writtenPremium');
+                    if (typeof v == 'string') return v.replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+                }
+            }), __c_label_i("govClass", {
+                get: $$ => $$('.govClass')
+            }), __c_label_i("grade", {
+                get: $$ => $$('.grade')
+            }), __c_label_i("newRenewal", {
+                get: $$ => $$('.newRenewal')
+            }), __c_label_i("notes", {
+                get: $$ => shapes.svgShape($$, 'svg-icon-file-text'),
+                atr: $$ => ({
+                    style: `opacity: ${this.firstUserNote($$) ? 1 : .3}`,
+                    events: {
+                        click: () => this.showNotes($$)
+                    }
+                })
             }) ]) ]) ]) ]) ]);
         }
         loadDateRange(px, effFrom, effTo) {
@@ -407,29 +337,15 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
             });
         }
         showPopup(ui, text) {
-        	text && jq('<label>').appendTo(jq('<div>').appendTo(jq(ui)).attr({class: 'dashboard-quotes-popup'})).text(text)
-        }
-        hidePopup(ui) {
-        	jq(ui).find('.dashboard-quotes-popup').remove();
-        }
-        sortArrow($$, fld) {
-            return {
-                class: 'arrow-button',
-                get: $$ => shapes.svgShape($$, 'svg-arrow-' + ($$('.sortInverse').indexOf(fld) == -1 ? 'up' : 'down')),
-                events: {
-                    click: function() {
-                        let si = $$.get('.sortInverse'), so = $$.get('.sortOrder');
-                        $$.set('.sortInverse', si.indexOf(fld) == -1 ? fld + si : si.replace(fld, ''));
-                        $$.set('.sortOrder', fld + so.replace(fld, ''));
-                    }
-                }
-            };
+            text && jq('<label>').appendTo(jq('<div>').appendTo(jq(ui)).attr({
+                class: 'dashboard-quotes-popup'
+            })).text(text);
         }
         optPattern(opt) {
             return opt == '.quoteid' || opt == '.FEIN' ? '\\d{1,9}' : opt == '.producerCode' ? '\\d{1,6}' : '.{1,50}';
         }
         shouldShow($$) {
-            let cc = $$.get('companyCode'), newRenewal = $$.get('newRenewal'), v = $$.get('optionalValue').toString().toUpperCase().replace(/[^\w]/g, ''), f = $$.get('optional');
+            let cc = $$.get('criteria.companyCode'), newRenewal = $$.get('criteria.newRenewal'), v = $$.get('criteria.optionalValue').toString().toUpperCase().replace(/[^\w]/g, ''), f = $$.get('criteria.optional');
             if (f != 0 && v != 0 && (f == '.accountName' ? [ f, '.DBA' ] : [ f ]).filter(f => $$.get(f).toString().toUpperCase().replace(/[^\w]/g, '').indexOf(v) != -1).length == 0) return false;
             return (cc == 0 || $$.get('.companyCode') == cc) && (newRenewal == 0 || $$.get('.newRenewal') == newRenewal);
         }
@@ -467,7 +383,7 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
                     })[0]
                 }));
             } else {
-                jq(rt.rootUI).dialog('moveToTop');
+                jq(rt.rootUI[0]).dialog('moveToTop');
             }
         }
         onstart($$) {
@@ -477,37 +393,46 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
             }, (61 - new Date().getSeconds()) * 1e3);
             $$.get('qs-crit') == 0 && $$.set('qs-crit', 'submissionId');
         }
+        setupPopup() {
+            let self = this;
+            jq(document).on('mousemove', function(e) {
+                let c = jq('.dashboard-quotes-popup'), p = c.parent()[0], t = e.target, control = t._dfe_;
+                p && p != t && (!jq.contains(p, t) || e.target.tagName != 'LABEL') && c.remove();
+                if (control && c.parent().length == 0) {
+                    let $$ = control.model, text = '', fld = control.field.data.name;
+                    if (fld == 'producerCode') text = $$('.producerName');
+                    if (fld == 'govClass') text = $$('.govCCDescription');
+                    if (fld == 'notes') ($$ = self.firstUserNote($$)) && (text = $$.get('.subject'));
+                    text && jq('<label>').appendTo(jq('<div>').appendTo(jq(t)).attr({
+                        class: 'dashboard-quotes-popup'
+                    })).text(text);
+                }
+            });
+        }
         setup() {
+            this.setupPopup();
             this.noteRt = new Map();
             this.idKey = this.lastProcessedKey = 0;
+            this.style(this.name, [ 'quoteid', 'accountName', 'companyCode', 'producerCode', 'effectiveDate', 'writtenPremium', 'govClass', 'grade', 'newRenewal', 'notes' ]);
+        }
+        style(name, columns) {
             uiUtils.setDfeCustomStyle(`
-        	    th {
+        	    .dashboard-filtr th, .dashboard-rbody-tbl th {
     		        background-color: #97a47a;
     		        border-right: solid 2px white;
     		        white-space: nowrap;
     		    }
 
-    		    th label, th input[type="button"] {
+    		    .dashboard-filtr th label, .dashboard-filtr th input[type="button"] {
     		        color: white;
     		        padding-left: 1px;
     		        padding-right: 1px;
     		        outline: none;
     		    }
 
-    		    table {
+    		    .dashboard-filtr, .dashboard-rbody-tbl {
     		        border-collapse: collapse;
     		    }
-
-                .arrow-button {
-                    width:14px;
-                    height: 14px;
-                    fill: white;
-                    display: flex;
-                }
-
-                .arrow-button:active {
-                    transform: scale(0.8);
-                }
     		    
     		    .wrong-date {
     		        background: antiquewhite;
@@ -527,7 +452,7 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
             		position: absolute;
 				}
 				
-				.dashboard-quotes-popup label {
+				.dashboard-quotes-popup > label {
             		display: block;
             		position: relative;
 				    opacity: 0.9;
@@ -536,81 +461,88 @@ defineForm("dashboard/quotes", [ "require", "dfe-core", "forms/dashboard/notes",
 				    border-radius: 7px;
 				    box-shadow: 2px 2px lightgrey;
 				    z-index: 100;
+				    top: -5px;
+				    left: -100px;
+				    width: 120px;
     		    }
     		    				
 				.dashboard-rbody-tbl td {
 				    font-size: 12px;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+1) {
+				.dashboard-rbody-tbl th {
+                    padding: 2px 15px 2px 15px;
+                }
+                
+                .dashboard-rbody-tbl th > div {
+                    display: flex;
+                }
+				
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('quoteid') + 1}) {
             		text-align: center;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+2) {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('accountName') + 1}) {
 				    min-width: 300px;
 				    width: 300px;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+3) {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('companyCode') + 1}) {
 				    text-align: center;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+4) {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('producerCode') + 1}) {
             		text-align: center;
             		position: relative;
             		overflow: visible;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+4) > .dashboard-quotes-popup > label {
-				    top: -5px;
-				    left: -100px;
-				    width: 120px;
-				}
-				
-				.dashboard-rbody-tbl td:nth-child(10n+5) {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('effectiveDate') + 1}) {
             		text-align: center;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+6) {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('writtenPremium') + 1}) {
             		text-align: right;
             		position: relative;
 				}
 				
-                .dashboard-rbody-tbl td:nth-child(10n+6)::before {
+                .dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('writtenPremium') + 1})::before {
                     content: '$';
                     position: absolute;
                     font: 400 12px Arial;
                     left: 15px;
                 }				
 				
-				.dashboard-rbody-tbl td:nth-child(10n+7) {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('govClass') + 1}) {
             		text-align: center;
 				}
 
-				.dashboard-rbody-tbl td:nth-child(10n+8) {
-            		padding-left: 5px
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('govClass') + 1}) > .dashboard-quotes-popup > label {
+            		left: -110px;
+				}
+								
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('grade') + 1}) {
+            		text-align: center;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+9) {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('newRenewal') + 1}) {
             		padding-left: 5px
 				}	
 					
-				.dashboard-rbody-tbl td:nth-child(10n+10) {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('notes') + 1}) {
             		text-align: center;
             		cursor: pointer;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+10) > svg {
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('notes') + 1}) > svg {
             		width: 16px;
             		height: 16px;
 				}
 				
-				.dashboard-rbody-tbl td:nth-child(10n+10) > .dashboard-quotes-popup > label {
-            		top: -5px;
-            		left: -110px;
-				    width: 120px;
+				.dashboard-rbody-tbl td:nth-child(10n+${columns.indexOf('notes') + 1}) > .dashboard-quotes-popup > label {
+            		left: -120px;
 				}
-				`, this.name);
+				`, name);
         }
     }();
 });

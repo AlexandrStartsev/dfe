@@ -620,9 +620,11 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 }).join(',');
             }(obj.dfe);
             ast.body[0].body.expression.properties.forEach(function(p) {
-                if (p instanceof uglify.AST_ConciseMethod && p.key.name == 'constructor') for (var b = p.value.body, i = 0; i < b.length; i++) if (b[i].body instanceof uglify.AST_Assign && b[i].body.left.property == 'dfe') b[i] = uglify.parse('this.dfe=' + f);
-                //b[i] = uglify.parse('this.dfe=[' + fields.join(',') + ']');
-                        });
+                if (p instanceof uglify.AST_ConciseMethod && p.key.name == 'constructor') 
+                	for (var b = p.value.body, i = 0; i < b.length; i++) 
+                		if (b[i].body instanceof uglify.AST_Assign && b[i].body.left.property == 'dfe') 
+                			b[i] = uglify.parse('this.dfe=' + f);
+            });
             var enc = uglify.parse('defineForm("' + obj.name + '", ["' + cc.join('", "') + '"], function (' + dp + ') { return ' + ast.print_to_string({
                 quote_style: 3,
                 beautify: true,
@@ -634,7 +636,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 comments: true
             });
             //, ie8: true
-                }
+        }
         storeInSession($$) {
             function ajaxPost(data, url, accept, error) {
                 var xhr = new XMLHttpRequest();
