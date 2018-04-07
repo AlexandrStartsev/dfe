@@ -564,14 +564,19 @@ define('component-maker', ['dfe-common', 'components/pass-through'], function(cm
                 for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
                 ctrl.component.store(ctrl, data, method)
             }
+            dfe_form.attrs = function($$) {
+                for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
+                return ctrl ? ctrl._attrs : $$.runtime;
+            }
             var slots = Array.prototype.concat.apply([], dfe_form.dfe.map(function(d){ return d.pos })).length;
             return cmn.extend({form: dfe_form}, function(name, attrs) {
                 return cmn.extend( { name: name, children: dfe_form.dfe, component: cmn.extend({ 
                     _render: function(control, data, errs, attrs, events) {
+                        control._attrs = attrs;
                         data && typeof dfe_form.onstart == 'function' && (Array.isArray(data)?data:[data]).forEach(function(d) { dfe_form.onstart(d) });
                         pt._render(control, data, errs, attrs, events);
                     },
-                    cname: dfe_form.name,
+                    cname: 'forms/' + dfe_form.name,
                     slots: slots
                 }, pt, {}) }, attrs)
             })

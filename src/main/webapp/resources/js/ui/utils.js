@@ -296,7 +296,7 @@ require.config({
 	waitSeconds : 3600,
     bundles: {
         'dfe-core' : ['dfe-core', 'component-maker'],
-        'components/generic' : ['components/component', 'components/dfe-runtime', 'components/labeled-component', 'components/switch', 'components/editbox', 'components/c-editbox', 'components/editbox-$', 'components/c-editbox-$', 'components/dropdown', 'components/c-dropdown', 'components/button', 'components/container', 'components/pass-through', 'components/div', 'components/form', 'components/div-r', 'components/tab-d', 'components/tab-s', 'components/div-c', 'components/checkbox', 'components/c-checkbox', 'components/c-radiolist', 'components/radiolist', 'components/label', 'components/label-i', 'components/html', 'components/textarea', 'components/editbox-P', 'components/div-button', 'components/multioption', 'components/div-button-x'],
+        'components/generic' : ['components/component', 'components/dfe-runtime', 'components/labeled-component', 'components/switch', 'components/editbox', 'components/c-editbox', 'components/c-switch', 'components/editbox-$', 'components/c-editbox-$', 'components/dropdown', 'components/c-dropdown', 'components/button', 'components/container', 'components/pass-through', 'components/div', 'components/form', 'components/div-r', 'components/tab-d', 'components/tab-s', 'components/div-c', 'components/checkbox', 'components/c-checkbox', 'components/c-radiolist', 'components/radiolist', 'components/label', 'components/label-i', 'components/html', 'components/textarea', 'components/editbox-P', 'components/div-button', 'components/multioption', 'components/div-button-x'],
     },            
 });
 
@@ -379,7 +379,7 @@ var ajaxCache = (function() {
         },
         get: function(opt) {
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
-                var u = '/AJAXServlet.srv?';
+                var u = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
                 for(var o in opt)
                     (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
                         u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';

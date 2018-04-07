@@ -717,8 +717,8 @@
             attachUI: function (control, nodes) {
             	nodes && control.children.forEach(function(m){ 
                     var i = 0;
-                    m.forEach(function(c) { 
-                        c.component.setParentNode(c, [nodes[i++]])
+                    m.forEach(function(c) {
+                        c.component.setParentNode(c, nodes.slice(i, i += c.component.slots))
                     })
                 })
             },
@@ -1205,7 +1205,7 @@
                     if(!control.captionUi) {
                         nodes[0].appendChild(control.captionUi = document.createElement('label'))._dfe_ = control;
                     }
-                    attrs.html ? (control.captionUi.innerHTML = attrs.html) : (control.captionUi.innerText = attrs.text);
+                    attrs.html ? (control.captionUi.innerHTML = attrs.text) : (control.captionUi.innerText = attrs.text);
                     uiUtils.setAttribute(control.captionUi, 'style', attrs.cstyle);
                     var ce = attrs.captureError || this.captureError;
                     if(control.captureError = typeof ce != 'function' || ce(data, errs, attrs)) {
@@ -1254,4 +1254,11 @@
             renderingComponent: Radiolist,
         }, DWC, _base())
     })
+    
+    define('components/c-switch', ['components/labeled-component', 'components/switch', 'ui/utils'], function(DWC, Switch, uiUtils) {
+        return _extend({
+	        cname: 'c-switch',
+            renderingComponent: Switch,
+        }, DWC, _base())
+    })    
 })()

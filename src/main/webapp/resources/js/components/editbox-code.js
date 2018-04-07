@@ -63,7 +63,7 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
             else
                 text = text.replace(/^function/,'function foo');
         }
-        return text;
+        return (text||'').toString();
     }
     function formatInlineCode(text, func) {
         if(text!=0) {

@@ -1,4 +1,4 @@
-defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/editbox-dropdown-switch", "components/c-editbox-$", "components/container", "components/c-checkbox", "components/tab-s" ], function(require, cmn, fields, __c_div_button, __c_label, __c_button, __c_div, __c_c_radiolist, __c_c_editbox, __c_c_dropdown, __c_editbox_dropdown_switch, __c_c_editbox_$, __c_container, __c_c_checkbox, __c_tab_s) {
+defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "forms/cmau/applytoall", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/editbox-dropdown-switch", "components/c-editbox-$", "components/container", "components/tab-s" ], function(require, cmn, fields, __f_applytoall, __c_div_button, __c_label, __c_button, __c_div, __c_c_radiolist, __c_c_editbox, __c_c_dropdown, __c_editbox_dropdown_switch, __c_c_editbox_$, __c_container, __c_tab_s) {
     return new class {
         constructor() {
             this.dfe = __c_div("root", {
@@ -150,13 +150,10 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     n: "Y"
                 }, {} ]
             }), __c_c_dropdown("type-choice", {
-                atr: $$ => fields.choice('.vehicletype', fields.choiceItems({
-                    'Private Passenger Type': 'car',
-                    'Truck, Tractor or Trailer': 'truck',
-                    'Golf Carts and Low Speed Vehicles': 'golf',
-                    'Mobile Homes': 'mobile',
-                    'Antique Autos': 'antique'
-                }), {
+                atr: $$ => fields.choice('.vehicletype', Object.keys(this.typeMap).map(k => ({
+                    value: k,
+                    description: this.typeMap[k].name
+                })), {
                     disabled: this.vehDetailsDisabled($$),
                     text: 'Vehicle Type',
                     style: 'width: fit-content;'
@@ -214,22 +211,14 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     w: "3"
                 } ]
-            }), __c_c_dropdown("field-34", {
-                atr: () => fields.choice('.VehUseCd', [ 'Furnished for Non-Business Use', 'All Other' ], {
-                    text: 'Usage'
+            }), __f_applytoall("field-34", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.VehUseCd', 'Usage', {
+                    items: [ 'Furnished for Non-Business Use', 'All Other' ],
+                    type: 'car'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-35", {
-                get: () => 'Apply to all Passenger Vehicles',
-                set: ($$, value) => this.all($$, '.VehUseCd', 'car'),
-                atr: $$ => ({
-                    class: 'link-button'
-                }),
-                pos: [ {
-                    n: "N"
-                } ]
+                }, {}, {} ]
             }), __c_container("nonbus", {
                 get: $$ => $$('.VehUseCd') == 'Furnished for Non-Business Use' ? [ $$ ] : [],
                 atr: () => ({
@@ -240,42 +229,25 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_dropdown("field-38", {
-                atr: () => fields.choice('.OperExp', [ 'No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs' ], {
+            }, [ __f_applytoall("field-38", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.OperExp', 'Operator Experience', {
                     cstyle: 'padding-left: 10px',
-                    text: 'Operator Experience'
+                    items: [ 'No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs' ],
+                    type: 'car'
                 })
-            }), __c_button("field-39", {
-                get: () => 'Apply to all Passenger Vehicles',
-                set: $$ => this.all($$, '.OperExp', 'car'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_dropdown("field-42", {
-                atr: () => fields.choice('.OperUse', [ 'Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles' ], {
+            }), __f_applytoall("field-42", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.OperUse', 'Operator Use', {
                     cstyle: 'padding-left: 10px',
-                    text: 'Operator Use'
+                    items: [ 'Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles' ],
+                    type: 'car'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-43", {
-                get: () => 'Apply to all Passenger Vehicles',
-                set: $$ => this.all($$, '.OperUse', 'car'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }) ]), __c_div("field-151", {
-                get: $$ => [ $$ ],
-                pos: [ {
-                    n: "Y",
-                    s: "padding: 0px;"
-                } ]
-            }) ]), __c_container("truck", {
+                }, {}, {} ]
+            }) ]) ]), __c_container("truck", {
                 get: $$ => $$('.vehicletype') == 'truck' ? [ $$ ] : [],
                 atr: $$ => ({
-                    class: 'col-va-middle col-3-centred tab-alt-color tab-cols-3-4-3',
-                    skip: $$('.VehicleClass') == 'Trailer Types' ? [ 'field-152' ] : []
+                    class: 'col-va-middle col-3-centred tab-alt-color tab-cols-3-4-3'
                 }),
                 pos: [ {
                     n: "Y",
@@ -287,134 +259,84 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     w: "3"
                 } ]
-            }), __c_c_dropdown("field-51", {
-                atr: () => fields.choice('.VehicleClass', [ 'Light Truck 10,000 lbs GVW or less', 'Medium Truck 10,001 to 20,000 lbs GVW', 'Heavy Truck 20,001 to 45,000 lbs GVW', 'Extra-Heavy Truck over 45,000 lbs GVW', 'Heavy Truck-Tractor 45,000 lbs GCW or less', 'Extra-Heavy Truck-Tractor over 45,000 lbs GCW', 'Trailer Types' ], {
-                    text: 'Vehicle Class'
+            }), __f_applytoall("field-51", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.VehicleClass', 'Vehicle Class', {
+                    items: [ 'Light Truck 10,000 lbs GVW or less', 'Medium Truck 10,001 to 20,000 lbs GVW', 'Heavy Truck 20,001 to 45,000 lbs GVW', 'Extra-Heavy Truck over 45,000 lbs GVW', 'Heavy Truck-Tractor 45,000 lbs GCW or less', 'Extra-Heavy Truck-Tractor over 45,000 lbs GCW', 'Trailer Types' ],
+                    type: 'truck'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-52", {
-                get: () => 'Apply to all Trucks, Tractors and Trailers',
-                set: $$ => this.all($$, '.VehicleClass', 'truck'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_container("trailer", {
+                }, {}, {} ]
+            }), __c_container("tt-switch", {
                 get: $$ => $$('.VehicleClass') == 'Trailer Types' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-alt-color tab-cols-3-4-3'
+                    class: 'col-va-middle col-3-centred tab-alt-color tab-cols-3-4-3'
                 }),
                 pos: [ {
                     n: "Y",
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_dropdown("field-55", {
-                atr: () => fields.choice('.TrailerType', 'Semitrailers|Trailers|Service or Utility Trailer (0-200 lbs. Load Capacity)'.split('|'), {
-                    text: 'Trailer Type',
-                    style: 'max-width: 310px;'
+            }, [ __f_applytoall("field-55", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.TrailerType', 'Trailer Type', {
+                    items: [ 'Semitrailers', 'Trailers', 'Service or Utility Trailer (0-200 lbs. Load Capacity)' ],
+                    type: 'truck'
                 })
-            }), __c_button("field-56", {
-                get: () => 'Apply to all Trucks, Tractors and Trailers',
-                set: $$ => this.all($$, '.TrailerType', 'truck'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }) ]), __c_div("field-152", {
-                get: $$ => [ $$ ],
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }), __c_c_radiolist("field-58", {
-                atr: () => fields.simple('.UseClassInd1', {
-                    orientation: 'horizontal',
-                    text: 'Is this auto used for transporting personnel, tools and equipment to and from a job location where it is parked for the majority of the day?'
+            }) ]), __f_applytoall("field-58", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.UseClassInd1', 'Is this auto used for transporting personnel, tools and equipment to and from a job location where it is parked for the majority of the day?', {
+                    component: 'radiolist',
+                    type: 'truck'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-59", {
-                get: () => 'Apply to all Trucks, Tractors and Trailers',
-                set: $$ => this.all($$, '.UseClassInd1', 'truck'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_radiolist("field-62", {
-                atr: () => fields.simple('.UseClassInd2', {
-                    orientation: 'horizontal',
-                    text: 'Is this auto used for pick-up and/or delivery of property to residential households?'
+                }, {}, {} ]
+            }), __f_applytoall("field-62", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.UseClassInd2', 'Is this auto used for pick-up and/or delivery of property to residential households?', {
+                    component: 'radiolist',
+                    type: 'truck'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-63", {
-                get: () => 'Apply to all Trucks, Tractors and Trailers',
-                set: $$ => this.all($$, '.UseClassInd2', 'truck'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_dropdown("field-65", {
-                atr: () => fields.choice('.RadiusClass', 'Local up to 50 miles|Intermediate 51 to 200 miles|Long distance over 200 miles'.split('|'), {
+                }, {}, {} ]
+            }), __f_applytoall("field-65", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.RadiusClass', 'Radius', {
+                    items: [ 'Local up to 50 miles', 'Intermediate 51 to 200 miles', 'Long distance over 200 miles' ],
+                    type: 'truck'
+                }),
+                pos: [ {
+                    n: "Y"
+                }, {}, {} ]
+            }), __f_applytoall("field-68", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.DumpingOpInd', 'Used in dumping', {
+                    component: 'checkbox',
+                    type: 'truck'
+                }),
+                pos: [ {
+                    n: "Y"
+                }, {}, {} ]
+            }), __f_applytoall("field-71", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.SecondaryClass', 'Secondary Class', {
+                    items: [ 'Truckers', 'Food Delivery', 'Waste Disposal', 'Farmers', 'Dump & Transit Mix', 'Contractors', 'Not Otherwise Specified' ],
                     style: 'width:fit-content',
-                    text: 'Radius'
+                    type: 'truck'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-66", {
-                get: () => 'Apply to all Trucks, Tractors and Trailers',
-                set: $$ => this.all($$, '.RadiusClass', 'truck'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_checkbox("field-68", {
-                atr: $$ => fields.simple('.DumpingOpInd', [], {
-                    text: 'Used in dumping'
+                }, {}, {} ]
+            }), __f_applytoall("field-74", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.SecondaryClassType', 'Secondary Class Type', {
+                    component: 'ajax-dropdown',
+                    ajax: {
+                        method: 'CMAUVehicleScriptHelper',
+                        action: 'getSecondaryClassTypeOptions',
+                        secondaryClass: $$('.SecondaryClass')
+                    },
+                    style: 'width: fit-content',
+                    type: 'truck'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-69", {
-                get: () => 'Apply to all Trucks, Tractors and Trailers',
-                set: $$ => this.all($$, '.DumpingOpInd', 'truck'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_dropdown("field-71", {
-                atr: () => fields.choice('.SecondaryClass', [ 'Truckers', 'Food Delivery', 'Waste Disposal', 'Farmers', 'Dump & Transit Mix', 'Contractors', 'Not Otherwise Specified' ], {
-                    style: 'width:fit-content',
-                    text: 'Secondary Class'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_button("field-72", {
-                get: () => 'Apply to all Trucks, Tractors and Trailers',
-                set: $$ => this.all($$, '.SecondaryClass', 'truck'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_dropdown("field-74", {
-                atr: $$ => fields.ajaxChoice('.SecondaryClassType', {
-                    method: 'CMAUVehicleScriptHelper',
-                    action: 'getSecondaryClassTypeOptions',
-                    secondaryClass: $$('.SecondaryClass')
-                }, {
-                    text: 'Secondary Class Type',
-                    style: 'width:fit-content'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_button("field-75", {
-                get: () => 'Apply to all Trucks, Tractors and Trailers',
-                set: $$ => this.all($$, '.SecondaryClassType', 'truck'),
-                atr: () => ({
-                    class: 'link-button'
-                })
+                }, {}, {} ]
             }) ]), __c_container("golf", {
                 get: $$ => $$('.vehicletype') == 'golf' ? [ $$ ] : [],
                 atr: () => ({
@@ -430,50 +352,35 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     w: "3"
                 } ]
-            }), __c_c_dropdown("field-125", {
-                atr: () => fields.choice('.GolfType', [ 'Golf Cart', 'Low Speed Vehicles' ], {
-                    text: 'Type',
-                    style: 'width: fit-content'
+            }), __f_applytoall("field-125", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.GolfType', 'Type', {
+                    items: [ 'Golf Cart', 'Low Speed Vehicles' ],
+                    style: 'width: fit-content',
+                    type: 'golf'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-126", {
-                get: () => 'Apply to all Golf Carts and Low Speed Vehicles',
-                set: $$ => this.all($$, '.GolfType', 'golf'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_dropdown("field-128", {
-                atr: () => fields.choice('.GolfUse', [ 'Used On Golf Course', 'Other Commercial Purposes' ], {
-                    text: 'Use',
-                    style: 'width: fit-content'
+                }, {}, {} ]
+            }), __f_applytoall("field-128", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.GolfUse', 'Use', {
+                    items: [ 'Used On Golf Course', 'Other Commercial Purposes' ],
+                    style: 'width: fit-content',
+                    type: 'golf'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-129", {
-                get: () => 'Apply to all Golf Carts and Low Speed Vehicles',
-                set: $$ => this.all($$, '.GolfUse', 'golf'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_checkbox("field-131", {
-                atr: () => fields.simple('.GolfVhsub', [], {
-                    text: 'Vehicle subject to compulsory, financial or other law'
+                }, {}, {} ]
+            }), __f_applytoall("field-131", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.GolfVhsub', 'Vehicle subject to compulsory, financial or other law', {
+                    component: 'checkbox',
+                    type: 'golf'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-132", {
-                get: () => 'Apply to all Golf Carts and Low Speed Vehicles',
-                set: $$ => this.all($$, '.GolfVhsub', 'golf'),
-                atr: () => ({
-                    class: 'link-button'
-                })
+                }, {}, {} ]
             }) ]), __c_container("mobile", {
                 get: $$ => $$('.vehicletype') == 'mobile' ? [ $$ ] : [],
-                atr: () => ({
+                atr: $$ => ({
                     class: 'col-3-centred tab-alt-color tab-cols-2-5-3'
                 }),
                 pos: [ {
@@ -486,43 +393,34 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     w: "3"
                 } ]
-            }), __c_c_dropdown("field-134", {
-                atr: () => fields.choice('.MobileHomeType', [ 'Trailer Equipped As Living Quarters', 'Pickup Trucks Used Solely To Transport Camper Bodies', 'Motor Homes Self-Propelled Equipped As Living Quarters' ], {
-                    text: 'Type',
-                    style: 'width: fit-content'
+            }), __f_applytoall("field-134", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.MobileHomeType', 'Type', {
+                    items: [ 'Trailer Equipped As Living Quarters', 'Pickup Trucks Used Solely To Transport Camper Bodies', 'Motor Homes Self-Propelled Equipped As Living Quarters' ],
+                    style: 'width: fit-content',
+                    type: 'mobile'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-135", {
-                get: () => 'Apply to all Mobile Homes',
-                set: $$ => this.all($$, '.MobileHomeType', 'mobile'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_container("length-switch", {
+                }, {}, {} ]
+            }), __c_container("size-switch", {
                 get: $$ => $$('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [ $$ ] : [],
                 atr: () => ({
                     class: 'col-3-centred tab-alt-color tab-cols-2-5-3'
                 }),
                 pos: [ {
                     n: "Y",
-                    w: "3"
+                    w: "3",
+                    s: "padding: 0px;"
                 } ]
-            }, [ __c_c_dropdown("field-138", {
-                atr: () => fields.choice('.MotorHomeSize', [ 'Up To 22 feet', 'More Than 22 feet' ], {
-                    text: 'Length',
-                    style: 'width: fit-content'
-                })
-            }), __c_button("field-139", {
-                get: () => 'Apply to all Mobile Homes',
-                set: $$ => this.all($$, '.MotorHomeSize', 'mobile'),
-                atr: () => ({
-                    class: 'link-button'
+            }, [ __f_applytoall("field-138", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.MotorHomeSize', 'Length', {
+                    items: [ 'Up To 22 feet', 'More Than 22 feet' ],
+                    style: 'width: fit-content',
+                    type: 'mobile'
                 })
             }) ]) ]), __c_container("covs", {
                 get: $$ => [ $$ ],
-                atr: () => ({
+                atr: $$ => ({
                     class: 'col-3-centred tab-alt-color tab-cols-4-3-3'
                 }),
                 pos: [ {
@@ -535,67 +433,51 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 pos: [ {
                     w: "3"
                 } ]
-            }), __c_c_checkbox("field-79", {
-                atr: $$ => fields.simple('.PhysDmgInd', [], {
-                    text: 'Physical Damage Only?'
+            }), __f_applytoall("field-81", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.PhysDmgInd', 'Physical Damage Only?', {
+                    component: 'checkbox'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-80", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.PhysDmgInd'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_dropdown("field-82", {
-                atr: $$ => fields.ajaxChoice('.coverages.otc.ded', {
-                    query: {
-                        method: 'CMAUVehicleScriptHelper',
-                        action: 'getCompDedOptions',
-                        vehicleType: $$('.vehicletype')
+                }, {}, {} ]
+            }), __f_applytoall("field-82", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.otc.ded', 'Comp. Ded', {
+                    component: 'ajax-dropdown',
+                    ajax: {
+                        query: {
+                            method: 'CMAUVehicleScriptHelper',
+                            action: 'getCompDedOptions',
+                            vehicleType: $$('.vehicletype')
+                        },
+                        mapper: o => ({
+                            value: o.value,
+                            description: o.text
+                        })
                     },
-                    mapper: o => ({
-                        value: o.value,
-                        description: o.text
-                    })
-                }, {
-                    style: 'width: min-content;',
-                    text: 'Comp. Ded'
+                    style: 'width: fit-content'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-83", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.coverages.otc.ded'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_dropdown("field-85", {
-                atr: $$ => fields.ajaxChoice('.coverages.col.ded', {
-                    query: {
-                        method: 'CMAUVehicleScriptHelper',
-                        action: 'getCollDedOptions',
-                        vehicleType: $$('.vehicletype')
+                }, {}, {} ]
+            }), __f_applytoall("field-85", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.col.ded', 'Coll. Ded', {
+                    component: 'ajax-dropdown',
+                    ajax: {
+                        query: {
+                            method: 'CMAUVehicleScriptHelper',
+                            action: 'getCollDedOptions',
+                            vehicleType: $$('.vehicletype')
+                        },
+                        mapper: o => ({
+                            value: o.value,
+                            description: o.text
+                        })
                     },
-                    mapper: o => ({
-                        value: o.value,
-                        description: o.text
-                    })
-                }, {
-                    style: 'width: min-content;',
-                    text: 'Coll. Ded'
+                    style: 'width: fit-content'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-86", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.coverages.col.ded'),
-                atr: () => ({
-                    class: 'link-button'
-                })
+                }, {}, {} ]
             }), __c_container("val-switch", {
                 get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) ? [ $$ ] : [],
                 atr: () => ({
@@ -606,23 +488,15 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_dropdown("field-88", {
-                atr: $$ => fields.ajaxChoice('.ValuationMethod', {
-                    method: 'CMAUVehicleScriptHelper',
-                    action: 'getValuationMethodOptions',
-                    vehicleType: $$('.vehicletype')
-                }, {
-                    text: 'Valuation',
-                    style: 'width: min-content;'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_button("field-89", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.ValuationMethod'),
-                atr: () => ({
-                    class: 'link-button'
+            }, [ __f_applytoall("field-88", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.ValuationMethod', 'Valuation', {
+                    component: 'ajax-dropdown',
+                    ajax: {
+                        method: 'CMAUVehicleScriptHelper',
+                        action: 'getValuationMethodOptions',
+                        vehicleType: $$('.vehicletype')
+                    },
+                    style: 'width: min-content'
                 })
             }) ]), __c_container("amt-switch", {
                 get: $$ => this.compCol($$) && $$('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [],
@@ -634,18 +508,11 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_editbox_$("field-92", {
-                atr: () => fields.simple('.StatedAmt', {
-                    text: 'Stated Amount',
+            }, [ __f_applytoall("field-92", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.StatedAmt', 'Stated Amount', {
+                    component: 'editbox-$',
                     cstyle: 'padding-left: 10px;',
-                    style: 'width: 100px',
-                    formatting: '$9,999,999'
-                })
-            }), __c_button("field-93", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.StatedAmt'),
-                atr: () => ({
-                    class: 'link-button'
+                    style: 'width: 100px'
                 })
             }) ]), __c_container("pdonly-switch", {
                 get: $$ => $$('.PhysDmgInd') == 'Y' || $$('..state') != 'KS' ? [] : [ $$ ],
@@ -655,15 +522,9 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_checkbox("field-96", {
-                atr: () => fields.simple('.coverages.pip.IncludeInd', [], {
-                    text: 'Personal Injury Protection Coverage'
-                })
-            }), __c_button("field-97", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.coverages.pip.IncludeInd'),
-                atr: () => ({
-                    class: 'link-button'
+            }, [ __f_applytoall("field-96", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.IncludeInd', 'Personal Injury Protection Coverage', {
+                    component: 'checkbox'
                 })
             }), __c_container("pip-switch", {
                 get: $$ => $$('.coverages.pip.IncludeInd') == 'Y' ? [ $$ ] : [],
@@ -673,34 +534,22 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_dropdown("field-100", {
-                atr: () => fields.choice('.coverages.pip.addedpipoption', [ 'Option 1', 'Option 2' ], {
-                    text: 'Additional Personal Injury Protection',
+            }, [ __f_applytoall("field-100", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.addedpipoption', 'Additional Personal Injury Protection', {
+                    items: [ 'Option 1', 'Option 2' ],
                     cstyle: 'padding-left: 10px',
                     style: 'width: fit-content'
                 })
-            }), __c_button("field-101", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.coverages.pip.addedpipoption'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_editbox("field-103", {
-                atr: () => fields.simple('.coverages.pip.broadpipnum', {
-                    text: 'Number of Individuals for Broadened PIP',
-                    cstyle: 'padding-left: 10px',
+            }), __f_applytoall("field-103", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.broadpipnum', 'Number of Individuals for Broadened PIP', {
+                    component: 'editbox',
                     pattern: '[0-9]{1,5}',
-                    style: 'width: 80px;'
+                    cstyle: 'padding-left: 10px',
+                    style: 'width: 80px'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-104", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.coverages.pip.broadpipnum'),
-                atr: () => ({
-                    class: 'link-button'
-                })
+                }, {}, {} ]
             }), __c_container("added-pip", {
                 get: $$ => +$$('.coverages.pip.broadpipnum') > 0 ? [ $$ ] : [],
                 atr: $$ => this.covTabClass($$),
@@ -709,18 +558,12 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_editbox("field-145", {
-                atr: () => fields.simple('.coverages.pip.addedbroadpipnum', {
-                    text: 'Number of Named Individuals for Additional Broadened PIP',
-                    cstyle: 'padding-left: 10px',
+            }, [ __f_applytoall("field-145", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.addedbroadpipnum', 'Number of Named Individuals for Additional Broadened PIP', {
+                    component: 'editbox',
                     pattern: '[0-9]{1,5}',
-                    style: 'width: 80px;'
-                })
-            }), __c_button("field-146", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.coverages.pip.addedbroadpipnum'),
-                atr: () => ({
-                    class: 'link-button'
+                    cstyle: 'padding-left: 10px',
+                    style: 'width: 80px'
                 })
             }), __c_container("added-pip-s", {
                 get: $$ => +$$('.coverages.pip.addedbroadpipnum') ? [ $$ ] : [],
@@ -730,17 +573,11 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_dropdown("field-149", {
-                atr: () => fields.choice('.coverages.pip.addedbpipoptioncd', [ 'Option 1', 'Option 2' ], {
-                    text: 'Additional Broadened Personal Injury Protection',
+            }, [ __f_applytoall("field-149", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.addedbpipoptioncd', 'Additional Broadened Personal Injury Protection', {
+                    items: [ 'Option 1', 'Option 2' ],
                     cstyle: 'padding-left: 10px',
                     style: 'width: fit-content'
-                })
-            }), __c_button("field-150", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.coverages.pip.addedbpipoptioncd'),
-                atr: () => ({
-                    class: 'link-button'
                 })
             }) ]) ]) ]) ]) ]), __c_container("opt-covs", {
                 get: $$ => [ $$ ],
@@ -768,76 +605,44 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     n: "Y",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_dropdown("field-118", {
-                atr: () => fields.choice('.coverages.towlabor.towlabor', fields.choiceItems({
-                    'No Coverage': 'No Coverage',
-                    $50: '50',
-                    $100: '100',
-                    $200: '200'
-                }), {
-                    style: 'width: fit-content',
-                    text: 'Towing and Labor'
+            }, [ __f_applytoall("field-118", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.towlabor.towlabor', 'Towing and Labor', {
+                    items: fields.choiceItems({
+                        'No Coverage': 'No Coverage',
+                        $50: '50',
+                        $100: '100',
+                        $200: '200'
+                    }),
+                    style: 'width: fit-content'
                 })
-            }), __c_button("field-119", {
-                get: () => 'Apply to all Passenger Vehicles',
-                set: $$ => this.all($$, '.coverages.towlabor.towlabor', 'car'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }) ]), __c_c_checkbox("field-108", {
-                atr: () => fields.simple('.losspayee.losspayeeInd', [], {
-                    text: 'Loss Payee'
+            }) ]), __f_applytoall("field-108", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.losspayeeInd', 'Loss Payee', {
+                    component: 'checkbox'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-109", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.losspayee.losspayeeInd'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_checkbox("field-111", {
-                atr: () => fields.simple('.losspayee.ailessorInd', [], {
-                    text: 'Additional Insured - Lessor'
+                }, {}, {} ]
+            }), __f_applytoall("field-111", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.ailessorInd', 'Additional Insured - Lessor', {
+                    component: 'checkbox'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-112", {
-                get: function($$) {
-                    return 'Apply to all Vehicles';
-                },
-                set: $$ => this.all($$, '.losspayee.ailessorInd'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_checkbox("field-114", {
-                atr: () => fields.simple('.losspayee.haownInd', [], {
-                    text: 'Hired Auto - Specified As Covered Auto You Own'
+                }, {}, {} ]
+            }), __f_applytoall("field-114", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.haownInd', 'Hired Auto - Specified As Covered Auto You Own', {
+                    component: 'checkbox'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-115", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.losspayee.haownInd'),
-                atr: () => ({
-                    class: 'link-button'
-                })
-            }), __c_c_checkbox("field-157", {
-                atr: () => fields.simple('.emplessor', [], {
-                    text: 'Employee as Lessor'
+                }, {}, {} ]
+            }), __f_applytoall("field-157", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.emplessor', 'Employee as Lessor', {
+                    component: 'checkbox'
                 }),
                 pos: [ {
                     n: "Y"
-                }, {} ]
-            }), __c_button("field-158", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.emplessor'),
-                atr: () => ({
-                    class: 'link-button'
-                })
+                }, {}, {} ]
             }), __c_container("field-113", {
                 get: $$ => [ $$ ],
                 atr: $$ => ({
@@ -848,15 +653,9 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     w: "3",
                     s: "padding: 0px;"
                 } ]
-            }, [ __c_c_checkbox("field-116", {
-                atr: () => fields.simple('.losspayee.namedinsuredInd', [], {
-                    text: 'Additional Named Insured'
-                })
-            }), __c_button("field-117", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.losspayee.namedinsuredInd'),
-                atr: () => ({
-                    class: 'link-button'
+            }, [ __f_applytoall("field-116", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.namedinsuredInd', 'Additional Named Insured', {
+                    component: 'checkbox'
                 })
             }), __c_container("field-120", {
                 get: $$ => $$('.losspayee.namedinsuredInd') == 'Y' ? [ $$ ] : [],
@@ -868,16 +667,11 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                     s: "padding: 0px;",
                     w: "3"
                 } ]
-            }, [ __c_c_editbox("field-121", {
-                atr: () => fields.simple('.losspayee.namedInsured.Name', {
+            }, [ __f_applytoall("field-121", {
+                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.namedInsured.Name', '<b style="color: red">*</b>Name', {
+                    component: 'editbox',
                     cstyle: 'padding-left: 10px;',
-                    html: '<b style="color: red">*</b>Name'
-                })
-            }), __c_button("field-124", {
-                get: () => 'Apply to all Vehicles',
-                set: $$ => this.all($$, '.losspayee.namedInsured.Name'),
-                atr: () => ({
-                    class: 'link-button'
+                    html: true
                 })
             }) ]) ]) ]), __c_div("car-ctrl", {
                 get: $$ => [ $$ ],
@@ -925,6 +719,34 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "com
                 } ]
             }) ]);
             this.carDefaults = JSON.parse('{"losspayee":[{"losspayeeInd":"N","ailessorInd":"N","haownInd":"N"}],"emplessor":"N","PhysDmgInd":"N","DumpingOpInd":"N","hasvin":"Y","vinoverride":"N","custom":"N","UseClassInd1":"N","UseClassInd2":"N","coverages":[{"pip":[{"IncludeInd":"N"}],"liab":[{"IncludeInd":"Y"}],"towlabor":[{"towlabor":"No Coverage"}]}]}');
+            this.typeMap = {
+                car: {
+                    name: "Private Passenger Type",
+                    btn: "Passenger Vehicles"
+                },
+                truck: {
+                    name: "Trucks, Tractors and Trailers"
+                },
+                golf: {
+                    name: "Golf Carts and Low Speed Vehicles"
+                },
+                mobile: {
+                    name: "Mobile Homes"
+                },
+                antique: {
+                    name: "Antique Autos"
+                }
+            };
+        }
+        makeApplyAllAttrs($$, field, text, opts) {
+            return cmn.extend(opts, {
+                get: $$ => [ $$ ],
+                set: () => this.all($$, field, opts.type),
+                field: field,
+                text: text,
+                component: 'dropdown',
+                all: opts.type ? this.typeMap[opts.type].btn || this.typeMap[opts.type].name : 'Vehicles'
+            });
         }
         vehDetailsDisabled($$) {
             return $$('.hasvin') == 'Y' && ($$('.vinnumber') == 0 || $$('.vinoverride') != 'Y');

@@ -564,13 +564,14 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
             }) ]) ]) ]) ]);
         }
         allFields($$) {
+            var dfe = $$.get('dfe'), form = dfe[0] && dfe[0].data.form;
             return function tr(lst, out) {
                 lst.forEach(function(i) {
-                    out.push(i);
+                    i.data.form == form && out.push(i);
                     tr(i.get('.children'), out);
                 });
                 return out;
-            }($$.get('dfe'), []);
+            }(dfe, []);
         }
         codeToText(fn) {
             return fn.toString().replace(/^function[^(]*/, 'function').replace(/\n\/\*``\*\//, '');
@@ -604,9 +605,15 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
             for (var d in obj.dependencies) obj.dependencies[d].match(/components\//) || (dp += (dp == 0 ? '' : ',') + d, 
             cc.push(obj.dependencies[d]));
             var self = this, f = function collect(dfe) {
-                return dfe.map(function(r) {
-                    var c = r.component.cname, cn = '__c_' + c.replace(/\-/g, '_'), cf = collect(r.children);
-                    cc.indexOf('components/' + c) == -1 && (dp += ', ' + cn) && cc.push('components/' + c);
+                return dfe[0] && dfe[0].form == obj && dfe.map(function(r) {
+                    var c = r.component.cname, cf = collect(r.children)||'', cn;
+                    if(c.match(/^forms\//)) {
+                        cn = '__f_' + c.replace(/.*(?=\/\w+$)/g,'').substr(1);
+                        cc.indexOf(c) == -1 && (dp += ', ' + cn) && cc.push(c);
+                    } else {
+                        cn = '__c_' + c.replace(/\-|\//g, '_');
+                        cc.indexOf('components/' + c) == -1 && (dp += ', ' + cn) && cc.push('components/' + c);
+                    }
                     var field = cn + '("' + r.name + '",{', cma = '';
                     [ 'class', 'get', 'set', 'val', 'atr' ].forEach(function(p) {
                         if (typeof r[p] != 'undefined') {
@@ -684,15 +691,21 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 if (e.type == 'mouseover') {
                     do {
                         if (rt.findControls(proxy.get('.name')).filter(function(c) {
-                            if ((c.ui || c.mUI) && (ui = c.ui && c.ui.nodeName ? c.ui : c.mUI[0]).nodeName && (r = ui.getBoundingClientRect()) && (r.x || r.width)) {
-                                body.appendChild(sp = doc.createElement('span'));
-                                sp.setAttribute('style', 'position: absolute; z-index: 3000; opacity: 0.5; border-radius: 5px; ' + hl);
-                                sp.setAttribute('class', '__marker__');
-                                sp.style.top = r.top - 3 + (doc.defaultView.scrollY || doc.defaultView.window.pageYOffset) + 'px';
-                                sp.style.left = r.left - 4 + (doc.defaultView.scrollX || doc.defaultView.window.pageXOffset) + 'px';
-                                sp.style.width = r.width + 10 + 'px';
-                                sp.style.height = r.height + 6 + 'px';
-                                return true;
+                            if(Array.isArray(c._allParentNodes)) {
+                                var a;
+                                c._allParentNodes.forEach(function(ui){
+                                    if((r = ui.getBoundingClientRect()) && (r.x || r.width)){
+                                        a = true;
+                                        body.appendChild(sp = doc.createElement('span'));
+                                        sp.setAttribute('style', 'position: absolute; z-index: 3000; opacity: 0.5; border-radius: 5px; ' + hl);
+                                        sp.setAttribute('class', '__marker__');
+                                        sp.style.top = r.top - 3 + (doc.defaultView.scrollY || doc.defaultView.window.pageYOffset) + 'px';
+                                        sp.style.left = r.left - 4 + (doc.defaultView.scrollX || doc.defaultView.window.pageXOffset) + 'px';
+                                        sp.style.width = r.width + 10 + 'px';
+                                        sp.style.height = r.height + 6 + 'px';
+                                    }
+                                })
+                                return a;
                             }
                         }).length > 0) break;
                         proxy.get('.name') != 0 && (hl = 'border: dashed; border-color: red;'), proxy = proxy.get('..');
