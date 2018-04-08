@@ -21,7 +21,7 @@
                     window.babel.transformScriptTags();
                     
                     //console.log(window.babel.transform("class ShoppingList extends React.Component { render() { let rows = ['Instagram', 'WhatsApp', 'Oculus'].map(v => <li>{v}</li>); return ( <div className='shopping-list'> <h1>Shopping List for {this.props.name}</h1><ul>{rows}</ul></div>);}}ReactDOM.render( <ShoppingList name='Mark' />, document.getElementById('react') );", {presets: ['es2015', 'react']}).code);
-                    $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
+                    $.get('/test/600-cars.json', function(arf) { resolve(arf) })
                 })
             });
             
@@ -70,13 +70,13 @@
         <br>
         <br>
         
-        <div id ="edit"></div>
+        <!--<div id ="edit"></div>
         <script>
             setTimeout(function(){
                 var node = document.getElementById('edit');
                 node.setAttribute('dfe-form', 'dfe.edit.dfe');
                 node.setAttribute('dfe-arguments', '(function(r){ return {params: {target_runtime: r}, model: r.form, listener: r.listener} })(document.querySelector("div[dfe-edit-target]")._dfe_runtime)');
             }, 1000) 
-        </script>
+        </script> -->
     </body>
 </html>

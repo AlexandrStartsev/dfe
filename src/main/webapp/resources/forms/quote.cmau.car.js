@@ -164,17 +164,26 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 }, {} ]
             }), __c_c_switch("year-switch", {
                 val: $$ => $$.required('.ModelYr', '(18|19|20)\\d{2}'),
-                atr: $$ => this.vehDetailsChoice($$, '.ModelYr', '\\d{1,4}', 'year', 'Vehicle Year', 'getYearOptions'),
+                atr: $$ => this.vehDetailsChoice($$, '.ModelYr', '\\d{1,4}', 'year', 'Vehicle Year', 'getYearOptions', {
+                    vehicleType: $$('.vehicletype')
+                }),
                 pos: [ {
                     n: "Y"
                 }, {} ]
             }), __c_c_switch("make-switch", {
-                atr: $$ => this.vehDetailsChoice($$, '.make', '[-\\w ]{1,50}', 'make', 'Vehicle Make', 'getMakeOptions'),
+                atr: $$ => this.vehDetailsChoice($$, '.make', '[-\\w ]{1,50}', 'make', 'Vehicle Make', 'getMakeOptions', {
+                    vehicleType: $$('.vehicletype'),
+                    vehicleYear: $$('.ModelYr')
+                }),
                 pos: [ {
                     n: "Y"
                 }, {} ]
             }), __c_c_switch("model-switch", {
-                atr: $$ => this.vehDetailsChoice($$, '.modelinfo', '[-\\w ]{1,50}', 'model', 'Vehicle Model', 'getModelOptions'),
+                atr: $$ => this.vehDetailsChoice($$, '.modelinfo', '[-\\w ]{1,50}', 'model', 'Vehicle Model', 'getModelOptions', {
+                    vehicleType: $$('.vehicletype'),
+                    vehicleYear: $$('.ModelYr'),
+                    vehicleMake: $$('.make')
+                }),
                 pos: [ {
                     n: "Y"
                 }, {} ]
@@ -770,14 +779,15 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             };
         }
         makeApplyAllAttrs($$, field, text, opts) {
-            return cmn.extend(opts, {
-                get: $$ => [ $$ ],
-                set: () => this.all($$, field, opts.type),
-                field: field,
-                text: text,
-                component: 'dropdown',
-                all: opts.type ? this.typeMap[opts.type].btn || this.typeMap[opts.type].name : 'Vehicles'
-            });
+            return {
+                set: ($$, value, method) => method=='all' ? this.all($$, field, opts.type) : $$.set(field, value),
+                get: $$ => cmn.extend(opts, {
+                    value: $$(field).toString(), 
+                    text: text,
+                    all: opts.type ? this.typeMap[opts.type].btn || this.typeMap[opts.type].name : 'Vehicles',
+                    component: 'dropdown'
+                })
+            }
         }
         vehDetailsDisabled($$) {
             return $$('.hasvin') == 'Y' && ($$('.vinnumber') == 0 || $$('.vinoverride') != 'Y');
@@ -796,9 +806,6 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             return freetext ? fields.simple(field, args) : fields.ajaxChoice(field, {
                 query: cmn.extend(query, {
                     method: 'CMAUVehicleScriptHelper',
-                    vehicleType: $$('.vehicletype'),
-                    vehicleYear: $$('.ModelYr'),
-                    vehicleMake: $$('.make'),
                     action: action
                 })
             }, args);

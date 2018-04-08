@@ -715,24 +715,20 @@
             slots: 0,
             // TODO: ...
             attachUI: function (control, nodes) {
-            	nodes && control.children.forEach(function(m){ 
-                    var i = 0;
-                    m.forEach(function(c) {
-                        c.component.setParentNode(c, nodes.slice(i, i += c.component.slots))
-                    })
+                var i = 0;
+            	nodes && control.fixedChildren.forEach(function(c) {
+                    c.component.setParentNode(c, nodes.slice(i, i += c.component.slots))
                 })
             },
             detachUI: function (control) {
-                control.children.forEach(function(m){ 
-                    m.forEach(function(c) { 
-                        c.component.detachUI(c)
-                    })
+                control.fixedChildren.forEach(function(c) { 
+                    c.component.detachUI(c)
                 })
             },            
 	        render: function (nodes, control, data, errs, attrs, events) {
 	        	this.attachUI(control, nodes);
 	        }
-	    }, Component, {});//function (n, f, c) { return _extend({ name: n, children: c||[], component: _extend({ slots: 1 }, arguments.callee) }, f) })
+	    }, Component, function() { throw 'Not to be used directly' });
     })
     
 	define('components/radiolist', ['components/component', 'ui/utils'], function(Component, uiUtils) {

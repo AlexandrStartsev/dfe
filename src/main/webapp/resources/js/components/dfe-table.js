@@ -3,10 +3,11 @@ define('components/dfe-table', ['components/container', 'ui/utils'], function(Co
     function defer(p, c, d, e, a, t) { return c._deferred = p ? 0 : function(p) {c.component.render(p, c, d, e, a, t)} }  
     var tables = new Set();
     function process(control){
-        for(var trs = control.ui ? control.ui.querySelectorAll('tr') : [], n = trs.length, i = 0, flag=true, tr, td; i < n; i++) {
-            tr = trs[i], td = tr.firstChild;
-            td.firstChild && td.firstChild.tagName == 'TABLE' || uiUtils.setAttribute(tr, 'dfe-color', (flag = !flag) ? '' : 0);
-        }
+        if(document.body.contains(control.ui))
+            for(var trs = control.ui.querySelectorAll('tr'), n = trs.length, i = 0, flag=true, tr, td; i < n; i++) {
+                tr = trs[i], td = tr.firstChild;
+                td.firstChild && td.firstChild.tagName == 'TABLE' || uiUtils.setAttribute(tr, 'dfe-color', (flag = !flag) ? '' : 0);
+            }
     }
     function processAll() {
         tables.forEach(process);
@@ -14,10 +15,11 @@ define('components/dfe-table', ['components/container', 'ui/utils'], function(Co
     ['keyup', 'mouseup'].forEach(function(n){
         document.addEventListener(n, function(e){
             for(var t = e.target; t; t = t.parentNode) { 
-                if(t._dfe_ && t._dfe_.component.cname == 'dfe-table') {
+                t._dfe_runtime && t._dfe_runtime.schedule.push( processAll );
+                /*if(t._dfe_ && t._dfe_.component.cname == 'dfe-table') {
                     t._dfe_.model.runtime.schedule.push( processAll );
                     break ; 
-                }
+                }*/
             }
         }, false)
     });
