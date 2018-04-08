@@ -19,7 +19,7 @@ define('components/chart', ['components/component', 'ui/utils', 'echarts'], func
 })
 
 /*
-
+ //https://ecomfe.github.io/echarts-examples/public/index.html
 // https://ecomfe.github.io/echarts-doc/public/en/tutorial.html
                     var myChart = echarts.init(document.getElementById('chart'));
                     var option = {

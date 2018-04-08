@@ -1,4 +1,4 @@
-defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "forms/cmau/applytoall", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/editbox-dropdown-switch", "components/c-editbox-$", "components/container", "components/tab-s" ], function(require, cmn, fields, __f_applytoall, __c_div_button, __c_label, __c_button, __c_div, __c_c_radiolist, __c_c_editbox, __c_c_dropdown, __c_editbox_dropdown_switch, __c_c_editbox_$, __c_container, __c_tab_s) {
+defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "forms/cmau/applytoall", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/editbox-dropdown-switch", "components/c-editbox-$", "components/dfe-table", "components/container", "components/tab-s" ], function(require, cmn, fields, __f_applytoall, __c_div_button, __c_label, __c_button, __c_div, __c_c_radiolist, __c_c_editbox, __c_c_dropdown, __c_editbox_dropdown_switch, __c_c_editbox_$, __c_dfe_table, __c_container, __c_tab_s) {
     return new class {
         constructor() {
             this.dfe = __c_div("root", {
@@ -76,18 +76,19 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 pos: [ {
                     colclass: "tab-item"
                 } ]
-            }), __c_container("body", {
+            }), __c_div("body", {
+                get: $$ => [ $$ ]
+            }, [ __c_dfe_table("info", {
                 get: $$ => [ $$ ],
                 atr: function($$) {
                     let skip = $$('.hasvin') == 'Y' ? $$('.vinvalid') != 'Y' && $$('.vinnumber') != 0 ? [] : [ 'vinoverride' ] : [ 'vin', 'vinoverride' ];
                     this.vehDetailsDisabled($$) && skip.push('custom');
                     return {
-                        class: 'tab-cols-5-5 tab-alt-color',
+                        class: 'tab-cols-5-5',
                         skip: skip
                     };
                 },
                 pos: [ {
-                    colstyle: "width:100%",
                     colclass: "dfe-inline-section-1"
                 } ]
             }, [ __c_label("field-154", {
@@ -196,15 +197,16 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 pos: [ {
                     n: "Y"
                 }, {} ]
-            }), __c_container("private", {
+            }) ]), __c_dfe_table("private", {
                 get: $$ => $$('.vehicletype') == 'car' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-alt-color tab-cols-2-5-3'
+                    class: 'col-3-centred tab-cols-2-5-3'
                 }),
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: ".dfe-inline-section-1"
+                    s: ".dfe-inline-section-1",
+                    colclass: "dfe-inline-section-1"
                 } ]
             }, [ __c_label("field-36", {
                 get: () => 'Private Passenger Auto',
@@ -222,7 +224,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             }), __c_container("nonbus", {
                 get: $$ => $$('.VehUseCd') == 'Furnished for Non-Business Use' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-alt-color tab-cols-2-5-3'
+                    class: 'col-3-centred dfe-table tab-cols-2-5-3'
                 }),
                 pos: [ {
                     n: "Y",
@@ -244,15 +246,16 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 pos: [ {
                     n: "Y"
                 }, {}, {} ]
-            }) ]) ]), __c_container("truck", {
+            }) ]) ]), __c_dfe_table("truck", {
                 get: $$ => $$('.vehicletype') == 'truck' ? [ $$ ] : [],
                 atr: $$ => ({
-                    class: 'col-va-middle col-3-centred tab-alt-color tab-cols-3-4-3'
+                    class: 'col-va-middle col-3-centred tab-cols-3-4-3'
                 }),
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: ".dfe-inline-section-1"
+                    s: ".dfe-inline-section-1",
+                    colclass: "dfe-inline-section-1"
                 } ]
             }, [ __c_label("field-49", {
                 get: () => 'Trucks, Tractors and Trailers',
@@ -270,7 +273,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             }), __c_container("tt-switch", {
                 get: $$ => $$('.VehicleClass') == 'Trailer Types' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-va-middle col-3-centred tab-alt-color tab-cols-3-4-3'
+                    class: 'col-va-middle col-3-centred dfe-table tab-cols-3-4-3'
                 }),
                 pos: [ {
                     n: "Y",
@@ -337,15 +340,16 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 pos: [ {
                     n: "Y"
                 }, {}, {} ]
-            }) ]), __c_container("golf", {
+            }) ]), __c_dfe_table("golf", {
                 get: $$ => $$('.vehicletype') == 'golf' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-alt-color tab-cols-4-3-3'
+                    class: 'col-3-centred tab-cols-4-3-3'
                 }),
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: ".dfe-inline-section-1"
+                    s: ".dfe-inline-section-1",
+                    colclass: "dfe-inline-section-1"
                 } ]
             }, [ __c_label("field-122", {
                 get: () => 'Golf Carts and Low Speed Vehicles',
@@ -378,15 +382,16 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 pos: [ {
                     n: "Y"
                 }, {}, {} ]
-            }) ]), __c_container("mobile", {
+            }) ]), __c_dfe_table("mobile", {
                 get: $$ => $$('.vehicletype') == 'mobile' ? [ $$ ] : [],
                 atr: $$ => ({
-                    class: 'col-3-centred tab-alt-color tab-cols-2-5-3'
+                    class: 'col-3-centred tab-cols-2-5-3'
                 }),
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: ".dfe-inline-section-1"
+                    s: ".dfe-inline-section-1",
+                    colclass: "dfe-inline-section-1"
                 } ]
             }, [ __c_label("field-123", {
                 get: () => 'Mobile Homes',
@@ -405,7 +410,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             }), __c_container("size-switch", {
                 get: $$ => $$('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-alt-color tab-cols-2-5-3'
+                    class: 'col-3-centred dfe-table tab-cols-2-5-3'
                 }),
                 pos: [ {
                     n: "Y",
@@ -418,15 +423,16 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                     style: 'width: fit-content',
                     type: 'mobile'
                 })
-            }) ]) ]), __c_container("covs", {
+            }) ]) ]), __c_dfe_table("covs", {
                 get: $$ => [ $$ ],
                 atr: $$ => ({
-                    class: 'col-3-centred tab-alt-color tab-cols-4-3-3'
+                    class: 'col-3-centred tab-cols-4-3-3'
                 }),
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: ".dfe-inline-section-1"
+                    s: ".dfe-inline-section-1",
+                    colclass: "dfe-inline-section-1"
                 } ]
             }, [ __c_label("field-77", {
                 get: () => 'Coverages',
@@ -481,7 +487,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             }), __c_container("val-switch", {
                 get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-alt-color tab-cols-4-3-3'
+                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
                 }),
                 pos: [ {
                     n: "Y",
@@ -499,9 +505,9 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                     style: 'width: min-content'
                 })
             }) ]), __c_container("amt-switch", {
-                get: $$ => this.compCol($$) && $$('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [],
+                get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) && $$('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-alt-color-1 tab-cols-4-3-3'
+                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
                 }),
                 pos: [ {
                     n: "Y",
@@ -516,7 +522,9 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 })
             }) ]), __c_container("pdonly-switch", {
                 get: $$ => $$('.PhysDmgInd') == 'Y' || $$('..state') != 'KS' ? [] : [ $$ ],
-                atr: $$ => this.covTabClass($$, 1),
+                atr: () => ({
+                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
+                }),
                 pos: [ {
                     n: "Y",
                     w: "3",
@@ -528,7 +536,9 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 })
             }), __c_container("pip-switch", {
                 get: $$ => $$('.coverages.pip.IncludeInd') == 'Y' ? [ $$ ] : [],
-                atr: $$ => this.covTabClass($$),
+                atr: () => ({
+                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
+                }),
                 pos: [ {
                     n: "Y",
                     w: "3",
@@ -552,7 +562,9 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 }, {}, {} ]
             }), __c_container("added-pip", {
                 get: $$ => +$$('.coverages.pip.broadpipnum') > 0 ? [ $$ ] : [],
-                atr: $$ => this.covTabClass($$),
+                atr: () => ({
+                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
+                }),
                 pos: [ {
                     n: "Y",
                     w: "3",
@@ -567,7 +579,9 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 })
             }), __c_container("added-pip-s", {
                 get: $$ => +$$('.coverages.pip.addedbroadpipnum') ? [ $$ ] : [],
-                atr: $$ => this.covTabClass($$, 1),
+                atr: () => ({
+                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
+                }),
                 pos: [ {
                     n: "Y",
                     w: "3",
@@ -579,16 +593,17 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                     cstyle: 'padding-left: 10px',
                     style: 'width: fit-content'
                 })
-            }) ]) ]) ]) ]) ]), __c_container("opt-covs", {
+            }) ]) ]) ]) ]) ]), __c_dfe_table("opt-covs", {
                 get: $$ => [ $$ ],
                 atr: $$ => ({
-                    class: `col-3-centred ${this.vehShowTowingLabor($$) ? 'tab-alt-color' : 'tab-alt-color-1'} tab-cols-4-3-3`,
-                    skip: $$('..state') == 'KS' ? [ 'field-111', 'field-112', 'field-114', 'field-115' ] : [ 'field-113' ]
+                    class: `col-3-centred tab-cols-4-3-3`,
+                    skip: $$('..state') == 'KS' ? [ 'field-111', 'field-114' ] : [ 'field-113' ]
                 }),
                 pos: [ {
                     n: "Y",
                     w: "2",
-                    s: ".dfe-inline-section-1"
+                    s: ".dfe-inline-section-1",
+                    colclass: "dfe-inline-section-1"
                 } ]
             }, [ __c_label("field-106", {
                 get: () => 'Optional Coverages',
@@ -596,9 +611,9 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                     w: "3"
                 } ]
             }), __c_container("towing-switch", {
-                get: $$ => this.vehShowTowingLabor($$) ? [ $$ ] : [],
+                get: $$ => $$('.vehicletype') == 'car' && $$('.coverages.otc.ded').toString().match(/\d|Full/) ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-alt-color-1 tab-cols-4-3-3'
+                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
                 }),
                 pos: [ {
                     w: "3",
@@ -646,7 +661,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             }), __c_container("field-113", {
                 get: $$ => [ $$ ],
                 atr: $$ => ({
-                    class: `col-3-centred ${this.vehShowTowingLabor($$) ? 'tab-alt-color' : 'tab-alt-color-1'} tab-cols-4-3-3`
+                    class: `col-3-centred dfe-table tab-cols-4-3-3`
                 }),
                 pos: [ {
                     n: "Y",
@@ -660,7 +675,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             }), __c_container("field-120", {
                 get: $$ => $$('.losspayee.namedinsuredInd') == 'Y' ? [ $$ ] : [],
                 atr: $$ => ({
-                    class: `col-3-centred ${this.vehShowTowingLabor($$) ? 'tab-alt-color-1' : 'tab-alt-color'} tab-cols-4-3-3`
+                    class: `col-3-centred dfe-table tab-cols-4-3-3`
                 }),
                 pos: [ {
                     n: "Y",
@@ -770,9 +785,6 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 val: freetext ? $$ => $$.required(field) : 0
             });
         }
-        vehShowTowingLabor($$) {
-            return $$('.vehicletype') == 'car' && $$('.coverages.otc.ded').toString().match(/\d|Full/);
-        }
         vehProcessVin($$) {
             $$.get('.vinnumber').length == 17 ? ajaxCache.get({
                 method: 'CMAUVehicleScriptHelper',
@@ -796,15 +808,6 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
         }
         all($$, prop, type) {
             $$('...location.car').forEach(car => type && car.data.vehicletype != type || car.set(prop, $$(prop)));
-        }
-        compCol($$) {
-            return ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/);
-        }
-        covTabClass($$, opt) {
-            let v = $$('.ValuationMethod') == 'Stated Amount' || !this.compCol($$);
-            return {
-                class: 'col-3-centred tab-cols-4-3-3 ' + (opt ^ v ? 'tab-alt-color-1' : 'tab-alt-color')
-            };
         }
         onstart($$) {
             $$('policy.cmau.location').forEach(loc => loc.defaultSubset('.car', this.carDefaults).forEach(car => car.get('.hasvin') == 'Y' && this.vehProcessVin(car)));

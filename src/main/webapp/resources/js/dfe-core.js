@@ -292,9 +292,10 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	DfeListener.prototype.get = function (data, element) { this.depend(data, element); return data[element]; }
 	//###############################################################################################################################
 	function DfeRuntime(rootUI, listener) {
-	   this.rootUI = Array.isArray(rootUI)?rootUI:[rootUI];
-	   this.listener = (listener || new DfeListener()).For(); 
-	   this.controls = new Set();
+        this.schedule = [];
+	    this.rootUI = Array.isArray(rootUI)?rootUI:[rootUI];
+	    this.listener = (listener || new DfeListener()).For(); 
+	    this.controls = new Set();
 	}
 	
 	DfeRuntime.prototype.setDfeForm = function(form) {
@@ -349,6 +350,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	            this.render(control, events);
 	        }
 	    }, this);
+        while(this.schedule.length) this.schedule.shift()(this);
 	}
 	
 	DfeRuntime.prototype.processChildren = function(parent, rx, prx, fpx) {
@@ -410,13 +412,14 @@ define('dfe-core', ['dfe-common'], function(cmn) {
         model.unbound.runtime = model.runtime = this;
 	    model.unbound.control = model.control = control;
 	    model.result = function(data) {
-            var fpx = field.get('.children');
+            var attrs = model.attrs, s, fpx = field.get('.children');
             if(fpx.length && typeof data == 'object') {
                 Array.isArray(data)||(data=[data]);
                 data[0] && typeof data[0].withListener != 'function' && (data=data.map(function(r){return new JsonProxy(r)}))
             }
-            runtime.processChildren(control, data || [], model.attrs.hmodel, fpx);
-	        control.component._render(control, control.data = data, control.error, model.attrs, model.events);
+            /*if(s = attrs.skip) { fpx = Array.isArray(s) ? fpx.filter(function(c) { return s.indexOf(c.data.name) == -1 } ) : fpx; }*/
+            runtime.processChildren(control, data || [], attrs.hmodel, fpx);
+	        control.component._render(control, control.data = data, control.error, attrs, model.events);
 	    }
 	    model.error = function(error, data) {
             data && (control.data = data);

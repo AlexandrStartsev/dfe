@@ -37,34 +37,7 @@
                   location: 'Wayne Manor'
                 }
               ]};           
-            require(['ui/utils'], function(){
-                require(['echarts'], function(echarts){
-                    // https://ecomfe.github.io/echarts-doc/public/en/tutorial.html
-                    var myChart = echarts.init(document.getElementById('chart'));
-                    var option = {
-                        title: {
-                            text: 'ECharts entry example'
-                        },
-                        tooltip: {},
-                        legend: {
-                            data:['Sales']
-                        },
-                         series: [{
-                            name: 'Sales',
-                            type: 'pie',
-                            data: [{name: "shirt", value: 5},
-                                   {name: "cardign", value: 20},
-                                   {name: "chiffon shirt", value: 36},
-                                   {name: "pants", value: 10},
-                                   {name: "heels", value: 10},
-                                   {name: "socks", value: 20}]
-                        }]
-                    };
-
-                    // use configuration item and data specified to show chart
-                    myChart.setOption(option);
-                })
-            }); 
+            require(['ui/utils']); 
         </script>     
         
 
@@ -92,19 +65,18 @@
         -->
         
         <!--<img src="test/i1.svg#svg-icon-file-text"></div>-->
-        <div id="chart" style="width: 600px; height:400px;"></div>
         <div id='dfe' dfe-form='quote.cmau.car' dfe-model='window.model' dfe-edit-target ></div>
         <br>
         <br>
         <br>
         
-        <!--<div id ="edit"></div>
+        <div id ="edit"></div>
         <script>
             setTimeout(function(){
                 var node = document.getElementById('edit');
                 node.setAttribute('dfe-form', 'dfe.edit.dfe');
                 node.setAttribute('dfe-arguments', '(function(r){ return {params: {target_runtime: r}, model: r.form, listener: r.listener} })(document.querySelector("div[dfe-edit-target]")._dfe_runtime)');
             }, 1000) 
-        </script> -->
+        </script>
     </body>
 </html>

@@ -23,14 +23,14 @@ label {
 *[filter-out] { visibility: hidden; display: none; }
 *[hidden] { visibility: hidden; display: none; }
 /* ============================ DFE css framework ============================ */
-table.tab-alt-color, table.tab-alt-color-1 { 
+table.tab-alt-color, table.tab-alt-color-1, table.dfe-table { 
     width: 100%; 
     overflow: hidden;
     background: white;
     border-collapse: collapse;
 }
 
-table.tab-alt-color > :nth-child(2n), table.tab-alt-color-1 > :nth-child(2n+1) {
+[dfe-color], table.tab-alt-color > :nth-child(2n), table.tab-alt-color-1 > :nth-child(2n+1) {
     background: rgb(238, 238, 238);
 }
 
@@ -41,7 +41,7 @@ table.tab-alt-color > :nth-child(2n), table.tab-alt-color-1 > :nth-child(2n+1) {
     box-sizing: border-box;
 }*/
 
-table.tab-alt-color > tr > td, table.tab-alt-color > tr > th, table.tab-alt-color-1 > tr > td, table.tab-alt-color-1 > tr > th {
+table.dfe-table > tr > th, table.dfe-table > tr > td, table.tab-alt-color > tr > td, table.tab-alt-color > tr > th, table.tab-alt-color-1 > tr > td, table.tab-alt-color-1 > tr > th {
     padding: 4px 6px;
     margin: 0px;
     border: 0px;
