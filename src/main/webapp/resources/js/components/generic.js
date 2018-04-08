@@ -468,7 +468,7 @@
 	        },
 	        orderFilterColumns: function(control, attrs) {
 	        	var d = control.field.data, ch = d.children||[], s = attrs.skip, o = attrs.colOrder, f = d.form, m = control.model, t = typeof s == 'function';
-	        	s && (ch = ch.filter(function(d) { return t ? s.call(f, d.name, m) : s.indexOf(d.name) == -1 }));
+	        	s && (ch = ch.filter(function(d) { return t ? !s.call(f, d.name, m) : s.indexOf(d.name) == -1 }));
 	        	typeof o == 'function' && (ch = ch.sort(function(d1, d2) { return o.call(f, d1.name, d2.name, m) }));
 	        	return ch;
 	        },
