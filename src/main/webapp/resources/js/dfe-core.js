@@ -375,6 +375,22 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	        }, this);  
 	    }
 	}
+    /*    DfeRuntime.prototype.processSubform = function(parent, px, attrs, fpx) {
+        typeof px.withListener != 'function' && (px = new JsonProxy(px, [], [], this.listener));
+        var form = parent.component.form;
+        parent._attrs = attrs;
+        if(!parent.fixedChildren.size) {
+	        fpx.forEach(function(fp) {
+                var c = this.addControl(parent, px, fp);
+                form.onstart == 'function' && form.onstart.call(form, px);
+                parent.fixedChildren.set(fp.data, c);
+	        }, this);
+        } else {
+            parent.fixedChildren.forEach(function(child) {
+                child.model.data == px.data || child.model.reflect(px.data, false);
+            });
+        }
+    }*/
     
 	DfeRuntime.prototype.addControl = function (parentControl, model_proxy, field_proxy) {
 	    if(field_proxy) {

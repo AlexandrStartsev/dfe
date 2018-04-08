@@ -602,8 +602,10 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 return s.replace('function ', s.match(/function \(\)/) ? 'constructor' : '').replace(/"use strict";/, '');
             }).join('\n') + '\n}';
             ast = uglify.parse('new ' + cts);
-            for (var d in obj.dependencies) obj.dependencies[d].match(/components\//) || (dp += (dp == 0 ? '' : ',') + d, 
-            cc.push(obj.dependencies[d]));
+            for (var d in obj.dependencies) {
+                cc.push(obj.dependencies[d]);
+                dp += (dp == 0 ? '' : ',') + d;
+            }
             var self = this, f = function collect(dfe) {
                 return dfe[0] && dfe[0].form == obj && dfe.map(function(r) {
                     var c = r.component.cname, cf = collect(r.children)||'', cn;

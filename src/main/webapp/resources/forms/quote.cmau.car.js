@@ -1,4 +1,4 @@
-defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "forms/cmau/applytoall", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/editbox-dropdown-switch", "components/c-editbox-$", "components/dfe-table", "components/container", "components/tab-s" ], function(require, cmn, fields, __f_applytoall, __c_div_button, __c_label, __c_button, __c_div, __c_c_radiolist, __c_c_editbox, __c_c_dropdown, __c_editbox_dropdown_switch, __c_c_editbox_$, __c_dfe_table, __c_container, __c_tab_s) {
+defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "forms/cmau/applytoall", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/c-editbox-$", "components/dfe-table", "components/container", "components/tab-s", "components/editbox", "components/dropdown", "components/c-switch" ], function(require, cmn, fields, __f_applytoall, __c_div_button, __c_label, __c_button, __c_div, __c_c_radiolist, __c_c_editbox, __c_c_dropdown, __c_c_editbox_$, __c_dfe_table, __c_container, __c_tab_s, __c_editbox, __c_dropdown, __c_c_switch) {
     return new class {
         constructor() {
             this.dfe = __c_div("root", {
@@ -162,28 +162,19 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 pos: [ {
                     n: "Y"
                 }, {} ]
-            }), __c_editbox_dropdown_switch("year-switch", {
+            }), __c_c_switch("year-switch", {
                 val: $$ => $$.required('.ModelYr', '(18|19|20)\\d{2}'),
-                atr: $$ => this.vehDetailsChoice($$, '.ModelYr', '\\d{1,4}', 'year', 'Vehicle Year', 'getYearOptions', {
-                    vehicleType: $$('.vehicletype')
-                }),
+                atr: $$ => this.vehDetailsChoice($$, '.ModelYr', '\\d{1,4}', 'year', 'Vehicle Year', 'getYearOptions'),
                 pos: [ {
                     n: "Y"
                 }, {} ]
-            }), __c_editbox_dropdown_switch("make-switch", {
-                atr: $$ => this.vehDetailsChoice($$, '.make', '[-\\w ]{1,50}', 'make', 'Vehicle Make', 'getMakeOptions', {
-                    vehicleType: $$('.vehicletype'),
-                    vehicleYear: $$('.ModelYr')
-                }),
+            }), __c_c_switch("make-switch", {
+                atr: $$ => this.vehDetailsChoice($$, '.make', '[-\\w ]{1,50}', 'make', 'Vehicle Make', 'getMakeOptions'),
                 pos: [ {
                     n: "Y"
                 }, {} ]
-            }), __c_editbox_dropdown_switch("model-switch", {
-                atr: $$ => this.vehDetailsChoice($$, '.modelinfo', '[-\\w ]{1,50}', 'model', 'Vehicle Model', 'getModelOptions', {
-                    vehicleType: $$('.vehicletype'),
-                    vehicleYear: $$('.ModelYr'),
-                    vehicleMake: $$('.make')
-                }),
+            }), __c_c_switch("model-switch", {
+                atr: $$ => this.vehDetailsChoice($$, '.modelinfo', '[-\\w ]{1,50}', 'model', 'Vehicle Model', 'getModelOptions'),
                 pos: [ {
                     n: "Y"
                 }, {} ]
@@ -733,7 +724,32 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                     colstyle: "align-self: flex-end;"
                 } ]
             }) ]);
-            this.carDefaults = JSON.parse('{"losspayee":[{"losspayeeInd":"N","ailessorInd":"N","haownInd":"N"}],"emplessor":"N","PhysDmgInd":"N","DumpingOpInd":"N","hasvin":"Y","vinoverride":"N","custom":"N","UseClassInd1":"N","UseClassInd2":"N","coverages":[{"pip":[{"IncludeInd":"N"}],"liab":[{"IncludeInd":"Y"}],"towlabor":[{"towlabor":"No Coverage"}]}]}');
+            this.carDefaults = {
+                losspayee: [ {
+                    losspayeeInd: "N",
+                    ailessorInd: "N",
+                    haownInd: "N"
+                } ],
+                emplessor: "N",
+                PhysDmgInd: "N",
+                DumpingOpInd: "N",
+                hasvin: "Y",
+                vinoverride: "N",
+                custom: "N",
+                UseClassInd1: "N",
+                UseClassInd2: "N",
+                coverages: [ {
+                    pip: [ {
+                        IncludeInd: "N"
+                    } ],
+                    liab: [ {
+                        IncludeInd: "Y"
+                    } ],
+                    towlabor: [ {
+                        towlabor: "No Coverage"
+                    } ]
+                } ]
+            };
             this.typeMap = {
                 car: {
                     name: "Private Passenger Type",
@@ -768,22 +784,24 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
         }
         vehDetailsChoice($$, field, pattern, help, label, action, query) {
             let disabled = this.vehDetailsDisabled($$), freetext = disabled || $$('.custom') == 'Y';
-            return fields.ajaxChoice(field, {
-                query: cmn.extend(query, {
-                    method: 'CMAUVehicleScriptHelper',
-                    action: action
-                }),
-                noerror: freetext
-            }, {
+            let args = {
                 cstyle: 'padding-left: 10px',
                 text: `<a href="javascript:showHelp('/cmau_help.html#${help}')" class="css-qmark"></a>${label}`,
                 html: true,
-                editbox: freetext,
-                pattern: freetext && pattern,
+                component: freetext ? __c_editbox : __c_dropdown,
+                pattern: pattern,
                 disabled: disabled,
-                style: freetext ? 'width: 150px; text-transform:uppercase;' : 'width: fit-content;',
-                val: freetext ? $$ => $$.required(field) : 0
-            });
+                style: freetext ? 'width: 150px; text-transform:uppercase;' : 'width: fit-content;'
+            };
+            return freetext ? fields.simple(field, args) : fields.ajaxChoice(field, {
+                query: cmn.extend(query, {
+                    method: 'CMAUVehicleScriptHelper',
+                    vehicleType: $$('.vehicletype'),
+                    vehicleYear: $$('.ModelYr'),
+                    vehicleMake: $$('.make'),
+                    action: action
+                })
+            }, args);
         }
         vehProcessVin($$) {
             $$.get('.vinnumber').length == 17 ? ajaxCache.get({
