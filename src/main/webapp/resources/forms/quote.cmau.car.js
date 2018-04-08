@@ -761,7 +761,8 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 noerror: freetext
             }, {
                 cstyle: 'padding-left: 10px',
-                html: `<a href="javascript:showHelp('/cmau_help.html#${help}')" class="css-qmark"></a>${label}`,
+                text: `<a href="javascript:showHelp('/cmau_help.html#${help}')" class="css-qmark"></a>${label}`,
+                html: true,
                 editbox: freetext,
                 pattern: freetext && pattern,
                 disabled: disabled,

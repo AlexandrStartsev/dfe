@@ -64,16 +64,16 @@ defineForm("quote.work.class", [ "require", "dfe-common", "dfe-field-helper", "c
             }), __c_editbox("field-11", {
                 atr: () => fields.simple('.city', {
                     style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px',
-                    pattern: '[a-zA-Z ]{1,45}'
+                    pattern: /[a-zA-Z ]{1,45}/
                 })
             }), __c_dropdown("field-12", {
                 atr: () => fields.choice('.state', cmn.statesPattern.split('|'), {
                     style: 'width: 45px; border-radius: 1px; height: 20px'
                 })
             }), __c_editbox("field-13", {
-                atr: () => fields.simple('.zip', [ ($$, fld) => $$.required(fld, '\\d{5}', 'Zip code is < 5 digits') ], {
+                atr: () => fields.simple('.zip', [ ($$, value) => value.match(/^\d{5}$/) || $$.error('Zip code is < 5 digits') ], {
                     style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px',
-                    pattern: '\\d{1,5}'
+                    pattern: /\d{1,5}/
                 })
             }), __c_button("field-14", {
                 get: () => 'Delete',
@@ -127,24 +127,24 @@ defineForm("quote.work.class", [ "require", "dfe-common", "dfe-field-helper", "c
             }), __c_label("field-25", {
                 get: $$ => $$.index() + 1
             }), __c_editbox("field-26", {
-                atr: () => fields.simple('.code', [ ($$, f) => $$.required(f, 0, 'Please enter class code') && $$.required(f, '\\d{4}') ], {
+                atr: () => fields.simple('.code', [ ($$, value) => value ? value.match(/^\d{4}$/) || $$.error('Invalid format') : $$.error('Please enter class code') ], {
                     style: 'width: 50px; border-radius: 1px; height: 18px',
-                    pattern: '\\d{1,4}'
+                    pattern: /\d{1,4}/
                 })
             }), __c_editbox("field-27", {
                 atr: () => fields.simple('.fulltimeemployeeamt', [ this.nbOnlyRequired ], {
                     style: 'width: 40px; border-radius: 1px; height: 18px',
-                    pattern: '\\d{1,3}'
+                    pattern: /\d{1,3}/
                 })
             }), __c_editbox("field-28", {
                 atr: () => fields.simple('.parttimeemployeeamt', [ this.nbOnlyRequired ], {
                     style: 'width: 40px; border-radius: 1px; height: 18px',
-                    pattern: '\\d{1,3}'
+                    pattern: /\d{1,3}/
                 })
             }), __c_editbox("field-29", {
                 atr: () => fields.simple('.seasonalemployeeamt', [], {
                     style: 'width: 40px; border-radius: 1px; height: 18px',
-                    pattern: '\\d{1,3}'
+                    pattern: /\d{1,3}/
                 })
             }), __c_editbox_$("field-30", {
                 atr: () => fields.simple('.payroll', {
@@ -213,8 +213,8 @@ defineForm("quote.work.class", [ "require", "dfe-common", "dfe-field-helper", "c
                 set: $$ => $$.append('.location', this.locationDefaults)[0].append('.class')
             }) ]);
         }
-        nbOnlyRequired($$, field) {
-            $$('policy.common.quotetype')=='NB' && $$.required(field)
+        nbOnlyRequired($$, v, field) {
+            $$('policy.common.quotetype') == 'NB' && $$.required(field);
         }
         onstart($$) {
             var ref = $$.first('insured.location');

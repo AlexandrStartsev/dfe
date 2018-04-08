@@ -65,6 +65,7 @@ global.loadModule = function(moduleName, loadArg) {
 	// TODO: sync this
 	(function() {
 		try {
+			console.log('Nashorn loading module: ' + moduleName);
 			if(loadArg) {
 				global.requirejs.modules.__loadingModule = moduleName;
 				load(loadArg);
@@ -85,13 +86,17 @@ global.requirejs = global.require = function(d, cb) {
 		if( d.indexOf('ui/') == 0 ) {
 			return global.requirejs.modules.__dummy;
 		}
-		if( d.indexOf('components/') == 0 ) {
-			d = 'validation/component';
-			addr = 'dfe-core';
+		if( d.indexOf('forms/') == 0 ) {
+			global.requirejs.modules[d] || global.loadModule( 'classpath:/conf/dfe-experimental/forms/.transpiled/' + d.substr(6) + '.js' );
+		} else {
+			if( d.indexOf('components/') == 0 ) {
+				d = 'validation/component';
+				addr = 'dfe-core';
+			}
+			if( d.indexOf('validation/') == 0 )
+				addr = 'dfe-core';
+			global.requirejs.modules[d] || global.loadModule( global.baseUrl + '/experimental/' + addr + '.js' );
 		}
-		if( d.indexOf('validation/') == 0 )
-			addr = 'dfe-core';
-		global.requirejs.modules[d] || global.loadModule( global.baseUrl + '/experimental/' + addr + '.js' );
 		return  global.requirejs.modules[d];
 	}
 	return Array.isArray(d) && typeof cb == 'function' && cb.apply(global, d.map( function(d) { return require(d) } ) ) || undefined;
@@ -128,7 +133,13 @@ global.define.amd = { jQuery: false };
 
 // TODO: rid of this, unify with client side -- when session scope config is in place because if we use "define" like this we'll override form for everyone
 function defineForm(n, d, f) {
-    return (function() { var a = f.apply(this, arguments); a.name = n; Array.isArray(a.dfe)||(a.dfe = [a.dfe]); return require('component-maker').fromForm(a) }).apply(global, d.map( function(d) { return global.require(d) }));
+	define('forms/' + n, (d||[]).concat(['component-maker']), function() { 
+    	var a = f.apply(this, arguments), cm = arguments[arguments.length-1]; 
+    	a.name = n; 
+    	(function _f(dfes) { dfes.forEach(function(dfe) { dfe.form||(dfe.form = a); _f(dfe.children) }) })(Array.isArray(a.dfe)?a.dfe:(a.dfe=[a.dfe]))
+    	typeof a.setup == 'function' && a.setup();
+    	return cm.fromForm(a) 
+    })    
 }
 
 var ajaxCache = (function() {
