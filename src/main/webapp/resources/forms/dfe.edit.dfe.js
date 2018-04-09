@@ -617,7 +617,7 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                         cc.indexOf('components/' + c) == -1 && (dp += ', ' + cn) && cc.push('components/' + c);
                     }
                     var field = cn + '("' + r.name + '",{', cma = '';
-                    [ 'class', 'get', 'set', 'val', 'atr' ].forEach(function(p) {
+                    [ 'class', 'get', 'set', 'val', 'atr', 'oncreate', 'preRender', 'postRender' ].forEach(function(p) {
                         if (typeof r[p] != 'undefined') {
                             field += cma + p + ': ' + (typeof r[p] == 'function' ? self.codeToText(r[p]) : '"' + r[p] + '"');
                             cma = ',';

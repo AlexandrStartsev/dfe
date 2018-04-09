@@ -13,11 +13,11 @@
         
         <script> 
             var model = new Promise(function(resolve, reject) {
-                require(['babel', 'uglify', 'ui/jquery' /*, 'react', 'react-dom'*/], function() {
+                require(['babel', 'uglify', 'ui/jquery' , 'react', 'react-dom'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
-                    //window.React = require('react');
-                    //window.ReactDOM = require('react-dom');
+                    window.React = require('react');
+                    window.ReactDOM = require('react-dom');
                     window.babel.transformScriptTags();
                     
                     //console.log(window.babel.transform("class ShoppingList extends React.Component { render() { let rows = ['Instagram', 'WhatsApp', 'Oculus'].map(v => <li>{v}</li>); return ( <div className='shopping-list'> <h1>Shopping List for {this.props.name}</h1><ul>{rows}</ul></div>);}}ReactDOM.render( <ShoppingList name='Mark' />, document.getElementById('react') );", {presets: ['es2015', 'react']}).code);
@@ -45,38 +45,22 @@
             
     <body> 
         <!--<div id="react"></div>
-        <script type="text/jsx" data-presets="es2015,react"> // src=...
-            let cart = ['Instagram', 'WhatsApp', 'Oculus'];
-
-            class ShoppingList extends React.Component {
-                render() {
-                    console.log('ShoppingList::render');
-                    let rows = this.props.cart.map(v => <li>{v}</li>);
-                    return (
-                        <div className="shopping-list">
-                            <h1 onClick={this.props.f}>Shopping List for {this.props.name}</h1>
-                            <ul>{rows}</ul>
-                        </div>
-                    );
-                }
-            }
-            ReactDOM.render( <ShoppingList name="Mark" cart={cart} f={() => cart.push('12345')} />, document.getElementById('react') );
-        </script> 
+        <script src="test/react-example-1.jsx" type="text/jsx" data-presets="es2015,react"></script> 
         -->
-        
+           
         <!--<img src="test/i1.svg#svg-icon-file-text"></div>-->
         <div id='dfe' dfe-form='quote.cmau.car' dfe-model='window.model' dfe-edit-target ></div>
         <br>
         <br>
         <br>
         
-        <div id ="edit"></div>
+        <!--<div id ="edit"></div>
         <script>
             setTimeout(function(){
                 var node = document.getElementById('edit');
                 node.setAttribute('dfe-form', 'dfe.edit.dfe');
                 node.setAttribute('dfe-arguments', '(function(r){ return {params: {target_runtime: r}, model: r.form, listener: r.listener} })(document.querySelector("div[dfe-edit-target]")._dfe_runtime)');
             }, 1000) 
-        </script>
+        </script> -->
     </body>
 </html>

@@ -5,7 +5,7 @@ defineForm("cmau/applytoall", [ "dfe-common", "dfe-field-helper", "components/c-
                 __c_c_switch('applytoall-ctrl', {
                     set: ($$, value) => { this.store($$, value) },
                     atr: function($$) {
-                        let a = this.attrs($$), def = {text: a.text, html: a.html, cstyle: a.cstyle, style: a.style}
+                        let a = this.params($$), def = {text: a.text, html: a.html, cstyle: a.cstyle, style: a.style}
                         switch(a.component) {
                             case 'dropdown':
                                 return fields.choice('value', a.items, cmn.extend( { component: __c_dropdown }, def ) );
@@ -22,7 +22,7 @@ defineForm("cmau/applytoall", [ "dfe-common", "dfe-field-helper", "components/c-
                         }
                     }
                 }), __c_button('applytoall-btn', {
-                    get: $$ => 'Apply to all ' + this.attrs($$).all,
+                    get: $$ => 'Apply to all ' + this.params($$).all,
                     set: $$ => this.store($$, $$.get('value'), 'all'),
                     atr: $$ => ({
                         class: 'link-button'

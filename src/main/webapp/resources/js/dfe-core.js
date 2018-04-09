@@ -380,7 +380,6 @@ define('dfe-core', ['dfe-common'], function(cmn) {
     DfeRuntime.prototype.processSubform = function(parent, px, attrs, fpx) {
         typeof px.withListener != 'function' && (px = new JsonProxy(px, [], [], this.listener));
         var form = parent.component.form;
-        parent._attrs = attrs;
         if(!parent.fixedChildren.size) {
 	        fpx.forEach(function(fp) {
                 var c = this.addControl(parent, px, fp);
@@ -390,10 +389,11 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	        }, this);
         } else {
             parent.fixedChildren.forEach(function(child) {
+                // haven't decided which is better, but we definitely can't just destroy subform controls. 
                 if(child.model.data != px.data) {
-                    child.notifications.push({action: 'parent'});
                     this.cleanUpDependencies(child);
                     this.prep$$(child, px, child.field);
+                    child.notifications.push({action: 'parent'});
                 }
                 //child.model.reflect(px.data, false);
             }, this);
@@ -404,6 +404,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    if(field_proxy) {
 	        var control = { parentControl : parentControl, 
                             dependencies : [], 
+                            _: {},
                             notifications : [this.initAction],
                             children : new Map(), 
                             fixedChildren : new Map(), 
@@ -411,6 +412,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	        this.controls.add(control);
 	        this.prep$$(control, model_proxy, field_proxy);
 	        this.verifyComponent(control);
+            typeof field_proxy.data.oncreate == 'function' && field_proxy.data.oncreate.call(field_proxy.data.form, control);
 	        return control;
 	    }
 	}
@@ -433,22 +435,25 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    var runtime = this, listener = this.listener.For(control);
 	    var field = control.field = field_proxy.withListener(listener);
         var model = control.model = _wrapModel(model_proxy, function(p) { return model.get(p) }, listener);
+        var form = field.data.form, pre = typeof field.data.preRender == 'function' && field.data.preRender, post = typeof field.data.postRender == 'function' && field.data.postRender;
 	    model.unbound = _wrapModel(model_proxy, function(p) { return model.unbound.get(p) }, this.listener);
         model.unbound.runtime = model.runtime = this;
 	    model.unbound.control = model.control = control;
 	    model.result = function(data) {
             var attrs = model.attrs, fpx = field.get('.children');
-            if(control.field.data.name == 'field-82') 
-                field = field;
             control.component.form ? runtime.processSubform(control, data, attrs, fpx ) : runtime.processChildren(control, data || [], attrs.hmodel, fpx);
+            pre && pre.call(form, control, data, control.error, attrs, model.events);
 	        control.component._render(control, control.data = data, control.error, attrs, model.events);
+            post && post.call(form, control, data, control.error, attrs, model.events);
 	    }
 	    model.error = function(error, data) {
             data && (control.data = data);
 	        if( control.doVal && (control.error = error) ) {
                 control.stickyError = error;
                 error == 'Simulated error' || runtime.notifyErroring(control);
-                control.component._render(control, control.data, control.error, model.attrs, model.events);
+                pre && pre.call(form, control, data, control.error, attrs, model.events);
+	            control.component._render(control, control.data, control.error, model.attrs, model.events);
+                post && post.call(form, control, data, control.error, attrs, model.events);
 	        }
 	        return error;
 	    }
@@ -589,15 +594,15 @@ define('component-maker', ['dfe-common', 'components/pass-through'], function(cm
                 for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
                 ctrl.component.store(ctrl, data, method)
             }
-            dfe_form.attrs = function($$) {
+            dfe_form.params = function($$) {
                 for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
-                return ctrl ? ctrl._attrs : $$.runtime;
+                return ctrl ? ctrl._.params : $$.runtime;
             }
             var slots = Array.prototype.concat.apply([], dfe_form.dfe.map(function(d){ return d.pos })).length;
             return cmn.extend({form: dfe_form}, function(name, attrs) {
                 return cmn.extend( { name: name, children: dfe_form.dfe, component: cmn.extend({ 
                     _render: function(control, data, errs, attrs, events) {
-                        control._attrs = attrs;
+                        control._.params = attrs;
                         data && typeof dfe_form.onstart == 'function' && (Array.isArray(data)?data:[data]).forEach(function(d) { dfe_form.onstart(d) });
                         pt._render(control, data, errs, attrs, events);
                     },
