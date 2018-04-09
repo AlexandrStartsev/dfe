@@ -97,6 +97,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                     w: "2"
                 } ]
             }), __c_c_radiolist("field-9", {
+                set: ($$, value) => {$$.set('.hasvin', value), 'Y' == value && this.vehProcessVin($$)},
                 atr: () => fields.simple('.hasvin', [], {
                     orientation: 'horizontal',
                     text: 'Do you have the VIN?'

@@ -31,7 +31,7 @@
 	            	this.detachUI(control);
 	        },
             attachUI: function (control, nodes) {
-                control.ui && nodes[0].appendChild(control.ui); 
+                control.ui && control.ui.parentNode != nodes[0] && nodes[0].appendChild(control.ui); 
 	            control.errorUi && nodes[0].appendChild(control.errorUi);
             },
             detachUI: function (control) {
