@@ -779,15 +779,13 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             };
         }
         makeApplyAllAttrs($$, field, text, opts) {
-            return {
+            return cmn.extend(opts, {
                 set: ($$, value, method) => method=='all' ? this.all($$, field, opts.type) : $$.set(field, value),
-                get: $$ => cmn.extend(opts, {
-                    value: $$(field).toString(), 
-                    text: text,
-                    all: opts.type ? this.typeMap[opts.type].btn || this.typeMap[opts.type].name : 'Vehicles',
-                    component: 'dropdown'
-                })
-            }
+                get: $$ => ({ value: $$(field).toString() }),
+                text: text,
+                all: opts.type ? this.typeMap[opts.type].btn || this.typeMap[opts.type].name : 'Vehicles',
+                component: 'dropdown'
+            })
         }
         vehDetailsDisabled($$) {
             return $$('.hasvin') == 'Y' && ($$('.vinnumber') == 0 || $$('.vinoverride') != 'Y');

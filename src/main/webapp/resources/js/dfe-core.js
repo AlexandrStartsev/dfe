@@ -230,6 +230,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	JsonProxy.prototype.reflect = function(data) {
 		if(data instanceof JsonProxy) 
 			data = data.persisted;
+        if(data == this.data) return;
 		if(typeof data != 'object')
 			this.detach();
 		else {
@@ -379,7 +380,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
     DfeRuntime.prototype.processSubform = function(parent, px, attrs, fpx) {
         typeof px.withListener != 'function' && (px = new JsonProxy(px, [], [], this.listener));
         var form = parent.component.form;
-        //parent._attrs = attrs;
+        parent._attrs = attrs;
         if(!parent.fixedChildren.size) {
 	        fpx.forEach(function(fp) {
                 var c = this.addControl(parent, px, fp);
@@ -390,9 +391,11 @@ define('dfe-core', ['dfe-common'], function(cmn) {
         } else {
             parent.fixedChildren.forEach(function(child) {
                 if(child.model.data != px.data) {
-                    child.model.reflect(px.data, false);
-                    //this.prep$$(child, px, child.field);  //child.model.reflect(px.data, false);
-                } 
+                    child.notifications.push({action: 'parent'});
+                    this.cleanUpDependencies(child);
+                    this.prep$$(child, px, child.field);
+                }
+                //child.model.reflect(px.data, false);
             }, this);
         }
     }
@@ -413,7 +416,6 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	}
 	
 	DfeRuntime.prototype.evict = function(control) {
-	   //this.processChildren(control, [], {}, []);
         control.children.forEach(function(m) { m.forEach(function(c){ this.evict(c) }, this) }, this)
         control.fixedChildren.forEach(function(c){ this.evict(c) }, this);
 	    control.component.purge(control);
@@ -587,10 +589,10 @@ define('component-maker', ['dfe-common', 'components/pass-through'], function(cm
                 for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
                 ctrl.component.store(ctrl, data, method)
             }
-            /*dfe_form.attrs = function($$) {
+            dfe_form.attrs = function($$) {
                 for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
                 return ctrl ? ctrl._attrs : $$.runtime;
-            }*/
+            }
             var slots = Array.prototype.concat.apply([], dfe_form.dfe.map(function(d){ return d.pos })).length;
             return cmn.extend({form: dfe_form}, function(name, attrs) {
                 return cmn.extend( { name: name, children: dfe_form.dfe, component: cmn.extend({ 
