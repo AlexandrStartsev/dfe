@@ -81,7 +81,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
             }, [ __c_dfe_table("info", {
                 get: $$ => [ $$ ],
                 atr: function($$) {
-                    let skip = $$('.hasvin') == 'Y' ? $$('.vinvalid') != 'Y' && $$('.vinnumber') != 0 ? [] : [ 'vinoverride' ] : [ 'vin', 'vinoverride' ];
+                    let skip = $$('.hasvin') == 'Y' ? $$('.vinvalid') != 'Y' && $$('.vinnumber') != 0 ? [] : [ 'override' ] : [ 'vin', 'override' ];
                     this.vehDetailsDisabled($$) && skip.push('custom');
                     return {
                         class: 'tab-cols-5-5',
@@ -134,7 +134,7 @@ defineForm("quote.cmau.car", [ "require", "dfe-common", "dfe-field-helper", "for
                 pos: [ {
                     n: "Y"
                 }, {} ]
-            }), __c_c_radiolist("vinoverride", {
+            }), __c_c_radiolist("override", {
                 atr: () => fields.simple('.vinoverride', [], {
                     cstyle: 'padding-left: 10px;',
                     orientation: 'horizontal',
