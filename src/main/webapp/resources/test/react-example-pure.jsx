@@ -14,7 +14,7 @@ class EditableRow extends React.Component {
 
     closeInput(store) {
         if(store) {
-            this.props.onChange(this.state.value);
+            this.props.setValue(this.state.value);
             this.setState({ edit: false, originalValue: this.state.value })
         } else {
             this.setState({ edit: false, value: this.state.originalValue })
@@ -25,7 +25,13 @@ class EditableRow extends React.Component {
         e.key == 'Enter' && this.closeInput(true);
         e.key == 'Escape' && this.closeInput(false);
     }
-
+    handleOnKeyUp(e) {
+        if(e.key.toString().match(/^\w$/)) {
+            this.setState({ value: this.input.value })
+            this.props.setValue(this.state.value);
+        }
+    }
+    
     render() {
         return( 
             <li onClick={e => this.setState({edit: true})}> { 
@@ -35,6 +41,7 @@ class EditableRow extends React.Component {
                                           onChange={e => this.setState({value: e.target.value})}
                                           onBlur={ this.closeInput.bind(this, true) }  
                                           onKeyDown={e => this.handleOnKeyDown(e) }
+                                          onKeyUp={e => this.handleOnKeyUp(e) }
                                       /> : this.state.value } 
             </li> )
     }
@@ -50,12 +57,15 @@ class ShoppingList extends React.Component {
         let rows = this.props.cart.map(record => <EditableRow 
                                                 key={record.key} 
                                                 value={record.value} 
-                                                onChange={newValue => this.props.onRecordChange(record, 'value', newValue) }
+                                                setValue={newValue => this.props.onRecordChange(record, 'value', newValue) }
                                             />);
         return (
             <div className="shopping-list">
                 <h1 >Shopping List for {this.props.name}</h1>
-                <ul>{rows}</ul>
+                <ul>
+                    <li>{this.props.cart[0].value}</li>
+                    {rows}
+                </ul>
                 <button onClick={() => this.props.addNewRecord('New record') }>Add new record</button>
             </div>
         );
