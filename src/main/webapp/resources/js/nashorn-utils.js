@@ -16,6 +16,9 @@ Array.from || (Array.from = function(s) {
     return r; 
 })
 
+var CompletableFuture = Java.type('java.util.concurrent.CompletableFuture');
+var TimeUnit = Java.type('java.util.concurrent.TimeUnit');
+
 var Symbol = Symbol || {}
 Symbol.iterator || (Symbol.iterator='Symbol(Symbol.iterator)')
  
@@ -61,75 +64,115 @@ function ARFtoDate(ad) {
     instead of having to override "defineForm" and bypass require altogether  
  */
 
-global.loadModule = function(moduleName, loadArg) {
-	// TODO: sync this
-	(function() {
-		try {
-			console.log('Nashorn loading module: ' + moduleName);
-			if(loadArg) {
-				global.requirejs.modules.__loadingModule = moduleName;
-				load(loadArg);
-				global.requirejs.modules.__loadingModule = '';
-			} else {
-				load(moduleName);
-			}
-		} catch(e) {
-			console.error('Dependency loading error for ' + moduleName + ': ' + e.toString());
-		}
-	}).call(global);
-}
+global.requirejs = (function(g){
+	var JavaException = Java.type('java.lang.Exception');
+	var JavaExperimentalUtilsFactory = Java.type('com.arrow.util.experimental.ExperimentalUtilsFactory');
+	
+	var baseUrl = g.baseUrl;
+	var formsUrlBase = baseUrl.replace(/([^/]*\/\/[^/]*\/).*/,'$1DfeServlet.srv?a=dfe&p=');
+	var moduleIdx = new (Java.type('java.util.concurrent.atomic.AtomicInteger'))();	
+	var modules = new (Java.type('java.util.concurrent.ConcurrentHashMap'))();
+	var dummy = function() { return dummy; }
+	
+	dummy.__noSuchProperty__ =dummy;
+	dummy.__noSuchMethod__ = dummy;
+	
+	modules.__loadingModule = '';
 
-global.requirejs = global.require = function(d, cb) {
-	if(typeof d == 'string') {
-		// TODO: lookup via proper config: baseUrl/paths/map
-		var addr = d;
+	//TODO: lookup via proper config: baseUrl/paths/map
+	function resolveModuleFuture (future, d) {
 		if( d.indexOf('ui/') == 0 ) {
-			return global.requirejs.modules.__dummy;
-		}
-		if( d.indexOf('forms/') == 0 ) {
-			global.requirejs.modules[d] || global.loadModule( 'classpath:/conf/dfe-experimental/forms/.transpiled/' + d.substr(6) + '.js' );
+			future.complete(dummy);
 		} else {
-			if( d.indexOf('components/') == 0 ) {
-				d = 'validation/component';
-				addr = 'dfe-core';
+			if( d.indexOf('forms/') == 0 ) {
+				// TODO: problem here is that we may not have transpiled version of the form. So atm I'll just do easiest thing: pretend to be browser and ask DfeServlet.
+				// Elaborate this. move forms management to require (but need to figure out how to plug session scope) 
+				// g.loadModule( 'classpath:/conf/dfe-experimental/forms/.transpiled/' + d.substr(6) + '.js' );
+				loadModule( formsUrlBase + d.substr(6) );
+			} else {
+				if( d.indexOf('components/') == 0 ) {
+					future.complete(require('validation/component'));
+				} else {
+					loadModule( baseUrl + '/experimental/' + (d.indexOf('validation/') == 0 ? 'dfe-core' : d) + '.js' );
+				}
 			}
-			if( d.indexOf('validation/') == 0 )
-				addr = 'dfe-core';
-			global.requirejs.modules[d] || global.loadModule( global.baseUrl + '/experimental/' + addr + '.js' );
 		}
-		return  global.requirejs.modules[d];
 	}
-	return Array.isArray(d) && typeof cb == 'function' && cb.apply(global, d.map( function(d) { return require(d) } ) ) || undefined;
-}
-
-global.define = function(n, d, cb) {
-	var r, exports = {}, module = { id: n, uri: '<unsupported>', config: {}, exports: exports };
-	if(typeof n != 'string') {
-		cb = d;
-		d = n;
-		n = global.requirejs.modules.__loadingModule || '_anonymous_' + global.requirejs.modules.__moduleIdx.incrementAndGet();
+	
+	var loadModule = function(moduleName, loadArg) {
+		(function() {
+			try {
+				console.log('Nashorn loading module: ' + moduleName);
+				if(loadArg) {
+					modules.__loadingModule = moduleName;
+					load(loadArg);
+					modules.__loadingModule = '';
+				} else {
+					load(moduleName);
+				}
+			} catch(e) {
+				throw 'Dependency loading error for ' + moduleName + ': ' + e.toString();
+			}
+		}).call(g);
 	}
-	if(!Array.isArray(d) ) { 
-		cb = d; 
-		d = 0; 
+	
+	var waitAll = function(d) {
+		CompletableFuture.allOf( d.filter(function(i) { return i != 'exports' && i != 'module' }).map( function(i) { return requireAsFuture(i) } ) ).get(120, TimeUnit.SECONDS);
 	}
-	typeof cb == 'function' && ( r = cb.apply(global, d ? d.map( function(d) { return d == 'exports' ? exports : d == 'module' ? module : require(d) }) : [ global.require, exports, module ] ) );
-	global.requirejs.modules[n] = r || exports || undefined;
-}
+	
+	var requireAsFuture = function (d) {
+		return modules.computeIfAbsent(d, function() {
+			return JavaExperimentalUtilsFactory.maybeCompleteAsync( function(future) {
+				resolveModuleFuture(future, d);
+			} )
+		});
+	}	
+	
+	var require = function(d, cb) {
+		if(typeof d == 'string') {
+			return requireAsFuture(d).get(120, TimeUnit.SECONDS);
+		}
+		if(Array.isArray(d)) {
+			CompletableFuture.allOf( d.map( function(i) { return requireAsFuture(i) } ) ).get(120, TimeUnit.SECONDS);
+			return typeof cb == 'function' && cb.apply(g, d.map( function(d) { return require(d) } ) ) || undefined;
+		}
+	}
+	var futureRequire = new CompletableFuture();
+	futureRequire.complete(require);
+	modules.require = futureRequire;
+	
+	require.define = function(n, d, cb) {
+		if(typeof n != 'string') {
+			cb = d;
+			d = n;
+			n = modules.__loadingModule || '_anonymous_' + moduleIdx.incrementAndGet();
+		}
+		var r, exports = {}, module = { id: n, uri: '<unsupported>', config: {}, exports: exports };
+		if(!Array.isArray(d) ) { 
+			cb = d; 
+			d = 0; 
+		}
+		var future = modules.computeIfAbsent(n, function() { return new CompletableFuture() });
+		try {
+			d && waitAll(d);
+			typeof cb == 'function' && ( r = cb.apply(g, d ? d.map( function(d) { return d == 'exports' ? exports : d == 'module' ? module : require(d) }) : [ require, exports, module ] ) );
+			future.complete(r || exports || undefined);
+		} catch(e) {
+			modules.remove(n).completeExceptionally(new JavaException('Rejecting define for module ' + n + "\n" + e.toString())); // important: next require will try to re-fetch it. 
+		}
+	}
 
-global.requirejs.modules = new (Java.type('java.util.concurrent.ConcurrentHashMap'))();
-global.requirejs.modules.require = global.require;
-global.requirejs.modules.__loadingModule = '';
-global.requirejs.modules.__moduleIdx = new (Java.type('java.util.concurrent.atomic.AtomicInteger'))();
-global.requirejs.modules.__dummy = function() { return global.requirejs.modules.__dummy; }
-global.requirejs.modules.__dummy.__noSuchProperty__ = global.requirejs.modules.__dummy;
-global.requirejs.modules.__dummy.__noSuchMethod__ = global.requirejs.modules.__dummy;
+	require.require = require;
+	require.undef = function(n) { modules.remove(n); }
+	require.define.amd = { jQuery: false };
+	require.requireAsFuture = requireAsFuture;
+	
+	return require ;
+})(global);
 
-global.requirejs.require = global.require;
-global.requirejs.define = global.define;
-global.requirejs.undef = function(n) { global.requirejs.modules.remove(n); }
+global.require = global.requirejs;
+global.define =  global.requirejs.define;
 
-global.define.amd = { jQuery: false };
 
 // TODO: rid of this, unify with client side -- when session scope config is in place because if we use "define" like this we'll override form for everyone
 function defineForm(n, d, f) {

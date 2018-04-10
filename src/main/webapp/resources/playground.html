@@ -49,45 +49,39 @@
     <body> 
         <div id="react"></div>
         <script type="text/jsx" data-presets="es2015,react">
-            const initialState = {
+	    const initialState = {
                 name: "Mark",
                 cart: [{key: 1, value: 'Instagram'}, {key: 2, value: 'WhatsApp'}, {key: 3, value: 'Oculus'}],
                 key: 4
             };
             let rootReducer = (state = initialState, action) => {
-                return action.type == "ADD_ITEM" ? {cart: state.cart.concat({key: state.key, value: action.payload}), key: state.key+1} : state
+                return action.type == "ADD_ITEM" ? {cart: state.cart.concat({key: state.key, value: action.payload}), key: state.key+1, name: state.name} : state
             }
             let store = Redux.createStore(rootReducer);
 
 
-            const mapStateToProps = state => {
-              return { cart: state.cart, name: state.name };
-            };
-            const mapDispatchToProps = dispatch => {
-              return { addNewRecord: item => dispatch({ type: "ADD_ITEM", payload: item }) }
-            };
+            let mapStateToProps = state => ({ cart: state.cart, name: state.name })
+            let mapDispatchToProps = dispatch => ({addNewRecord: item => dispatch({ type: "ADD_ITEM", payload: item })})
 
-            class ShoppingList extends React.Component {
-                constructor(props) {
-                    super(props);
+            const ShoppingList = ReactRedux.connect(mapStateToProps, mapDispatchToProps)( 
+                class extends React.Component {
+                    render() {
+                        let rows = this.props.cart.map(item => <li key={item.key}>{item.value}</li>);
+                        return (
+                            <div className="shopping-list">
+                                <h1 >Shopping List for {this.props.name}</h1>
+                                <ul>{rows}</ul>
+                                <button onClick={() => this.props.addNewRecord('New record') }>Add new record</button>
+                            </div>
+                        );
+                    }
                 }
-
-                render() {
-                    let rows = this.props.cart.map(item => <li key={item.key}>{item.value}</li>);
-                    return (
-                        <div className="shopping-list">
-                            <h1 >Shopping List for {this.props.name}</h1>
-                            <ul>{rows}</ul>
-                            <button onClick={() => this.props.addNewRecord('New record') }>Add new record</button>
-                        </div>
-                    );
-                }
-            }
+            )
             
-            const ConnectedList = ReactRedux.connect(mapStateToProps, mapDispatchToProps)( ShoppingList );
+            //ShoppingList );
             ReactDOM.render( 
                 <Provider store={store}>
-                    <ConnectedList />
+                    <ShoppingList />
                 </Provider>, document.getElementById("react") );
         
         </script>
