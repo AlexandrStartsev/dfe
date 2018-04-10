@@ -54,10 +54,10 @@ class ShoppingList extends React.Component {
 
     render() {
         console.log('ShoppingList::render');
-        let rows = this.props.cart.map(record => <EditableRow 
+        let rows = this.props.cart.map((record, i) => <EditableRow 
                                                 key={record.key} 
                                                 value={record.value} 
-                                                setValue={newValue => this.props.onRecordChange(record, 'value', newValue) }
+                                                setValue={newValue => this.props.onRecordChange(i, 'value', newValue) }
                                             />);
         return (
             <div className="shopping-list">
@@ -83,9 +83,9 @@ class App extends React.Component {
     addNewRecord(name) {
         this.setState({cart: this.state.cart.concat({key: this.state.key, value: 'New record'}), key: this.state.key + 1 });
     }
-    changeRecord(record, property, newValue) {
+    changeRecord(i, property, newValue) {
         let upd = this.state.cart.slice();
-        upd.filter(rec => rec == record).pop()[property] = newValue;
+        upd[i] = Object.assign({}, upd[i], {value: newValue});
         this.setState({cart: upd});
     }
     render() {
