@@ -197,7 +197,7 @@ let Dfe = (function(){
 	        l || e.set(element, l = new Set());
 	        if(!l.has(this.control)) {
 	            l.add(this.control);
-	            this.control.dependencies.push({data : data, element : element});
+	            this.control.__dependencies.push({data : data, element : element});
 	        }
 	    }
 	}
@@ -217,8 +217,27 @@ let Dfe = (function(){
     class RootComponent extends React.Component {
         constructor(props) {
             super(props);
-            this.dependencies = [];
+            this.__dependencies = [];
             this.__proxy = new JsonProxy(props.data, props.parents, props.elements, (props.listener||new DfeListener()).For(this));
+        }
+        
+        componentWillUnmount() {
+            /*let dpMap = this.__proxy.listener.dpMap;
+            this.__dependencies.forEach(function(dep) {
+                let eleMap = dpMap.get(dep.data);
+                if(eleMap) { 
+                    let ctlSet = eleMap.get(dep.element);
+                    if(ctlSet) {
+                        ctlSet.delete(this);
+                        ctlSet.size || eleMap.delete(dep.element);
+                        eleMap.size || dpMap.delete(dep.data);
+                    }
+                }
+            });*/
+        }
+        
+        validate() { // : string
+            // todo
         }
 
         get(path) {
@@ -271,41 +290,39 @@ class EditableRow extends Dfe.Component {
     }
 
     render() {
-        return( 
-            <li onClick={e => this.setState({edit: true})}> { 
-                    this.state.edit ? <input 
-                                          ref={e => this.input = e} 
-                                          defaultValue={ this.state.originalValue } 
-                                          onChange={e => this.set(this.props.field, e.target.value)}
-                                          onBlur={ this.closeInput.bind(this, true) }  
-                                          onKeyDown={e => this.handleOnKeyDown(e) }
-                                      /> : this.get(this.props.field) } 
-            </li> )
-    }
+        return this.state.edit ? <input 
+                                      ref={e => this.input = e} 
+                                      defaultValue={ this.state.originalValue } 
+                                      onChange={e => this.set(this.props.field, e.target.value)}
+                                      onBlur={ this.closeInput.bind(this, true) }  
+                                      onKeyDown={e => this.handleOnKeyDown(e) }
+                                  /> :  
+                <span onClick={e => this.setState({edit: true})}>{this.get(this.props.field)}</span> 
+    } 
 }
 
 class ShoppingList extends Dfe.Component {
     render() {
+        let rows = this.get('cart');
         return (
             <div className="shopping-list">
                 <h1> Shopping List for {this.get('.name')} </h1>
+                <h4> Reference value: {rows[0].get('.value')} </h4>
                 <ul>
-                    <EditableRow {...this.get('cart').shift()} field={'.value'} />
-                    { this.get('cart').map(item => <EditableRow {...item} field={'.value'}/>) }  
+                    { 
+                        rows.map(item => 
+                            <li key={item.data.key}>
+                                <EditableRow {...item} field={'.value'}/>
+                                { rows.length > 1 && <button onClick={() => item.detach()}>Delete</button> }
+                            </li> 
+                        ) 
+                    }  
                 </ul>
-                <button onClick={() => this.append('cart', {value: 'Yes I want some ... new face!'}) }>Add new record</button>
+                <button onClick={() => this.append('cart', {value: 'Yes I want some !new face!'}) }>Add new record</button>
             </div>
         );
     }
 }
 
-class App extends Dfe.Component {
-    render() {
-        return (
-            <ShoppingList {...this.props}/>
-        )
-    }
-}
-
-ReactDOM.render( <App {...new Dfe.Proxy({name: 'Mark', cart: [{value: 'Instagram'}, {value: 'WhatsApp'}, {value: 'Oculus'}]}) }/>, 
+ReactDOM.render( <ShoppingList {...new Dfe.Proxy({name: 'Mark', cart: [{value: 'Instagram'}, {value: 'WhatsApp'}, {value: 'Oculus'}]}) }/>, 
                      document.getElementById('react') );
