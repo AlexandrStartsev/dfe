@@ -191,7 +191,7 @@ let Dfe = (function(){
 	
 	DfeListener.prototype.depend = function(data, element) {
 	    if(this.control) {
-	        var e = this.dpMap.get(data);
+	        let e = this.dpMap.get(data);
 	        e || this.dpMap.set(data, e = new Map());
 	        var l = e.get(element);
 	        l || e.set(element, l = new Set());
@@ -201,6 +201,20 @@ let Dfe = (function(){
 	        }
 	    }
 	}
+    
+    DfeListener.prototype.undepend = function(data, element){
+	    if(this.control) {
+            let e = this.dpMap.get(data);
+            if(e) { 
+                let l = e.get(element);
+                if(l) {
+                    l.delete(this.control);
+                    l.size || e.delete(element);
+                    e.size || this.dpMap.delete(data);
+                }
+            }
+	    }      
+    }
 	
 	DfeListener.prototype.For = function(control) {
 		return new DfeListener(this.dpMap, control);
@@ -222,18 +236,8 @@ let Dfe = (function(){
         }
         
         componentWillUnmount() {
-            /*let dpMap = this.__proxy.listener.dpMap;
-            this.__dependencies.forEach(function(dep) {
-                let eleMap = dpMap.get(dep.data);
-                if(eleMap) { 
-                    let ctlSet = eleMap.get(dep.element);
-                    if(ctlSet) {
-                        ctlSet.delete(this);
-                        ctlSet.size || eleMap.delete(dep.element);
-                        eleMap.size || dpMap.delete(dep.data);
-                    }
-                }
-            });*/
+            this.__dependencies.forEach(function(dep) { this.__proxy.listener.undepend(dep.data, dep.element) }, this);
+            this.__dependencies = [];
         }
         
         validate() { // : string
