@@ -2150,4 +2150,33 @@ var requirejs, require, define;
 
     //Set up with config info.
     req(cfg);
+    define('async', function(){
+        function injectScript(src){
+            var s, t;
+            s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = src;
+            t = document.getElementsByTagName('script')[0]; t.parentNode.insertBefore(s,t);
+            return s;
+        }
+        function formatUrl(name, id){
+            var paramRegex = /!(.+)/,
+                url = name.replace(paramRegex, ''),
+                param = (paramRegex.test(name))? name.replace(/.+!/, '') : 'callback'; //default param name is 'callback'
+            url += (url.indexOf('?') < 0)? '?' : '&';
+            return url + param +'='+ id;
+        }
+        return {
+            load : function(name, req, onLoad, config){
+                if(config.isBuild){
+                    onLoad(null); //avoid errors on the optimizer
+                }else{
+                    var id = '__mm_asynch_req__'+ (+new Date()), s;
+                    window[id] = function() {
+                        s.parentNode.removeChild(s);
+                        onLoad(arguments);
+                    };
+                    s = injectScript(formatUrl(name, id));
+                }
+            }
+        };
+    });    
 }(this, (typeof setTimeout === 'undefined' ? undefined : setTimeout)));
