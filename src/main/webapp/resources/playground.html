@@ -6,14 +6,19 @@
             input[type='button'] {
                 padding-top: 0px;
                 padding-bottom: 0px;
-            }        
+            }
+            span.dfe-error-message {
+                color: crimson;
+                padding: 3px;
+                font-size: 8px;
+            }
         </style>
         
         <script src="/js/require.js"></script>
         
         <script> 
             var model = new Promise(function(resolve, reject) {
-                require(['babel', 'uglify', 'ui/jquery' , 'redux', 'react', 'react-redux', 'react-dom'], function() {
+                require(['babel', 'uglify', 'ui/jquery' , 'redux', 'react', 'react-redux', 'react-dom', 'dfe-for-react'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
                     window.Redux = require('redux');
@@ -21,6 +26,7 @@
                     window.ReactRedux = require('react-redux');
                     window.Provider = ReactRedux.Provider;
                     window.ReactDOM = require('react-dom');
+                    window.Dfe = require('dfe-for-react');
                     window.babel.transformScriptTags();
                     
                     //console.log(window.babel.transform("class ShoppingList extends React.Component { render() { let rows = ['Instagram', 'WhatsApp', 'Oculus'].map(v => <li>{v}</li>); return ( <div className='shopping-list'> <h1>Shopping List for {this.props.name}</h1><ul>{rows}</ul></div>);}}ReactDOM.render( <ShoppingList name='Mark' />, document.getElementById('react') );", {presets: ['es2015', 'react']}).code);
@@ -28,7 +34,7 @@
                 })
             });
             
-            require.config({ baseUrl: '/js', paths: { forms : '../forms' } })
+            require.config({ baseUrl: '/js', paths: { forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
             zmodel = {value: 'x'}
             zmodel = {list : [
                 {
