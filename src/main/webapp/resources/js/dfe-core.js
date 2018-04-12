@@ -3,7 +3,8 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	function __extend(from, to) { 
 	    for (var key in from) { var v = from[key]; to[key] = (typeof v === 'object' && (v = __extend(v, Array.isArray(v) ? [] : {}, 1)) || v) } return to;
 	}
-	
+	// TODO: make this run off of generated keys. 
+    
 	//###############################################################################################################################
 	function JsonProxy(data, parents, elements, listener) {
 	    this.parents = (parents || []);
