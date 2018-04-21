@@ -1,4 +1,4 @@
-defineForm("dashboard/sortableheader", [ "ui/utils", "ui/shapes", "components/html", "components/label", "components/div", "module" ], function(uiUtils, shapes, __c_html, __c_label, __c_div, module) {
+defineForm([ "ui/utils", "ui/shapes", "components/html", "components/label", "components/div", "module" ], function(uiUtils, shapes, __c_html, __c_label, __c_div, module) {
     return new class {
         constructor() {
             this.dfe = __c_div("a", {

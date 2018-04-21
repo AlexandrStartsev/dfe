@@ -1,4 +1,4 @@
-define('forms/dashboard/common', ['ui/shapes', 'ui/utils', 'module'], function(shapes, uiUtils, module){
+define(["ui/shapes", "ui/utils", "module", "ui/jquery", "dfe-common"], function(shapes, uiUtils, module, jq, cmn){
 	uiUtils.setDfeCustomStyle(`
     	.loading-overlay {
     		align-content: center;
@@ -10,7 +10,27 @@ define('forms/dashboard/common', ['ui/shapes', 'ui/utils', 'module'], function(s
     		background: lightgray;
     		opacity: 0.3;
     		z-index: 100;
-    	}	    
+    	}
+    	
+	    .dashboard-table th {
+	        background-color: #97a47a;
+	        border-right: solid 1px white;
+	        white-space: nowrap;
+	    }
+
+	    .dashboard-table th label {
+	        color: white;
+	        outline: none;
+	        white-space: nowrap;
+	    }
+
+	    .dashboard-table {
+	        border-collapse: collapse;
+	    }   
+	    
+	    .wrong-date {
+	        background: antiquewhite;
+	    }	    
     `, module.id);
 	return {
 		makeSortFunction: function($$) {

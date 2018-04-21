@@ -189,7 +189,8 @@
                     this.appendError(control, nodes[0], errs, attrs);
                 }
 	        },
-	        setAttributes: function(control, errs, attrs) { 
+	        setAttributes: function(control, errs, attrs) {
+	        	control.ui.disabled = attrs.disabled; 
 	            attrs.placeholder = attrs.disabled ? '' : control.formatting || attrs.placeholder;
 	            Component.setAttributes.call(this, control, errs, attrs);
 	        },
@@ -893,6 +894,23 @@
             }
         }, Component, _base())
     })
+    
+	define('components/iframe', ['components/component', 'ui/utils'], function(Component, uiUtils) {
+	    return _extend({
+	        cname: 'iframe',
+	        render: function (nodes, control, data, errs, attrs, events) {
+	        	if(!defer(nodes, control, data, errs, attrs, events)) {
+                    if(!control.ui) {
+                        nodes[0].appendChild(control.ui = document.createElement('iframe'))._dfe_ = control;
+                        this.setEvents(control.ui, control, data, errs, attrs);
+                    }
+                    uiUtils.setAttribute(control.ui, 'src', data.toString());
+                    this.setAttributes(control, errs, attrs);
+                    this.appendError(control, nodes[0], errs, attrs);
+	        	}
+            }
+        }, Component, _base())
+    })    
 	
 	define('components/textarea', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
 	    return _extend({

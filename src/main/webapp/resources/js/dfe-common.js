@@ -29,7 +29,7 @@ define('dfe-common', ['exports'], function(exports) {
 	function _test(a, b) { if(a == 0) return b == 0; if(typeof a != 'object') return a == b; for(var i in a) if(a[i] != b[i]) return false; return true; }
 	function ajaxFeed($$, args) {
 	    var o = _extend(args, {test: _test, mapper : function(i) {return i}}), r = { value : (Array.isArray(o.value) ? o.value[0] : o.value)||0, items : [], status: 'loading'}, p;
-        (p = ajaxCache.get(o.query)).then(function(data){
+	    function onSuccess(data){
         	try {
         		r.status = 'error';
 	            var d = data && data.result;
@@ -43,7 +43,8 @@ define('dfe-common', ['exports'], function(exports) {
         	} catch (e) {
         		$$.error(e.message, r);
         	}
-        }, function(fail){
+        }
+	    function onFailure(fail){
         	try {
 	        	r.status = 'error';
 	            if($$.control.doVal && !o.noerror) {
@@ -55,8 +56,16 @@ define('dfe-common', ['exports'], function(exports) {
         	} catch (e) {
         		$$.error(e.message, r);
         	}
-        })
-        if(!p.done) return r; // no need to repeat rendering if promise was resolved
+        }
+	    // normally you just put p.then but IE will render page before resolved promise calls back. Or maybe I should just modify promise polyfill...
+	    p = ajaxCache.get(o.query);
+	    if(!p.done) {
+	    	p.then(onSuccess, onFailure);
+	    	return r;
+	    } else {
+	    	(p.done==1?onSuccess:onFailure)(p.result);
+	    }
+        //if(!p.done) return r; // no need to repeat rendering if promise was resolved
 	}
 	//###########################################################################################################
 	_extend({ yyyymmdd: yyyymmdd,

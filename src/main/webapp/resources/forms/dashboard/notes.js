@@ -1,4 +1,4 @@
-defineForm("dashboard/notes", [ "require", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/label", "components/textarea", "components/html", "components/div" ], function(require, cmn, uiUtils, shapes, fields, __c_label, __c_textarea, __c_html, __c_div) {
+defineForm([ "require", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/label", "components/textarea", "components/html", "components/div" ], function(require, cmn, uiUtils, shapes, fields, __c_label, __c_textarea, __c_html, __c_div) {
     return new class {
         constructor() {
             this.dfe = __c_div("root", {

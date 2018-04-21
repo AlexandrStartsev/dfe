@@ -1,4 +1,4 @@
-defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r" ], function(require, uglify, babel, cmn, __c_button, __c_label, __c_dropdown, __c_checkbox, __c_editbox_code, __c_editbox, __c_div_button, __c_div, __c_div_c, __c_div_r) {
+defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r" ], function(require, uglify, babel, cmn, __c_button, __c_label, __c_dropdown, __c_checkbox, __c_editbox_code, __c_editbox, __c_div_button, __c_div, __c_div_c, __c_div_r) {
     return new class {
         constructor() {
             this.dfe = __c_div_r("root", {
@@ -634,7 +634,8 @@ defineForm("dfe.edit.dfe", [ "require", "uglify", "babel", "dfe-common", "compon
                 		if (b[i].body instanceof uglify.AST_Assign && b[i].body.left.property == 'dfe') 
                 			b[i] = uglify.parse('this.dfe=' + f);
             });
-            var enc = uglify.parse('defineForm("' + obj.name + '", ["' + cc.join('", "') + '"], function (' + dp + ') { return ' + ast.print_to_string({
+            //"' + obj.name + '", 
+            var enc = uglify.parse('defineForm(["' + cc.join('", "') + '"], function (' + dp + ') { return ' + ast.print_to_string({
                 quote_style: 3,
                 beautify: true,
                 comments: true

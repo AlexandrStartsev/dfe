@@ -1,4 +1,4 @@
-defineForm("cmau/applytoall", [ "dfe-common", "dfe-field-helper", "components/c-switch", "components/editbox", "components/editbox-$", "components/checkbox", "components/radiolist", "components/dropdown", "components/button" ], function(cmn, fields, __c_c_switch, __c_editbox, __c_editbox_$, __c_checkbox, __c_radiolist, __c_dropdown, __c_button) {
+defineForm([ "dfe-common", "dfe-field-helper", "components/c-switch", "components/editbox", "components/editbox-$", "components/checkbox", "components/radiolist", "components/dropdown", "components/button" ], function(cmn, fields, __c_c_switch, __c_editbox, __c_editbox_$, __c_checkbox, __c_radiolist, __c_dropdown, __c_button) {
 	return new class {
         constructor() {
             this.dfe = [

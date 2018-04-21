@@ -3,8 +3,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	function __extend(from, to) { 
 	    for (var key in from) { var v = from[key]; to[key] = (typeof v === 'object' && (v = __extend(v, Array.isArray(v) ? [] : {}, 1)) || v) } return to;
 	}
-	// TODO: make this run off of generated keys. 
-    
+	
 	//###############################################################################################################################
 	function JsonProxy(data, parents, elements, listener) {
 	    this.parents = (parents || []);
@@ -92,6 +91,10 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    return [ret];
 	}
 	
+	JsonProxy.prototype.isShadow = function() {
+		return !this.persisted;
+	}
+	
 	JsonProxy.prototype.persist = function () {
 	    if(!this.persisted ) {
 	        var lp = this.parents[this.parents.length - 1], le = this.elements[this.parents.length - 1], arr;
@@ -171,7 +174,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    	}
 	    });
 	}
-	 
+	
 	JsonProxy.prototype.detach = function() {
 	    if(this.persisted && this.parents.length > 0) {
 	        var p = this.parents[this.parents.length - 1], e = this.elements[this.parents.length - 1];
@@ -225,40 +228,20 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	JsonProxy.prototype.defaultSubset = function (path, defaults) { var ret = this.get(path); if(ret == 0) { this.append(path, defaults); ret = this.get(path); } return ret; }
 
 	/*
-	 * @param {Object|JsonProxy} data to reflect onto current object. deep. notifications will dispatched, dependencies on data object field will not be made
+	 * @param {Object|JsonProxy} to - object to merge into current object. notifications will dispatched, dependencies on "to" object fields will not be made
 	 */
-	// TODO: flesh it out
-	JsonProxy.prototype.reflect = function(data) {
-		if(data instanceof JsonProxy) 
-			data = data.persisted;
-        if(data == this.data) return;
-		if(typeof data != 'object')
+	JsonProxy.prototype.mergeShallow = function(to) {
+		if(to && typeof to.withListener == 'function') 
+			to = to.persisted;
+        if(to == this.persisted) return;
+		if(typeof to != 'object')
 			this.detach();
 		else {
 			this.persist();
-			var s = new Set(), k, l = this.listener, dest = this.data;
-			for(k in dest) s.add(k);
-			for(k in data) {
-				var d = data[k], isA = Array.isArray(d); 
-				if(s.has(k)) {
-					var cd = dest[k];
-					if(cd != d) {// TODO
-						dest[k] = d;
-						l && l.notify(dest, k, 'm');
-					}
-					s['delete'](k);
-				} else {
-					dest[k] = d;
-					l && l.notify(dest, k, 'm');
-				}
-			}
-			s.forEach(function(k) {
-				delete dest[k];
-				l && l.notify(dest, k, 'r'); 
-			})
+			var k, l = this.listener, dest = this.data;
+			for(var k in dest) to[k] == dest[k] || (l.notify(dest, k, 'm'), dest[k] = to[k]);
 		}
 	}
-	
     //###############################################################################################################################
 	function DfeListener(dependencyMap, control) {
 	    this.dpMap = dependencyMap || new Map();
@@ -379,24 +362,17 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	}
     
     DfeRuntime.prototype.processSubform = function(parent, px, attrs, fpx) {
-        typeof px.withListener != 'function' && (px = new JsonProxy(px, [], [], this.listener));
         var form = parent.component.form;
+        px.listener.set(parent._, 'params', attrs, 'params'); // TODO: something. move probably to first level children...
         if(!parent.fixedChildren.size) {
 	        fpx.forEach(function(fp) {
                 var c = this.addControl(parent, px, fp);
-                // todo:
-                //form.onstart == 'function' && form.onstart.call(form, px);
                 parent.fixedChildren.set(fp.data, c);
+                typeof form.onstart == 'function' && form.onstart.call(form, c.model);
 	        }, this);
         } else {
             parent.fixedChildren.forEach(function(child) {
-                // haven't decided which is better, but we definitely can't just destroy subform controls. 
-                if(child.model.data != px.data) {
-                    this.cleanUpDependencies(child);
-                    this.prep$$(child, px, child.field);
-                    child.notifications.push({action: 'parent'});
-                }
-                //child.model.reflect(px.data, false);
+            	child.model.mergeShallow(px);
             }, this);
         }
     }
@@ -442,7 +418,16 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    model.unbound.control = model.control = control;
 	    model.result = function(data) {
             var attrs = model.attrs, fpx = field.get('.children');
-            control.component.form ? runtime.processSubform(control, data, attrs, fpx ) : runtime.processChildren(control, data || [], attrs.hmodel, fpx);
+            if(control.component.form) {
+            	data = Array.isArray(data) ? data[0] : data;          	
+            	data = data && typeof data.withListener == 'function' ? data : new JsonProxy(data, [], [], listener);
+            	runtime.processSubform(control, data, attrs, fpx);
+            } else {
+            	if(fpx.length) {
+            		data = (Array.isArray(data) ? data: typeof data == 'object' ? [data] : []).map(function(i) { return typeof i.withListener == 'function' ? i : new JsonProxy(i, [], [], listener) });
+            	}
+            	runtime.processChildren(control, data, attrs.hmodel, fpx);
+            }
             pre && pre.call(form, control, data, control.error, attrs, model.events);
 	        control.component._render(control, control.data = data, control.error, attrs, model.events);
             post && post.call(form, control, data, control.error, attrs, model.events);
@@ -597,14 +582,12 @@ define('component-maker', ['dfe-common', 'components/pass-through'], function(cm
             }
             dfe_form.params = function($$) {
                 for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
-                return ctrl ? ctrl._.params : $$.runtime;
+                return ctrl ? $$.listener.get(ctrl._, 'params') : $$.runtime;
             }
             var slots = Array.prototype.concat.apply([], dfe_form.dfe.map(function(d){ return d.pos })).length;
             return cmn.extend({form: dfe_form}, function(name, attrs) {
                 return cmn.extend( { name: name, children: dfe_form.dfe, component: cmn.extend({ 
                     _render: function(control, data, errs, attrs, events) {
-                        control._.params = attrs;
-                        data && typeof dfe_form.onstart == 'function' && (Array.isArray(data)?data:[data]).forEach(function(d) { dfe_form.onstart(d) });
                         pt._render(control, data, errs, attrs, events);
                     },
                     cname: 'forms/' + dfe_form.name,
@@ -628,6 +611,8 @@ define('validation/validator', ['dfe-core', 'validation/component'], function(co
 	            return true; 
 	        },
 	        get : function(data, elem) { return data[elem] },
+	        // TODO: this is used to set attribute of subform and it kind of "mutates". Do something about whole thing
+	        set : function (data, element, value, action) { if(data[element] != value) { data[element] = value; this.notify(data, element, action, value) }; return true; },
 	        For: function(o) { return listener(o); }
 		}
 	}
@@ -643,3 +628,26 @@ define('validation/validator', ['dfe-core', 'validation/component'], function(co
         }
     }
 });
+
+function defineForm(n, d, f) {
+	if(typeof n === 'string') { n = ["forms/" + n] } else { f = d, d = n, n = [] }
+	if(Array.isArray(d)) { d = d.concat('component-maker', 'module') } else { f = d, d = ['component-maker', 'module'] }
+	define.apply(null, n.concat([d], function() {
+	    var cm = arguments[arguments.length-2], a = f.apply(this, arguments);
+	    a.name = arguments[arguments.length-1].id.replace(/^forms\//,'');
+	    a.dependencies = {};
+	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').forEach(function(n, i){a.dependencies[n] = d[i]});
+	    if(!a.dfe)
+	    	throw "No dfe found in form " + a.name + "?";
+        (function _f(dfes) {
+            dfes.forEach(function(dfe) {
+            	dfe.form||(dfe.form = a);
+                Array.isArray(dfe.pos) || (dfe.pos = dfe.pos?[dfe.pos]:[]);
+                for(var i = dfe.component.slots - dfe.pos.length; i; i > 0 ? (dfe.pos.push({}), i--) : (dfe.pos.pop(), i++)) ;
+                _f(dfe.children);
+            })
+        })(Array.isArray(a.dfe)?a.dfe:(a.dfe=[a.dfe]))
+        typeof a.setup == 'function' && a.setup();
+	    return cm.fromForm(a);
+	})); 
+}

@@ -82,6 +82,29 @@ svg, svg * {
 	left: 0px
 }
 
+.css-dotted {
+    width: 10px;
+    height: 10px;
+    position: relative
+}
+
+/*.css-dotted::before {
+    content: '';
+    border-top: 2px dotted;
+    border-color: inherit;
+    width: calc(100% - 2px);
+    position: absolute;
+    top: 60%;
+    left: 1px;
+}*/
+
+.css-dotted::before {
+    content: "...";
+    position: absolute;
+    bottom: -3px;
+}
+
+
 .css-plus {
 	width: 10px;
 	height: 10px;
@@ -117,7 +140,7 @@ svg, svg * {
 }
 
 .css-pm-button>div {
-	display: inline-flex;
+	/*display: inline-flex;*/
 	border: 1px solid #add8e6;
 	border-radius: 3px;
 	background: linear-gradient(to top left, lightblue, lightcyan);
@@ -174,6 +197,7 @@ svg, svg * {
 
     <div id="css-button-plus" class="css-pm-button"><div><div class="css-plus" style="border-color: green;"></div></div></div>
     <div id="css-button-minus" class="css-pm-button"><div><div class="css-minus" style="border-color: red;"></div></div></div>
+    <div id="css-button-dotted" class="css-pm-button"><div><div class="css-dotted" style="border-color: #444;"></div></div></div>
 
 	 <svg id="svg-icon-file-text" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
 	  <g>

@@ -1,4 +1,4 @@
-defineForm("dashboard/quicksearch", [ "components/c-dropdown", "components/editbox", "components/button", "components/form" ], function(__c_c_dropdown, __c_editbox, __c_button, __c_form) {
+defineForm([ "components/c-dropdown", "components/editbox", "components/button", "components/form" ], function(__c_c_dropdown, __c_editbox, __c_button, __c_form) {
     return new class {
         constructor() {
             this.dfe = __c_form("qs", {

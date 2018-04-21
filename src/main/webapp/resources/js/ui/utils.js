@@ -337,24 +337,6 @@ DFE.nav = function () {
 
 define('ui/utils', ['dfe-core', 'module'], function(core, m) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
-    (function(f) {this.defineForm = f})(function (n, d, f) {
-        define("forms/" + n, (d||[]).concat(['component-maker']), function() {
-    	    var cm = arguments[arguments.length-1], a = f.apply(this, arguments);
-    	    a.name = n;
-    	    a.dependencies = {};
-    	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').forEach(function(n, i){a.dependencies[n] = d[i]});
-            (function _f(dfes) {
-                dfes.forEach(function(dfe) {
-                	dfe.form||(dfe.form = a);
-                    Array.isArray(dfe.pos) || (dfe.pos = dfe.pos?[dfe.pos]:[]);
-                    for(var i = dfe.component.slots - dfe.pos.length; i; i > 0 ? (dfe.pos.push({}), i--) : (dfe.pos.pop(), i++)) ;
-                    _f(dfe.children);
-                })
-            })(Array.isArray(a.dfe)?a.dfe:(a.dfe=[a.dfe]))
-            typeof a.setup == 'function' && a.setup();
-    	    return cm.fromForm(a);
-    	}); 
-    })
     function setupNode(node) {
 		var formName = node.getAttribute('dfe-form'), args = eval(node.getAttribute('dfe-arguments')), model = eval(node.getAttribute('dfe-model'))||{}, pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
 		Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
@@ -414,7 +396,8 @@ var ajaxCache = (function() {
         },
         get: function(opt) {
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
-                var u = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
+                //var u = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
+                var u = '/AJAXServlet.srv?';
                 for(var o in opt)
                     (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
                         u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';
@@ -437,12 +420,15 @@ var ajaxCache = (function() {
                             if(this.status == 200)
                                 try {
                                 	var r = this.response || this.responseText;
-                                    resolve(typeof r == 'string' && dataType == 'json' ? JSON.parse(r) : r)
+                                    resolve(v.result = typeof r == 'string' && dataType == 'json' ? JSON.parse(r) : r)
                                 } catch(e) {
-                                    reject({xhr: xhr, exception: e});
+                                	v.done = 2;
+                                    reject(v.result = {xhr: xhr, exception: e});
                                 }
-                            else
-                                reject({xhr: xhr});
+                            else {
+                            	v.done = 2;
+                                reject(v.result = {xhr: xhr});
+                            }
                         }
                     }
                     xhr.send(so ? extend(opt.data, {cacheKey: key}) : opt.data);

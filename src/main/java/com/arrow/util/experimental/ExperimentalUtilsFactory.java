@@ -1,11 +1,13 @@
 package com.arrow.util.experimental;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.script.ScriptEngine;
@@ -32,8 +34,6 @@ public class ExperimentalUtilsFactory {
 			ScriptEngine e = manager.getEngineByName("nashorn");
 			e.put("baseUrl", baseUrl);
 			e.eval("global = (function() { return this })()");
-			//e.eval("load(baseUrl + '/experimental/babel.js')");
-			//e.eval("load(baseUrl + '/experimental/uglify.js')");
 			e.eval("load('classpath:com/arrow/js/nashorn-utils.js')");
 			//backgroundWarmup(e);
 			return e;
@@ -69,5 +69,16 @@ public class ExperimentalUtilsFactory {
 				}
 			}
 		});
+	}
+	
+	public final static CompletableFuture<Object> maybeCompleteAsync(Consumer<CompletableFuture<?>> task) {
+		CompletableFuture<Object> future = new CompletableFuture<>(); 
+		ForkJoinPool.commonPool().submit(new Runnable() {
+			@Override
+			public void run() {
+				task.accept(future);
+			}
+		});
+		return future;
 	}
 }

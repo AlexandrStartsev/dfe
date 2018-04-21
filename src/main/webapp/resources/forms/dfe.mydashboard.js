@@ -1,19 +1,13 @@
-defineForm("dfe.mydashboard", [ "require", "ui/utils", "dfe-core", "dfe-common", "components/div-button", "components/dfe-runtime", "components/tab-d", "components/div", "forms/dashboard/quicksearch" ], function(require, uiUtils, core, cmn, __c_div_button, __c_dfe_runtime, __c_tab_d, __c_div, __f_quicksearch) {
+defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div-button", "components/dfe-runtime", "components/tab-d", "components/div", "forms/dashboard/quicksearch" ], function(require, uiUtils, core, cmn, __c_div_button, __c_dfe_runtime, __c_tab_d, __c_div, __f_quicksearch) {
     return new class {
         constructor() {
             this.dfe = __c_div("root", {
                 get: $$ => [ $$ ],
                 atr: () => ({
-                    style: 'display: table; background-color: white; width: 1350px; position: relative'
+                    style: 'display: table; background-color: white; width: 1500px; position: relative'
                 })
             }, [ __c_tab_d("a", {
-                get: $$ => [ {
-                    caption: 'My Dashboard',
-                    hfield: 'quotes'
-                }, {
-                    caption: 'Diaries',
-                    hfield: 'diaries'
-                } ],
+                get: $$ => [{caption: 'My Dashboard', hfield: 'myassignment'}].concat( $$('features.teamManager') == 0 ? [] : {caption: 'Team(s) Detail', hfield: 'team'} ).concat([{ caption: 'Diaries', hfield: 'diaries' }, { caption: 'Reports', hfield: 'reports' }]),
                 atr: $$ => ({
                     haclass: 'tab-item-active',
                     rowstyle$header: 'display: flex; align-items: flex-end;',
@@ -25,11 +19,18 @@ defineForm("dfe.mydashboard", [ "require", "ui/utils", "dfe-core", "dfe-common",
                 pos: [ {
                     colclass: "dashboard-tab-item"
                 } ]
-            }), __c_dfe_runtime("quotes", {
+            }), __c_dfe_runtime("myassignment", {
                 class: "header",
                 get: $$ => $$,
                 atr: () => ({
-                    form: 'dashboard/quotes',
+                    form: 'dashboard/myassignment',
+                    editTarget: true
+                })
+            }), __c_dfe_runtime("team", {
+                class: "header",
+                get: $$ => $$,
+                atr: () => ({
+                    form: 'dashboard/team',
                     editTarget: true
                 })
             }), __c_dfe_runtime("diaries", {
@@ -37,6 +38,13 @@ defineForm("dfe.mydashboard", [ "require", "ui/utils", "dfe-core", "dfe-common",
                 get: $$ => $$,
                 atr: () => ({
                     form: 'dashboard/diaries',
+                    editTarget: true
+                })
+            }), __c_dfe_runtime("reports", {
+                class: "header",
+                get: $$ => $$,
+                atr: () => ({
+                    form: 'dashboard/reports',
                     editTarget: true
                 })
             }) ]), __f_quicksearch("qs", {
@@ -47,7 +55,7 @@ defineForm("dfe.mydashboard", [ "require", "ui/utils", "dfe-core", "dfe-common",
             }) ]);
         }
         setup() {
-            uiUtils.setDfeCustomStyle(`
+            uiUtils.setDfeCustomStyle(`    		                
             	.dashboard-tab-item {
             		display: inline
             	}

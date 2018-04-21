@@ -61,13 +61,13 @@ public class DfeServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		HttpSession session = req.getSession();
 		
-		if( session.getAttribute("login_prodcode") == null ) {
+		final String action = req.getParameter("a");// getRequestURI().replace("/DfeServlet.srv/", "");
+		final String param = req.getParameter("p");		
+		
+		if( session.getAttribute("login_prodcode") == null && !"dfe".equals(action) ) { // allowing nashorn to get form
 			resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return ;				
 		}
-		
-		final String action = req.getParameter("a");// getRequestURI().replace("/DfeServlet.srv/", "");
-		final String param = req.getParameter("p");		
 		
 		try {
 			if( "model".equals(action) ) {
@@ -84,7 +84,7 @@ public class DfeServlet extends HttpServlet {
 			
 			if( "dfe".equals(action) ) {
 		        resp.setContentType("application/json");
-		        FormStore fs = getForm(param.replace("/", ""), session);
+		        FormStore fs = getForm(param.replaceAll("^/", ""), session);
 				String code = req.getHeader("User-Agent").matches(".*(Chrome|Firefox).*") ? fs.jsForm : fs.es5Form.get(); // TODO: elaborate this, check version etc (tho it will work as is in 99.99% cases) 
 				IOUtils.copy(new StringReader( code ), resp.getWriter());
 				return ;
@@ -164,8 +164,12 @@ public class DfeServlet extends HttpServlet {
 	public static String validateStore (String strModel, HttpSession session) throws Exception {
 		Map<String, Object> json = gson.fromJson(strModel, umTt.getType());
 		String formName = ((List<Map<String, String>>)json.get("policy")).get(0).get("formname");
-		String strResp = (String)ExperimentalUtilsFactory.execute("function(model, form, servletContext) { return JSON.stringify(require('validation/validator').validate(JSON.parse(model), form)) }", 
-																		strModel, getForm(formName, session).getScriptForm()); 
+		String strResp = (String)ExperimentalUtilsFactory.execute(
+				  "function(model, form, servletContext) { "
+				+ "    return CompletableFuture.supplyAsync( function() {"
+				+ "        return JSON.stringify(require('validation/validator').validate(JSON.parse(model), form.form))"
+				+ "    }).get(60, TimeUnit.SECONDS)"  // TODO: just give back 500 for now. elaborate on messaging
+				+ "}", strModel, getForm(formName, session).getScriptForm()); 
         Map<String, Object> validationResult = gson.fromJson(strResp, umTt.getType());
         if( (Boolean)validationResult.get("result") ) {
 	        PolicyModel model = (PolicyModel) session.getAttribute("model");
@@ -186,6 +190,9 @@ public class DfeServlet extends HttpServlet {
 		});
 	}	
 	
+	/**
+	 * TODO: something
+	 */
 	@Override
 	protected long getLastModified(HttpServletRequest req) {
 		/*try {
@@ -218,10 +225,11 @@ public class DfeServlet extends HttpServlet {
 				public Object call() throws Exception {
 					long t = System.currentTimeMillis();
 					try {					
+						String formScript = FormStore.this.es5Form.get().replaceFirst("defineForm[ ]*\\([ ]*\\[", "defineForm('" + formName + "',[");
 						Map<String, String> arg = new HashMap<>();
-						arg.put("name", "forms/babel/" + formName + ".js");
-						arg.put("script", FormStore.this.es5Form.get());
-						return ExperimentalUtilsFactory.execute("load", arg);
+						arg.put("name", "forms/" + formName);
+						arg.put("script", formScript);
+						return ExperimentalUtilsFactory.execute("function(arg){ require.undef(arg.name); load(arg); return require(arg.name) }", arg);
 					} finally {
 						log.warn("Nashorn form creation took: " + (System.currentTimeMillis() - t) + "ms");
 					}

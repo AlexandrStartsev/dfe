@@ -1,4 +1,4 @@
-defineForm("quote.industry", [ "require", "dfe-common", "components/label", "components/radiolist", "components/editbox", "components/typeahead", "components/multioption", "components/div", "components/textarea" ], function(require, cmn, __c_label, __c_radiolist, __c_editbox, __c_typeahead, __c_multioption, __c_div, __c_textarea) {
+defineForm([ "require", "dfe-common", "components/label", "components/radiolist", "components/editbox", "components/typeahead", "components/multioption", "components/div", "components/textarea" ], function(require, cmn, __c_label, __c_radiolist, __c_editbox, __c_typeahead, __c_multioption, __c_div, __c_textarea) {
     return new class {
         constructor() {
             this.dfe = __c_div("root", {

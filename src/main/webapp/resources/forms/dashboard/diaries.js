@@ -1,4 +1,4 @@
-defineForm("dashboard/diaries", [ "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery", "components/label", "components/html", "components/container", "components/div" ], function(cmn, __f_sortableheader, dashboardCommon, uiUtils, shapes, fields, jq, __c_label, __c_html, __c_container, __c_div) {
+defineForm([ "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery", "components/label", "components/html", "components/container", "components/div" ], function(cmn, __f_sortableheader, dashboardCommon, uiUtils, shapes, fields, jq, __c_label, __c_html, __c_container, __c_div) {
     return new class {
         constructor() {
             this.dfe = __c_div("root", {
@@ -14,7 +14,7 @@ defineForm("dashboard/diaries", [ "dfe-common", "forms/dashboard/sortableheader"
             }, [ __c_container("diaries", {
                 get: $$ => $$('.rows'),
                 atr: $$ => ({
-                    class: 'diaries-table',
+                    class: 'dashboard-table diaries-table',
                     order: dashboardCommon.makeSortFunction($$)
                 })
             }, [ __c_label("field-1", {
@@ -122,26 +122,16 @@ defineForm("dashboard/diaries", [ "dfe-common", "forms/dashboard/sortableheader"
             uiUtils.setDfeCustomStyle(`
             	.diaries-table {
             		width: 100%;
-            		border-collapse: collapse;
             	}
             	
             	.diaries-table th {
-            		background-color: #97a47a;
-    		        border-right: solid 2px white;
     		        border-bottom: solid 2px white;
-            		text-align: center;
-            		color: white;
-            		padding: 2px 15px 2px 15px;
             	}
             	
                 .diaries-table th > div {
                     display: flex;
                     justify-content: center;
                 }
-                
-            	.diaries-table th > label {
-    		        white-space: nowrap;
-            	}                
             	
             	.diaries-table td {
             		text-align: center;

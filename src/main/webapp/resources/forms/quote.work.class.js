@@ -1,4 +1,4 @@
-defineForm("quote.work.class", [ "require", "dfe-common", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-$", "components/radiolist", "components/container" ], function(require, cmn, fields, __c_label, __c_editbox, __c_dropdown, __c_button, __c_div, __c_editbox_$, __c_radiolist, __c_container) {
+defineForm([ "require", "dfe-common", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-$", "components/radiolist", "components/container" ], function(require, cmn, fields, __c_label, __c_editbox, __c_dropdown, __c_button, __c_div, __c_editbox_$, __c_radiolist, __c_container) {
     return new class {
         constructor() {
             this.dfe = __c_div("root", {
