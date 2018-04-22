@@ -1,5 +1,7 @@
 package com.arrow.util.experimental;
 
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,11 +11,13 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import com.arrow.common.EnvironmentInfo;
@@ -76,9 +80,30 @@ public class ExperimentalUtilsFactory {
 		ForkJoinPool.commonPool().submit(new Runnable() {
 			@Override
 			public void run() {
-				task.accept(future);
+				try {
+					task.accept(future);
+				} catch(Exception e) {
+					//e.printStackTrace(System.err);
+					future.completeExceptionally(e);
+				}
 			}
 		});
 		return future;
+	}
+	
+	public final static String getUriAsString(String uri) throws Exception {
+		if(uri.startsWith("classpath:")) {
+			return IOUtils.toString(new InputStreamReader(ExperimentalUtilsFactory.class.getClassLoader().getResourceAsStream(uri.replace("classpath:", ""))));
+		}
+		if(uri.startsWith("http")) {
+			return IOUtils.toString(new URL(uri).openStream(), "UTF-8");
+		}
+		throw new UnsupportedOperationException("uri format is not supported yet");
+	}
+	
+	public final static <T> T executeSynchronized(Object lock, Supplier<T> task) {
+		synchronized(lock) {
+			return task.get();
+		}
 	}
 }

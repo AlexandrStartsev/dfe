@@ -1,10 +1,8 @@
 package com.arrow.webrate.servlets;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -207,34 +205,12 @@ public class DfeServlet extends HttpServlet {
 		private final Future<Object> form;
 		public final String jsForm;
 		public final Future<String> es5Form;
-		public final long timestamp;
 		
-		public FormStore(String jsForm, String formName, long ts, String transpiled) {
-			this.timestamp = ts;
-			this.jsForm = jsForm;//.replaceAll("\\r\\n *","");
-			this.es5Form = DfeServlet.executorService.submit(new Callable<String>() {
-				@Override
-				public String call() throws Exception {
-					String command = "function(code) { return require('babel').transform(code, { plugins: ['transform-es3-property-literals', 'transform-es3-member-expression-literals'], presets : ['es2015']}).code}";
-					return transpiled == null ? (String)ExperimentalUtilsFactory.execute(command, jsForm) : transpiled;
-				}
-			});
-			
-			this.form = DfeServlet.executorService.submit(new Callable<Object>() {
-				@Override
-				public Object call() throws Exception {
-					long t = System.currentTimeMillis();
-					try {					
-						String formScript = FormStore.this.es5Form.get().replaceFirst("defineForm[ ]*\\([ ]*\\[", "defineForm('" + formName + "',[");
-						Map<String, String> arg = new HashMap<>();
-						arg.put("name", "forms/" + formName);
-						arg.put("script", formScript);
-						return ExperimentalUtilsFactory.execute("function(arg){ require.undef(arg.name); load(arg); return require(arg.name) }", arg);
-					} finally {
-						log.warn("Nashorn form creation took: " + (System.currentTimeMillis() - t) + "ms");
-					}
-				}
-			});
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		public FormStore(String formName, String es5, String es6) {
+			this.jsForm = (String)ExperimentalUtilsFactory.execute("require", "forms/" + formName + "!es6");
+			this.es5Form = (Future)ExperimentalUtilsFactory.execute("require.requireAsFuture", "forms/" + formName + "!es5");
+			this.form = (Future)ExperimentalUtilsFactory.execute("require.requireAsFuture", "forms/" + formName);
 		}
 		
 		public Object getScriptForm() throws InterruptedException, ExecutionException {
@@ -257,21 +233,7 @@ public class DfeServlet extends HttpServlet {
 					return globalFormCache.get(formName, new Callable<FormStore>() {
 						@Override
 						public FormStore call() throws Exception {
-							try {
-								String path = "conf/dfe-experimental/forms/" + formName + ".js";
-								String transpiled = null;
-								try {
-									String tpath = "conf/dfe-experimental/forms/.transpiled/" + formName + ".js";
-									transpiled = IOUtils.toString(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(tpath)));
-								} catch( Exception e ) {
-									// do nothing
-								}
-								long ts = resourceLastModified(path);
-								return new FormStore(IOUtils.toString(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(path))), formName, ts, transpiled);
-							} catch (Throwable e) {
-								DfeServlet.log.error("Error retrieving form: " + formName, e);
-								return new FormStore(blankDfe.replace("@FORM_NAME", formName), formName, -1, null);
-							}
+							return new FormStore(formName, null, null);
 						}
 					});
 				}
@@ -294,6 +256,6 @@ public class DfeServlet extends HttpServlet {
 		Object store = session.getAttribute("dfestore");
 		if(!(store instanceof Cache))
 			session.setAttribute("dfestore", store = CacheBuilder.newBuilder().build());
-		((Cache<String, FormStore>)store).put(formName, new FormStore(jsForm, formName, System.currentTimeMillis(), null));
+		//((Cache<String, FormStore>)store).put(formName, new FormStore(jsForm, formName, System.currentTimeMillis(), null));
 	}
 }
