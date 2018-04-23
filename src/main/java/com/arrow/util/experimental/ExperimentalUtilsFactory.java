@@ -1,17 +1,12 @@
 package com.arrow.util.experimental;
 
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -34,12 +29,10 @@ public class ExperimentalUtilsFactory {
 
 		@Override
 		public ScriptEngine call() throws Exception {
-			// TODO: uncomment when we have eager initialization back. 
 			ScriptEngine e = manager.getEngineByName("nashorn");
 			e.put("baseUrl", baseUrl);
 			e.eval("global = (function() { return this })()");
 			e.eval("load('classpath:com/arrow/js/nashorn-utils.js')");
-			//backgroundWarmup(e);
 			return e;
 		}
 	});
@@ -60,50 +53,21 @@ public class ExperimentalUtilsFactory {
 		}).call(null, args);
 	}
 	
-	final static void backgroundWarmup(ScriptEngine e) {
-		ForkJoinPool.commonPool().submit(new Callable<Object>() {
-			@Override
-			public Object call() throws Exception {
-				long t = System.currentTimeMillis();
-				try {
-					// do something intense for a while, doesn't really matter what
-					return e.eval("for(var i = 0; i < 100; i++ ) babel.transform('class abc{ f(a) { return a.map(b => b.c) } }', {presets: ['es2015']})");
-				} finally {
-					log.warn("Nashorn warmup complete in " + (System.currentTimeMillis() - t) + "ms");
-				}
-			}
-		});
-	}
-	
-	public final static CompletableFuture<Object> maybeCompleteAsync(Consumer<CompletableFuture<?>> task) {
-		CompletableFuture<Object> future = new CompletableFuture<>(); 
-		ForkJoinPool.commonPool().submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					task.accept(future);
-				} catch(Exception e) {
-					//e.printStackTrace(System.err);
-					future.completeExceptionally(e);
-				}
-			}
-		});
-		return future;
-	}
-	
 	public final static String getUriAsString(String uri) throws Exception {
+		return getUriAsString(uri, "UTF-8");
+	}
+			
+	public final static String getUriAsString(String uri, String encoding) throws Exception {
 		if(uri.startsWith("classpath:")) {
-			return IOUtils.toString(new InputStreamReader(ExperimentalUtilsFactory.class.getClassLoader().getResourceAsStream(uri.replace("classpath:", ""))));
+			return IOUtils.toString(ExperimentalUtilsFactory.class.getClassLoader().getResourceAsStream(uri.replace("classpath:", "")), encoding);
 		}
 		if(uri.startsWith("http")) {
-			return IOUtils.toString(new URL(uri).openStream(), "UTF-8");
+			return IOUtils.toString(new URL(uri).openStream(), encoding);
+		}
+		if(uri.startsWith("inline:")) {
+			int length = Integer.parseInt(uri.replaceFirst("inline:(\\d+):.*", "$1"));
+			return uri.substring(7, length + 7);
 		}
 		throw new UnsupportedOperationException("uri format is not supported yet");
-	}
-	
-	public final static <T> T executeSynchronized(Object lock, Supplier<T> task) {
-		synchronized(lock) {
-			return task.get();
-		}
 	}
 }
