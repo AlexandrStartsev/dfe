@@ -411,7 +411,7 @@ define('dfe-core', function() {
                 for(let lrs = 0, rs = 0; rs < renderStructure.length; rs++) {
                     let st = renderStructure[rs];
                     if( typeof st === 'string' ) {
-                        renderStructure[rs] = st = { type: '#text', attributes: [{nodeValue: st.toString()}], children: [] }
+                        renderStructure[rs] = st = { type: '#text', attributes: [{text: st.toString()}], children: [] }
                     }
 
                     let lst = keyMap ? keyMap[rs] : lastRenderStructure[lrs];

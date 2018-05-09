@@ -57,16 +57,18 @@ define([ "dfe-core",
                             description: typeMap[k].name
                         })))
                     }),
-                    Form.field(Dropdown, "field-2", { 
-                        val: $$ => $$.required('.ModelYr', '(18|19|20)\\d{2}'),
-                        atr: $$ => fields.ajaxChoice('.ModelYr', {
-                            query: {
-                                vehicleType: $$('.vehicletype'),
-                                method: 'CMAUVehicleScriptHelper',
-                                action: 'getYearOptions'
-                            }
+                    Form.field(Labeled, { atr: () => ({text: 'Some label'}) }, 
+                        Form.field(Dropdown, "field-2", { 
+                            val: $$ => $$.required('.ModelYr', '(18|19|20)\\d{2}'),
+                            atr: $$ => fields.ajaxChoice('.ModelYr', {
+                                query: {
+                                    vehicleType: $$('.vehicletype'),
+                                    method: 'CMAUVehicleScriptHelper',
+                                    action: 'getYearOptions'
+                                }
+                            }, { vstrategy: 'always'})
                         })
-                    })
+                    )
                 ])
             )
         }

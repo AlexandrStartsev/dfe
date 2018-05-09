@@ -39,7 +39,7 @@ define('dfe-common', ['exports'], function(exports) {
 		        	i.value = i.value || _extend(i, {});
 		        	r.found = r.found || o.test(r.value, i.value) && i.value; 
 		        });
-		        r.found || o.noerror || !$$.control.doVal ? $$.result(r) : $$.error(r.items.length > 0 ? 'Please make selection' : 'Not found', r);
+		        r.found || o.noerror || !$$.$node.doValidation ? $$.result(r) : $$.error(r.items.length > 0 ? 'Please make selection' : 'Not found', r);
         	} catch (e) {
         		$$.error(e.message, r);
         	}
@@ -47,7 +47,7 @@ define('dfe-common', ['exports'], function(exports) {
 	    function onFailure(fail){
         	try {
 	        	r.status = 'error';
-	            if($$.control.doVal && !o.noerror) {
+	            if($$.$node.doValidation && !o.noerror) {
 	                var msg = 'Error retrieving data\n' + (fail.exception ? fail.exception.message : fail.xhr.statusText);
 	                fail.xhr.responseText && (msg = fail.xhr.responseText.substr(0, 50) + '...');
 	                $$.error(msg, r);

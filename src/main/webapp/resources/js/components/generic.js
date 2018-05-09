@@ -13,6 +13,16 @@ define('components/container', ['dfe-core'], function(Core) {
     return class Container extends Core.Component {}
 })    
 
+define('components/either', ['dfe-core'], function(Core) {
+    return class Either extends Core.Component {
+        render(data, error, attributes, children) {
+            let first, rest = [];
+            children.forEach( map => map.forEach( child => first ? attributes.first || rest.push(child) : (first = child) ) );
+            return attributes.first ? first : rest;
+        }
+    }
+})
+
 define('components/text', ['components/base'], function(BaseComponent) {
     return class Text extends BaseComponent {}
 }) 
@@ -22,19 +32,41 @@ define('components/span', ['dfe-core', 'components/base'], function(Core, BaseCo
         render(data, error, attributes, children) {
             let sub = [];
             children.forEach( 
-                map => map.forEach( 
-                    child => sub.push( Core.createElement('span', child) ) 
+                (map, row) => map.forEach( 
+                    child => sub.push( Core.createElement('span', {key: row ? row.key : 0}, child) ) 
                 )
             )
             return Core.createElement('span', {class: attributes.class, style: attributes.style}, sub);
         }
     }
-})    
+})
+
+define('components/div', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
+    return class Span extends BaseComponent {         
+        render(data, error, attributes, children) {
+            let sub = [];
+            children.forEach( 
+                (map, row) => map.forEach( 
+                    child => sub.push( Core.createElement('div', {key: row ? row.key : 0}, child) ) 
+                )
+            )
+            return Core.createElement('div', {class: attributes.class, style: attributes.style}, sub);
+        }
+    }
+})
 
 define('components/table', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
     return class Table extends BaseComponent {
         render(data, error, attributes, children) {
-            let headRows = [], bodyRows = [], footRows = [], lastRow = -1;
+            let rows = this.makeRows(data, attributes, children, 'tr', clazz => clazz === 'header' ? 'th' : 'td' );
+            return Core.createElement('table', {class: attributes.class, style: attributes.style}, [
+                rows.$header.length && Core.createElement('thead', {}, rows.$header),
+                rows[""].length && Core.createElement('tbody', {}, rows[""]),
+                rows.$footer.length && Core.createElement('tfoot', {}, rows.$footer)
+            ]);
+        }
+        makeRows(data, attributes, children, rowElement, classToCellElement) {
+            let rows = { $header: [], $footer: [], "": [] }, lastRow = -1;
             let orderedFilteredColumns = this.orderFilterColumns(attributes);
             let orderedFilteredRows = this.orderFilterRows(attributes, data).map(row => row.data);
             children.get(null) && orderedFilteredRows.push(null);
@@ -44,23 +76,26 @@ define('components/table', ['dfe-core', 'components/base'], function(Core, BaseC
                     orderedFilteredColumns.forEach(
                         field => {
                             let child = fieldMap.get(field);
-                            let currentBlock = row === null ? field.class === 'header' ? headRows : footRows : bodyRows;
-                            let currentRow = currentBlock[ currentBlock.length - 1 ];
-                            let ii = child.immediateNodeInfo[0];
-                            if(!currentRow || lastRow !== row || ii && ii.newRow && currentRow.children.length ) {
-                                currentBlock.push( currentRow = Core.createElement('tr', {key: row ? row.key : 0}) );
-                                lastRow = row;
+                            let selector = field.class ? '$' + field.class : '';
+                            let currentBlock = rows[selector];
+                            if( currentBlock ) {
+                                let currentRow = currentBlock[ currentBlock.length - 1 ];
+                                let ii = child.immediateNodeInfo[0];
+                                if(!currentRow || lastRow !== row || ii && ii.newRow && currentRow.children.length ) {
+                                    currentBlock.push( currentRow = Core.createElement(rowElement, {
+                                        key: row ? row.key : 0,
+                                        class: attributes['rowclass' + selector],
+                                        style: attributes['rowstyle' + selector],
+                                    }));
+                                    lastRow = row;
+                                }
+                                currentRow.children.push( Core.createElement( classToCellElement(field.class), child ) )
                             }
-                            currentRow.children.push( Core.createElement('td', child) )
                         }
                     )
                 }
             )
-            return Core.createElement('table', {class: attributes.class, style: attributes.style}, [
-                headRows.length && Core.createElement('thead', {}, headRows),
-                bodyRows.length && Core.createElement('tbody', {}, bodyRows),
-                footRows.length && Core.createElement('tfoot', {}, footRows)
-            ]);
+            return rows;
         }
         orderFilterColumns(attributes) {
             let field = this.$node.field, form = this.$node.form, model = this.$node.model;
@@ -81,7 +116,7 @@ define('components/labeled-component', ['components/base'], function(BaseCompone
         render(data, error, attributes, children) {
             let firstChild;
             children.forEach(( m, _ ) => m.forEach(( child, _ ) => firstChild || (firstChild = child) ));
-            return [ attributes.label, firstChild ]
+            return [ attributes.text, firstChild ]
         }
         renderDefault() {
             return [ undefined, undefined ]
@@ -317,8 +352,8 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
             return [[
                 Core.createElement(
                     'select', 
-                    { ...attributes, selectedIndex: selectedIndex, onChange: e => this.store(options[e.target.selectedIndex].value) }, 
-                    options.map( Core.createElement.bind(null, 'option') )
+                    { ...attributes, selectedIndex: selectedIndex, onChange: e => this.store(options[e.target.selectedIndex].value) },
+                    options.map( opt => Core.createElement('option', { text: opt.text }) )
                 ),
                 error && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
             ]]
@@ -330,268 +365,6 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
 })
 
 /*
-define('components/container', ['components/dropdown', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'container',
-        layout: 'tpos',
-        isContainer: true,
-        runtime: function(control, reset) {
-            if(!control.runtime || reset) {
-                control.runtime = { 
-                    allocs: new Map(), 
-                    dataRows: [], 
-                    fields: new Set(), 
-                    headAlloc: { rows: [] }, 
-                    footAlloc: { rows: [] } 
-                }
-            }
-            return control.runtime;
-        },
-        emptyUI: function(control) {
-            Component.emptyUI.call(this, control);
-            this.runtime(control, true);
-        },
-        render: function(nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                var arrangedFields = this.orderFilterColumns(control, attrs);
-                this.renderFx(nodes, control, data, errs, attrs, arrangedFields);
-                //if(!control.ui) { this.setEvents(control.ui, control, data, errs, attrs); }
-                this.processRows(control, attrs, data || [], arrangedFields);
-                this.setAttributes(control, errs, attrs);
-            }
-        },
-        setAttributes: function(control, errs, attrs) {
-            Component.setAttributes.call(this, control, errs, attrs);
-            var rt = this.runtime(control), ha = rt.headAlloc;
-            rt.headAlloc.rows.forEach(function(row) { 
-                attrs.rowclass$header ? row.tr.setAttribute('class', attrs.rowclass$header) : row.tr.removeAttribute('class');
-                attrs.rowstyle$header ? row.tr.setAttribute('style', attrs.rowstyle$header) : row.tr.removeAttribute('style');
-            })
-            rt.allocs.forEach(function (rowAlloc) {
-                rowAlloc.rows.forEach(function(row) { 
-                    attrs.rowclass ? row.tr.setAttribute('class', attrs.rowclass) : row.tr.removeAttribute('class');
-                    attrs.rowstyle ? row.tr.setAttribute('style', attrs.rowstyle) : row.tr.removeAttribute('style');
-                })
-            })
-        },
-        renderFx: function(nodes, control, data, errs, attrs, arrangedFields) {
-            if( ! control.ui ) {
-                nodes[0].appendChild(control.ui = document.createElement('table'))._dfe_ = control;
-            }
-            var rt = this.runtime(control);
-            var hf = arrangedFields.filter(function(fd) { return fd.clazz=='th' });
-            if(hf.length > 0) {
-                rt.uiTHead || control.ui.insertBefore(rt.uiTHead = document.createElement('thead'), control.ui.firstChild);
-            }
-            rt.headAlloc = this.reconcileRow(rt.uiTHead, control, rt.headAlloc, null, {rows: []}, hf);
-        },
-        processRows: function(control, attrs, newRows, arrangedFields) {
-            var rt = this.runtime(control);
-            var newAllocs = new Map();
-            var footAlloc = rt.footAlloc;
-            var oldAllocs = rt.allocs;
-            var or = rt.dataRows;
-            var nr = this.orderFilter(control, attrs, newRows);
-            var ui = control.ui; //control.ui_tbody||
-            var fields = arrangedFields.filter(function(fd) { return !fd.clazz });
-
-            for(var i = 0, j = 0; i < nr.length; ) {
-                var _n = nr[i];
-                if(j == or.length) {
-                    newAllocs.set(_n, this.reconcileRow(ui, control, { rows: [] }, _n, footAlloc, fields)); //newAllocs.set(_n, this.insertRowBefore(ui, control, _n, footAllocs, arrangedFields));
-                    i++;
-                    continue ;
-                }
-                var _o = or[j], orA = oldAllocs.get(_o);
-                if(_n == _o) {
-                    var nextAllocs = oldAllocs.get(or[j + 1]);
-                    newAllocs.set(_n, this.reconcileRow(ui, control, orA, _n, nextAllocs||footAlloc, fields));
-                    oldAllocs['delete'](_o);
-                    i++, j++;
-                    continue ;
-                }
-                var nrA = oldAllocs.get(_n);
-                if(typeof nrA != 'undefined') {
-                    this.moveRow(ui, control, nrA, orA);
-                    newAllocs.set(_n, this.reconcileRow(ui, control, nrA, _n, orA, fields));
-                    oldAllocs['delete'](_n);
-                } else {
-                    newAllocs.set(_n, this.reconcileRow(ui, control, { rows: [] }, _n, orA, fields)); //newAllocs.set(_n, this.insertRowBefore(ui, control, _n, orA, arrangedFields));
-                }
-                i++;
-            }
-            oldAllocs.forEach( function(v, k) { 
-                this.removeDataRow(ui, control, v, k) 
-            }, this);
-            rt.allocs = newAllocs;
-            rt.dataRows = nr;
-        },
-        moveRow: function(ui, control, nrA, orA) {
-            var ib = orA.rows[0];
-            nrA.rows.forEach(function(r) { ui.insertBefore(r, ib) } )
-        },
-        reconcileRow: function(ui, control, allocs, rowData, nextAlloc, arrangedFields) {
-            var currentTr = 0, currentTd = 0, currentRow = allocs.rows[0];
-            var before = nextAlloc.rows[0]||null;
-            var children = rowData ? control.children.get(rowData) : control.fixedChildren;
-            function initLineIfNecessary() {
-                if(!currentRow) {
-                    allocs.rows.push( currentRow = { tr: document.createElement('tr'), td: [] } ); 
-                    ui.insertBefore( currentRow.tr, before );
-                    currentTd = 0;
-                }
-            }
-            function trimTd() {
-                if(currentRow) {
-                    for(var rest = currentRow.td.splice(currentTd), i = rest.length-1; i >= 0; i--) {
-                        currentRow.tr.removeChild(rest[i].td);
-                    }
-                }
-                currentRow = allocs.rows[++currentTr];
-                currentTd = 0;
-            }
-            arrangedFields.forEach(function(field) {
-                var child = children.get(field);
-                var comp = child.component;
-                comp.setParentNode(child, child.dimensions.map(function(pos){
-                    initLineIfNecessary();
-                    if( pos.n == 'Y' && currentTd ) {
-                        trimTd();
-                        initLineIfNecessary();   
-                    }
-                    var currentCell = currentRow.td[currentTd++], td;
-                    if( !currentCell ) {
-                        currentRow.td.push(currentCell = {td: td = document.createElement(field.clazz||'td')});
-                        currentRow.tr.appendChild(td);
-                    } else {
-                        td = currentCell.td;
-                    }
-                    pos.v == currentCell.v || ( (currentCell.v = pos.v) ? td.setAttribute('valign' , pos.v) : td.removeAttribute('valign') )
-                    pos.w == currentCell.w || ( (currentCell.w = pos.w) ? td.setAttribute('colSpan', pos.w) : td.removeAttribute('colSpan') )
-                    pos.h == currentCell.h || ( (currentCell.h = pos.h) ? td.setAttribute('rowSpan', pos.h) : td.removeAttribute('rowSpan') )
-                    pos.c == currentCell.c || ( (currentCell.c = pos.c) ? td.setAttribute('class'  , pos.c) : td.removeAttribute('class') )
-                    pos.s == currentCell.s || ( (currentCell.s = pos.s) ? td.setAttribute('style'  , pos.s) : td.removeAttribute('style') )
-                    return td;
-                }))
-            })
-            trimTd();
-            for(var rest = allocs.rows.splice(currentTr), i = rest.length-1; i >= 0; i--) {
-                ui.removeChild(rest[i].tr);
-            }
-            return allocs;
-        },
-        removeDataRow: function(ui, control, oldAlloc, or) {
-            var prevChildren = control.children.get(or);
-            prevChildren && prevChildren.forEach(function(c) {c.component.setParentNode(c)});
-            oldAlloc.rows.forEach(function(r) { ui.removeChild(r) } );
-        },
-        orderFilterColumns: function(control, attrs) {
-            var d = control.field.data, ch = d.children||[], s = attrs.skip, o = attrs.colOrder, f = d.form, m = control.model, t = typeof s == 'function';
-            s && (ch = ch.filter(function(d) { return t ? !s.call(f, d.name, m) : s.indexOf(d.name) == -1 }));
-            typeof o == 'function' && (ch = ch.sort(function(d1, d2) { return o.call(f, d1.name, d2.name, m) }));
-            var rt = this.runtime(control), fields = rt.fields, nextFields = new Set();
-            ch.forEach(function(field){
-                fields.delete(field);
-                nextFields.add(field);
-            });
-            fields.forEach(function(field) {
-                (field.clazz ? [control.fixedChildren] : control.children).forEach(function(children) {
-                    var child = children.get(field);
-                    child.component.setParentNode(child);
-                })
-            })
-            rt.fields = nextFields;
-            return ch;
-        },
-        orderFilter: function(control, attrs, newRows) {
-            if(typeof attrs.filter == 'function') {
-                newRows = newRows.filter(attrs.filter);
-            }
-            if(Array.isArray(attrs.filter)) { 
-                var s = new Set(); 
-                attrs.filter.forEach(function(r) { s.add(r.data) });
-                newRows = newRows.filter(function(px) {return s.has(px.data)});
-            }
-            return (typeof attrs.order == 'function' ? newRows.sort(attrs.order) : newRows).map(function(r) { return r.data; });
-        }
-    }, Component, _base())
-})
-
-define('components/pass-through', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'pass-through',
-        isContainer: true,
-        attachUI: function (control, nodes) {
-            var i = 0;
-            control.children.forEach( function(map) {
-                map.forEach(function(child, field) {
-                    child.component.setParentNode(child, nodes.slice(i, i += child.dimensions.length))
-                })
-            })
-        },
-        detachUI: function (control) {
-            control.children.forEach(function(map) {
-                map.forEach(function(child) {
-                    child.component.detachUI(child)
-                })
-            })
-        },
-        render: function (nodes, control, data, errs, attrs, events) {
-            var dimensions = [];
-            control.children.forEach( function(map) { 
-                map.forEach(function(child, field) {
-                    dimensions.concat(child.dimensions);
-                })
-            })
-            control.dimensions = dimensions;
-        }
-    }, Component, _base());
-})    
-
-define('components/div', ['components/component', 'components/container', 'ui/utils'], function(Component, CContainer, uiUtils) {
-    return _extend({
-        cname: 'div',
-        layout: 'dpos',
-        buildFieldData: function(control, previousData, attrs) {
-            var ret = [], nd, dp, i=0, cls, match = true, ch = this.orderFilterColumns(control, attrs); 
-            ret.attrs = attrs;
-            previousData = previousData||[];
-            ch.forEach(function(cf) {
-                nd = { field: cf, clazz: cf['class'] || '', pos: cf.pos };
-                if( cf.name && cf.name == attrs.hfield ) {
-                    pd = previousData.headField;
-                    ret.headField = nd;
-                } else {
-                    pd = previousData[i++];
-                    ret.push(nd);
-                }
-                match = match && pd && nd.clazz == pd.clazz && nd.field == pd.field && nd.pos == pd.pos;
-            });
-            ret.match = match && ret.length == previousData.length;
-            return ret;
-        },
-        setAttributes: Component.setAttributes,
-        allocateNodes: function(control, ui, attrs, fieldData, nextAllocs) {
-            var ret = { nodes: [], rows: [] }, nodes, div, ib = nextAllocs && nextAllocs.rows[0];
-            fieldData.forEach(function(fd) {
-                ret.nodes.push(nodes = []);
-                fd.pos.forEach(function(pos){
-                    ui.insertBefore(div = document.createElement('div'), ib||null);
-                    ret.rows.push(div);
-                    nodes.push(div);
-                    pos.colclass && div.setAttribute('class', pos.colclass);
-                    pos.colstyle && div.setAttribute('style', pos.colstyle);
-                })
-            }); 
-            return ret;
-        },
-        renderFx: function(nodes, control, data, errs, attrs) {
-            nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-            var rt = this.runtime(control), hf = rt.fieldData.filter(function(fd) { return fd.clazz!='' });
-            hf.length > 0 && this.positionChildren(control, rt.headAlloc = this.allocateNodes(control, control.ui, attrs, hf), hf);
-        }
-    }, CContainer, _base())
-})  
 
 define('components/form', ['components/div'], function(CDiv) {
    return _extend({
@@ -1134,19 +907,6 @@ define('components/div-button-x', ['components/div-button', 'ui/utils'], functio
             }
         }
     }, CDivButton, _base())
-})
-
-define('components/switch', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'switch',
-        render: function(nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                var rt = this.runtime(control);
-                attrs.component != rt.renderingComponent && rt.renderingComponent && rt.renderingComponent.purge(control);
-                (rt.renderingComponent = attrs.component).render(nodes, control, data, errs, attrs, events);
-            }
-        }
-    }, Component, _base());
 })
 
 define('components/dfe-runtime', ['components/component', 'dfe-core', 'ui/utils'], function(Component, core, uiUtils) {

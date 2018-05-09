@@ -39,7 +39,8 @@ require.config({
                                 'components/editbox-P',
                                 'components/div-button',
                                 'components/multioption',
-                                'components/div-button-x']
+                                'components/div-button-x',
+                                'components/either' ]
     }
 });
 
