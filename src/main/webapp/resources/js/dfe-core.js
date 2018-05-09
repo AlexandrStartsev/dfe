@@ -310,6 +310,7 @@ define('dfe-core', function() {
         }
     }
     
+    let DOMEvents = [{name: 'onKeyDown', event: 'keydown'}, {name: 'onKeyUp', event: 'keyup'}, {name: 'onChange', event: 'change'}, {name: 'onClick', event: 'click'}, {name: 'onMouseEnter', event: 'mouseenter'}, {name: 'onMouseLeave', event: 'mouseleave'}, {name: 'onBlur', event: 'blur'}];
     class DOM {
         static calcImmediateNodeInfo(renderStructure, fpos) {
             let fi = 0; 
@@ -323,24 +324,42 @@ define('dfe-core', function() {
             if(newAttributes.style != oldAttributes.style ) {
                 (newAttributes.style === undefined ? domElement.removeAttribute('style') : domElement.setAttribute('style', newAttributes.style));
             }
-            if(newAttributes.onKeyDown != oldAttributes.onKeyDown) {
-                oldAttributes.onKeyDown && domElement.removeEventListener('keydown', oldAttributes.onKeyDown, false);
-                newAttributes.onKeyDown && domElement.addEventListener('keydown', newAttributes.onKeyDown, false);
+            if(newAttributes.id != oldAttributes.id) {
+                (newAttributes.id === undefined ? domElement.removeAttribute('id') : domElement.setAttribute('id', newAttributes.id));
             }
-            if(newAttributes.onKeyUp != oldAttributes.onKeyUp) {
-                oldAttributes.onKeyUp && domElement.removeEventListener('keyup', oldAttributes.onKeyUp, false);
-                newAttributes.onKeyUp && domElement.addEventListener('keyup', newAttributes.onKeyUp, false);
-            }
-            if(newAttributes.onChange != oldAttributes.onChange) {
-                oldAttributes.onChange && domElement.removeEventListener('change', oldAttributes.onChange, false);
-                newAttributes.onChange && domElement.addEventListener('change', newAttributes.onChange, false);
-            }
-            if(newAttributes.onClick != oldAttributes.onClick) {
-                oldAttributes.onClick && domElement.removeEventListener('click', oldAttributes.onClick, false);
-                newAttributes.onClick && domElement.addEventListener('click', newAttributes.onClick, false);
+            if(newAttributes.name != oldAttributes.name) {
+                (newAttributes.name === undefined ? domElement.removeAttribute('name') : domElement.setAttribute('name', newAttributes.name));
+            }        
+            DOMEvents.forEach( e => {
+                if(newAttributes[e.name] != oldAttributes[e.name]) {
+                    typeof oldAttributes[e.name] === 'function' && domElement.removeEventListener(e.event, oldAttributes[e.name], false);
+                    typeof newAttributes[e.name] === 'function' && domElement.addEventListener(e.event, newAttributes[e.name], false);
+                }
+            })
+            if( typeof newAttributes.events === 'object' || typeof oldAttributes.events === 'object' ) {
+                let newEvents = newAttributes.events||0, oldEvents = oldAttributes.events||0;
+                DOMEvents.forEach( e => {
+                    if(newEvents[e.name] != oldEvents[e.name]) {
+                        typeof oldEvents[e.name] === 'function' && domElement.removeEventListener(e.event, oldEvents[e.name], false);
+                        typeof newEvents[e.name] === 'function' && domElement.addEventListener(e.event, newEvents[e.name], false);
+                    }
+                })
             }
             if(newAttributes.html != oldAttributes.html) {
-                domElement.innerHTML = newAttributes.html;
+                if(oldAttributes.html) {
+                    while(domElement.firstChild) {
+                        domElement.removeChild(domElement.firstChild); 
+                    }
+                }
+                let html = newAttributes.html, isArray = Array.isArray(html);
+                html = isArray ? html.filter(e => !!e) : html;
+                if( html && html != 0) {
+                    if( isArray ) {
+                        html[0].nodeName ? html.forEach(node => domElement.appendChild(node)) : (domElement.innerHTML = html.join(''));
+                    } else {
+                        html.nodeName ? domElement.appendChild(html) : domElement.innerHTML = html.toString();
+                    }
+                }
             }
             if(!!newAttributes.disabled != domElement.disabled) {
                 domElement.disabled = !!newAttributes.disabled;
@@ -380,6 +399,17 @@ define('dfe-core', function() {
                 case 'td':
                     (newAttributes.colSpan||1) == domElement.colSpan || (domElement.colSpan = newAttributes.colSpan||1);
                     (newAttributes.rowSpan||1) == domElement.rowSpan || (domElement.rowSpan = newAttributes.rowSpan||1);
+                    break ;
+                case 'form':
+                    if(newAttributes.action != oldAttributes.action) {
+                        (newAttributes.action === undefined ? domElement.removeAttribute('action') : domElement.setAttribute('action', newAttributes.action));
+                    }
+                    if(newAttributes.method != oldAttributes.method) {
+                        (newAttributes.method === undefined ? domElement.removeAttribute('method') : domElement.setAttribute('method', newAttributes.method));
+                    }
+                    if(newAttributes.target != oldAttributes.target) {
+                        (newAttributes.target === undefined ? domElement.removeAttribute('target') : domElement.setAttribute('target', newAttributes.target));
+                    }
                     break ;
             }
         }
@@ -565,9 +595,9 @@ define('dfe-core', function() {
     }
     
     class Node {
-        constructor(parentNode, field, unboundModel, runtime) {
+        constructor(parent, field, unboundModel, runtime) {
             Object.assign(this, {
-                parent: parentNode,
+                parent: parent,
                 runtime: runtime,
                 form: null,
                 field: field,
@@ -593,9 +623,10 @@ define('dfe-core', function() {
             let control = new (field.component)(this);
             let renderStructure = control.renderDefault();
 
-            this.form = control instanceof Form ? control : parentNode.form;
+            this.form = control instanceof Form ? control : parent.form;
             this.control = control;
             this.renderStructure = renderStructure && renderStructure.filter ? renderStructure : [renderStructure];
+            this.immediateNodeInfo = DOM.calcImmediateNodeInfo(this.renderStructure, field.pos || []);
         }
         store(value, method) {
             let setter = this.attributes.set || this.field.set;
@@ -655,9 +686,9 @@ define('dfe-core', function() {
             this.nodes.forEach(node => DOM.render(node));
             while(this.schedule.length) this.schedule.shift()(this);
         }
-        addNode(parentNode, modelProxy, field) {
+        addNode(parent, modelProxy, field) {
             let unbound = wrapProxy(modelProxy, path => unbound.get(path), this.listener);
-            let node = new Node(parentNode, field, unbound, this);
+            let node = new Node(parent, field, unbound, this);
             node.notifications.push(this.initAction);
             this.nodes.add(node);
             this.prep$$(node, unbound);
@@ -681,19 +712,18 @@ define('dfe-core', function() {
                 if( node.doValidation ) {
                     if( error ) {
                         node.stickyError = error;
-                        error === 'Simulated error' || runtime.notifyErroring(node);
+                        runtime.notifyErroring(node);
                         node.acceptLogic(node.lastData, error);
                     }
                 }
                 return error;
             }
-            model.errorwatch = function(target) {
-                // TODO...
-                let has = false;
-                listener.get(target||node.parentNode, 'erroringChildren').forEach(function(n) {
-                    while(n && !has) has |= (n.model.data == model.data), n = n.parentNode;
-                });
-                has && model.error('Simulated error');
+            model.errorwatch = function(target, reducer) {
+                let error;
+                listener.get(target||node, 'erroringChildren').forEach(
+                    node => error = error !== undefined && reducer ? reducer(error, node.lastError) : node.lastError
+                );
+                error && node.acceptLogic(node.lastData, error);
             }
             model.required = function(name, pattern, message) {
                 var val = model.get(name);
@@ -705,17 +735,17 @@ define('dfe-core', function() {
             }
         }
         removeErroring(node) {
-            // TODO...
             if( node.lastError ) {
                 delete node.lastError;
-                
-                for( var p=node.parentNode; p && p.erroringChildren['delete'](control) && this.listener.notify(p, 'erroringChildren'); p=p.parentNode ) ;
+                for( let cur = node.parent; cur && cur.erroringChildren.delete(node); cur = cur.parent ) {
+                    this.listener.notify(cur, 'erroringChildren');
+                }
             }
         }
         notifyErroring(node) {
-            // TODO...
-            for( var p = node.parentNode; p && !p.erroringChildren.has(control); p = p.parentNode )
-                p.erroringChildren.add(control), this.listener.notify(p, 'erroringChildren', 'validate'); 
+            for( let cur = node.parent; cur && !cur.erroringChildren.has(node); cur = cur.parent ) {
+                cur.erroringChildren.add(node), this.listener.notify(cur, 'erroringChildren', 'validate'); 
+            }
         }
         evict(node) {
             node.children.forEach(fieldMap => fieldMap.forEach( node => this.evict(node)));
@@ -773,10 +803,15 @@ define('dfe-core', function() {
                     var m = node.model, d = node.field, l = m.listener, v, fg, fv;
                     //m.events = events;
                     let attrs = node.attributes = typeof d.atr != 'function' ? {} : d.atr.call(node.form, m);
-                    node.doValidation = node.control.doValidation(events, attrs);
+                    node.doValidation = attrs.errorwatch || node.control.doValidation(events, attrs);
                     this.removeErroring(node);
                     typeof (v = typeof (fg = d.get || attrs.get) != 'function' ? [m] : fg.call(node.form, m, events)) == 'undefined' || m.result(v);
-                    node.doValidation && typeof (fv = d.val || attrs.val) == 'function' && fv.call(node.form, m, events);
+                    if(attrs.errorwatch) {
+                        let { target: target, accept: reducer } = attrs.errorwatch;
+                        m.errorwatch(target, reducer);
+                    } else {
+                        node.doValidation && typeof (fv = d.val || attrs.val) == 'function' && fv.call(node.form, m, events);
+                    }
                 } catch(e) { 
                     node.doValidation = 1; try{ node.model.error(e.message) } catch (e) { } console.error(node.field + '\n' + e.message + '\n' + e.stack); 
                 }

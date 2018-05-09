@@ -1,4 +1,5 @@
-define([ "dfe-core", 
+define([ "dfe-core",
+        "ui/shapes",
         'dfe-field-helper',
         "components/labeled-component", 
         "components/editbox", 
@@ -7,7 +8,10 @@ define([ "dfe-core",
         "components/button",
         "components/checkbox",
         "components/text",
-        "components/dropdown" ], function(Core, fields, Labeled, Editbox, Container, Table, Button, Checkbox, Text, Dropdown) {
+        "components/dropdown",
+        "components/html",
+        "components/div-r" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+            Text, Dropdown, Html, DivR) {
     let Form = Core.Form;
     
     /*class SubForm extends Form {
@@ -51,13 +55,24 @@ define([ "dfe-core",
         static fields() {
             return (
                 Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [
+                    Form.field(Html, "field-49", {
+                        get: $$ => shapes.cssShape($$, $$('.hasvin') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
+                        atr: $$ => ({
+                            events: {
+                                onClick: () => $$.set('.hasvin', $$('.hasvin') == 'Y' ? 'N' : 'Y')
+                            }
+                        }),
+                        pos: [ {
+                            style: "padding: 1px; background: white; border-radius: 3px;"
+                        } ]
+                    }),
                     Form.field(Dropdown, "field-1", { 
                         atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
                             value: k,
                             description: typeMap[k].name
                         })))
                     }),
-                    Form.field(Labeled, { atr: () => ({text: 'Some label'}) }, 
+                    Form.field(Labeled, { atr: () => ({text: 'Some label', errorwatch: true}) }, 
                         Form.field(Dropdown, "field-2", { 
                             val: $$ => $$.required('.ModelYr', '(18|19|20)\\d{2}'),
                             atr: $$ => fields.ajaxChoice('.ModelYr', {
@@ -66,7 +81,7 @@ define([ "dfe-core",
                                     method: 'CMAUVehicleScriptHelper',
                                     action: 'getYearOptions'
                                 }
-                            }, { vstrategy: 'always'})
+                            }, { vstrategy: 'always', hideError: true})
                         })
                     )
                 ])
