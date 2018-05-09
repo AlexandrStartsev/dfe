@@ -29,7 +29,7 @@ define('components/modal-dialog', ['components/div', 'ui/utils', 'ui/jquery-ui']
         render: function(nodes, control, data, errs, attrs, events) {
 
             //attrs.show 
-
+{
             var rc = require('components/' + attrs.component), rt = this.runtime(control);
                 if( rc != rt.renderingComponent ) {
                     rt.renderingComponent && rt.renderingComponent.emptyUI(control);

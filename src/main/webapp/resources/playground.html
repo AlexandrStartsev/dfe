@@ -12,22 +12,30 @@
         <script src="/js/require.js"></script>
         
         <script> 
-            var model = new Promise(function(resolve, reject) {
+           /* var model = new Promise(function(resolve, reject) {
                 require(['babel', 'uglify', 'ui/jquery'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
                     $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
                 })
-            });
+            });*/
             require.config({ baseUrl: '/js', paths: { forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
-            require(['ui/utils']); 
+            require(['ui/utils'], function() {
+                require(['forms/test', 'dfe-core', 'ui/jquery'], function(form, core, $){
+                    $.get('/test/test-arf-2.json', function(arf) { 
+                        arf.policy[0].cmau[0].location.shift();
+                        core.startRuntime({ model : arf, node: [document.getElementById('dfe'), document.getElementById('dfe2')], form: form });
+                    })
+                })
+            });
         </script>     
         
 
     </head>
             
     <body> 
-        <div id='dfe' dfe-form='quote.cmau.car' dfe-model='window.model' dfe-edit-target ></div>
+        <span id='dfe' dfe-form='test' dfe-model='window.model' dfe-edit-target ></span>
+        <span id='dfe2' ></span>
         <br>
         <br>
         <br>
@@ -36,8 +44,8 @@
         <script>
             setTimeout(function(){
                 var node = document.getElementById('edit');
-                node.setAttribute('dfe-form', 'dfe.edit.dfe');
-                node.setAttribute('dfe-arguments', '(function(r){ return {params: {target_runtime: r}, model: r.form, listener: r.listener} })(document.querySelector("div[dfe-edit-target]")._dfe_runtime)');
+                //node.setAttribute('dfe-form', 'dfe.edit.dfe');
+                //node.setAttribute('dfe-arguments', '(function(r){ return {params: {target_runtime: r}, model: r.form, listener: r.listener} })(document.querySelector("div[dfe-edit-target]")._dfe_runtime)');
             }, 1000) 
         </script>
     </body>

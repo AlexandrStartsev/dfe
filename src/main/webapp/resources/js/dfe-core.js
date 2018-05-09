@@ -1,8 +1,15 @@
-define('dfe-core', ['dfe-common'], function(cmn) {
+define('dfe-core', function() {
+    let arfDatePattern = /^(18|19|20)((\\d\\d(((0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-8]))|((0[13578]|1[02])(29|30|31))|((0[4,6,9]|11)(29|30))))|(([02468][048]|[13579][26])0229))$/;
 	//deep
-	function __extend(from, to) { 
-	    for (var key in from) { var v = from[key]; to[key] = (typeof v === 'object' && (v = __extend(v, Array.isArray(v) ? [] : {}, 1)) || v) } return to;
+	function deepCopy(to, from) { 
+        Object.getOwnPropertyNames(from).forEach(key => {
+            let v = from[key]; 
+            to[key] = typeof v === 'object' ? deepCopy(Array.isArray(v) ? [] : {}, v) : v;
+        })
+        return to;
 	}
+    
+    let nextKey = 0;
 	
 	//###############################################################################################################################
 	function JsonProxy(data, parents, elements, listener) {
@@ -10,6 +17,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	    this.elements = (elements || []);
 	    this.data = data||{};
 	    this.persisted = data;
+        this.data.key || (this.data.key = ++nextKey);
 	    this.listener = listener;
 	    if(this.parents.length != this.elements.length) throw 'Oops';
 	}          
@@ -87,7 +95,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	            ret = pa.pop();
 	            break ;
 	        }
-	    __extend(defaults, (ret = ret || new JsonProxy(undefined, this.parents, p, this.listener)).data);
+	    deepCopy((ret = ret || new JsonProxy(undefined, this.parents, p, this.listener)).data, defaults);
 	    return [ret];
 	}
 	
@@ -116,7 +124,7 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	
 	JsonProxy.prototype.clone = function () {
 	    var ret = (this.parents.length && this.parents[this.parents.length - 1].append('.' + this.elements[this.elements.length - 1])[0] || new JsonProxy({})).withListener(this.listener);
-	    __extend(this.data, ret.data);
+	    deepCopy(ret.data, this.data);
 	    return ret;
 	}
 	    
@@ -275,329 +283,558 @@ define('dfe-core', ['dfe-common'], function(cmn) {
 	
 	DfeListener.prototype.set = function (data, element, value, action) { if(data[element] != value) { data[element] = value; this.notify(data, element, action, value) }; return true; }
 	DfeListener.prototype.get = function (data, element) { this.depend(data, element); return data[element]; }
-	//###############################################################################################################################
-	function DfeRuntime(rootUI, listener) {
-        this.schedule = [];
-	    this.rootUI = Array.isArray(rootUI)?rootUI:[rootUI];
-	    this.listener = (listener || new DfeListener()).For(); 
-	    this.controls = new Set();
-	}
-	
-	DfeRuntime.prototype.setDfeForm = function(form) {
-	    this.form = form;
-	    this.root_field_proxy = new JsonProxy(form, [], [], this.listener).get('dfe');
-	    return this;
-	}
-	
-	DfeRuntime.prototype.setModel = function(model) {
-	    this.model_proxy = new JsonProxy(model, [], [], this.listener);
-	    return this;
-	}
-	
-	DfeRuntime.prototype.stop = function () { 
-	    clearInterval(this.processor); 
-	}
-	    
-	DfeRuntime.prototype.shutdown = function () { 
-	    clearInterval(this.processor);
-	    this.controls.forEach(function(c) { this.evict(c) }, this);
-	    delete this.rootControls;
-	}
-	
-	DfeRuntime.prototype.restart = function(initAction, suppressOnstart) {
-	    this.shutdown();
-	    this.initAction = {action: initAction||'init'};        
-	    var self = this, px = this.model_proxy;
-	    if(px && this.root_field_proxy) {
-	    	suppressOnstart || typeof this.form.onstart == 'function' && this.form.onstart.call(this.form, cmn.extend(px, function(p) { return px.get(p) }), this);
-            var i = 0;
-            this.rootControls = this.root_field_proxy.map(function(px) { 
-                var c = this.addControl(this.parentControl, this.model_proxy, px); 
-                c._allParentNodes = this.rootUI.slice(i, i += c.component.slots);
-                return c; 
-            }, this);
-	        this.processInterceptors();
-	        this.processor=setInterval(function() { self.processInterceptors(); }, 50);
-	    }
-	    return this;
-	}
-	
-	DfeRuntime.prototype.store = function (control, value, method) {
-	    var f = control.field.data.set || control.model.attrs.set;
-	    typeof f == 'function' && f.call(control.field.data.form, control.model.unbound, value, method);
-	}
-	
-	DfeRuntime.prototype.processInterceptors = function() {
-        this.controls.forEach(function(control){
-	    	if(control.notifications.length) {
-	    		var events = control.notifications;
-	            control.notifications = [];
-	            this.render(control, events);
-	        }
-	    }, this);
-        while(this.schedule.length) this.schedule.shift()(this);
-	}
-	
-	DfeRuntime.prototype.processChildren = function(parent, rx, prx, fpx) {
-	    if(parent.children.size || fpx.length ) {
-	        var pc = parent.children, fields = new Map(), rows = new Map(), rkeys = new Set(), fkeys = new Set(), skeys = new Set(), i=0, m, present, a, f, n, c, d; 
-	        parent.children.forEach(function(v, k) { rkeys.add(k);i++||v.forEach(function(c, f){fkeys.add(f)})});
-	        (fpx||[]).forEach(function(fp) { d=fp.data,fields.set(d, fp); (typeof d['class'] == 'string' && d['class']!=''?skeys:fkeys).add(d) });
-	        (rx||[]).forEach(function(r) { rows.set(r.data, r); rkeys.add(r.data)});
-	        rkeys.forEach( function(r) { 
-	            (m = pc.get(r))||pc.set(r, m = new Map()); 
-	            present = rows.get(r); 
-	            fkeys.forEach(function(k) {
-	                c = m.get(k);
-	                present && (f=fields.get(k)) ? c || m.set(k, this.addControl(parent, present, f)) : c && (this.evict(c), m['delete'](k));
-	            }, this);
-	            m.size || pc['delete'](r);
-	        }, this);
-	        m = parent.fixedChildren;
-	        skeys.forEach(function(k) {
-	            c = m.get(k);
-	            (f=fields.get(k)) ? c || m.set(k, this.addControl(parent, prx, f)) : c && (this.evict(c), m['delete'](k));
-	        }, this);  
-	    }
-	}
     
-    DfeRuntime.prototype.processSubform = function(parent, px, attrs, fpx) {
-        var form = parent.component.form;
-        px.listener.set(parent._, 'params', attrs, 'params'); // TODO: something. move probably to first level children...
-        if(!parent.fixedChildren.size) {
-	        fpx.forEach(function(fp) {
-                var c = this.addControl(parent, px, fp);
-                parent.fixedChildren.set(fp.data, c);
-                typeof form.onstart == 'function' && form.onstart.call(form, c.model);
-	        }, this);
-        } else {
-            parent.fixedChildren.forEach(function(child) {
-            	child.model.mergeShallow(px);
-            }, this);
+    let wrapProxy = (function(){
+        let keys = []; 
+        for(let key in new JsonProxy()) {
+            key === 'listener' || keys.push(key);
         }
-    }
-    
-	DfeRuntime.prototype.addControl = function (parentControl, model_proxy, field_proxy) {
-	    if(field_proxy) {
-	        var control = { parentControl : parentControl, 
-                            dependencies : [], 
-                            _: {},
-                            notifications : [this.initAction],
-                            children : new Map(), 
-                            fixedChildren : new Map(), 
-                            erroringControls : new Set() };
-	        this.controls.add(control);
-	        this.prep$$(control, model_proxy, field_proxy);
-	        this.verifyComponent(control);
-            typeof field_proxy.data.oncreate == 'function' && field_proxy.data.oncreate.call(field_proxy.data.form, control);
-	        return control;
-	    }
-	}
-	
-	DfeRuntime.prototype.evict = function(control) {
-        control.children.forEach(function(m) { m.forEach(function(c){ this.evict(c) }, this) }, this)
-        control.fixedChildren.forEach(function(c){ this.evict(c) }, this);
-	    control.component.purge(control);
-	    this.cleanUpDependencies(control);
-	    this.controls['delete'](control);
-	    this.removeErroring(control);
-	}
-	
-    var _wrapModel = (function(){
-        var _m = []; for(var _it in new JsonProxy()) _it == 'listener' || _m.push(_it);
-        return function(model, out, l) { for(var i = _m.length-1; i >=0; i-- ) out[_m[i]] = model[_m[i]]; out.listener = l; return out; }
+        return function(proxy, target, listener) {
+            for(var i = keys.length - 1; i >=0; i-- ) 
+                target[keys[i]] = proxy[keys[i]];
+            target.listener = listener;
+            return target;
+        }
     })()
     
-	DfeRuntime.prototype.prep$$ = function(control, model_proxy, field_proxy) {
-	    var runtime = this, listener = this.listener.For(control);
-	    var field = control.field = field_proxy.withListener(listener);
-        var model = control.model = _wrapModel(model_proxy, function(p) { return model.get(p) }, listener);
-        var form = field.data.form, pre = typeof field.data.preRender == 'function' && field.data.preRender, post = typeof field.data.postRender == 'function' && field.data.postRender;
-	    model.unbound = _wrapModel(model_proxy, function(p) { return model.unbound.get(p) }, this.listener);
-        model.unbound.runtime = model.runtime = this;
-	    model.unbound.control = model.control = control;
-	    model.result = function(data) {
-            var attrs = model.attrs, fpx = field.get('.children');
-            if(control.component.form) {
-            	data = Array.isArray(data) ? data[0] : data;          	
-            	data = data && typeof data.withListener == 'function' ? data : new JsonProxy(data, [], [], listener);
-            	runtime.processSubform(control, data, attrs, fpx);
-            } else {
-            	if(fpx.length) {
-            		data = (Array.isArray(data) ? data: typeof data == 'object' ? [data] : []).map(function(i) { return typeof i.withListener == 'function' ? i : new JsonProxy(i, [], [], listener) });
-            	}
-            	runtime.processChildren(control, data, attrs.hmodel, fpx);
-            }
-            pre && pre.call(form, control, data, control.error, attrs, model.events);
-	        control.component._render(control, control.data = data, control.error, attrs, model.events);
-            post && post.call(form, control, data, control.error, attrs, model.events);
-	    }
-	    model.error = function(error, data) {
-            data && (control.data = data);
-	        if( control.doVal && (control.error = error) ) {
-                control.stickyError = error;
-                error == 'Simulated error' || runtime.notifyErroring(control);
-                pre && pre.call(form, control, data, control.error, attrs, model.events);
-	            control.component._render(control, control.data, control.error, model.attrs, model.events);
-                post && post.call(form, control, data, control.error, attrs, model.events);
-	        }
-	        return error;
-	    }
-	    model.errorwatch = function(ctrl) {
-	    	var has = false;
-	    	listener.get(ctrl||control.parentControl, 'erroringControls').forEach(function(c) {
-	    		while(c && !has) has |= (c.model.data == model.data), c = c.parentControl;
-	    	});
-	    	has && model.error('Simulated error');
-	    }
-	    model.required = function(name, pattern, message) {
-		    var val = model.get(name);
-		    Array.isArray(val) && (val = val[0]);
-		    if( typeof val === 'undefined' || val.toString().replace(/ /g, '') === '' ) model.error(message || 'Required');
-		    else if( pattern === 'date' && !val.toString().match(cmn.arfDateRegExp) || pattern && pattern !== 'date' && ! val.match(pattern) )
-		    	     model.error(message || 'Invalid format');
-		         else return true ;
-		}	   
-	}
-	
-	DfeRuntime.prototype.removeErroring = function(control) {
-		delete control.error;
-	    for( var p=control.parentControl; p && p.erroringControls['delete'](control) && this.listener.notify(p, 'erroringControls'); p=p.parentControl ) ;
-	}
-	
-	DfeRuntime.prototype.notifyErroring = function(control) {
-	    for( var p = control.parentControl; p && !p.erroringControls.has(control); p = p.parentControl )
-	    	p.erroringControls.add(control), this.listener.notify(p, 'erroringControls', 'validate'); 
-	}
-	
-	DfeRuntime.prototype.render = function (control, events) {
-	    try {
-	        if(this.verifyComponent(control)) {
-		        var m = control.model, d = control.field.data, l = m.listener, v, fg, fv;
-		        m.events = events;
-		        m.attrs = typeof d.atr != 'function' ? {} : d.atr.call(d.form, m);
-		        m.attrs.hmodel || (m.attrs.hmodel = m);
-		        m.control.doVal = control.component.doValidation(control, events, m.attrs);
-		        this.removeErroring(control);
-		        typeof (v = typeof (fg = d.get || m.attrs.get) != 'function' ? [] : fg.call(d.form, m)) == 'undefined' || m.result(v);
-		        m.control.doVal && typeof (fv = d.val || m.attrs.val) == 'function' && fv.call(d.form, m);
-	        }
-	    } catch(e) { 
-	        control.doVal = 1; try{ control.model.error(e.message) } catch (e) { } console.error(control.field + '\n' + e.message + '\n' + e.stack); 
-		}
-	}
-	
-	DfeRuntime.prototype.verifyComponent = function(control) {
-	    var component = control.field.listener.get(control.field.data, 'component');
-	    if( component != control.component ) {
-	        if(control.component) {
-	            control.component.emptyUI(control);
-	            delete control.runtime;
-	            delete control.data;
-	            delete control.error;
-	            delete control.stickyError;
-	        }
-	        control.component = component;
-	    }
-	    return control.component;
-	}
-	
-	DfeRuntime.prototype.cleanUpDependencies = function(control) {
-		var dpMap = this.listener.dpMap;
-	    control.dependencies.forEach(function(dep) {
-	        var eleMap = dpMap.get(dep.data);
-	        if(eleMap) { 
-	            var ctlSet = eleMap.get(dep.element);
-	            if(ctlSet) {
-	                ctlSet['delete'](control);
-	                ctlSet.size || eleMap['delete'](dep.element);
-	                eleMap.size || dpMap['delete'](dep.data);
-	            }
-	        }
-	    }, this);
-	    control.dependencies.splice(0);
-	}
-	
-	DfeRuntime.prototype.notifyControls = function(controls, action) {
-	   (Array.isArray(controls) ? controls : [controls]).forEach(function(control) { control.notifications.push({action : action||'n'}) }); /*this.render(control, [{action : action||'n'}]);*/
-	}
-	
-	DfeRuntime.prototype.findChildren = function(controls, deep, includeSelf, field, model) {
-	    var ret = new Set(), a = [];
-	    function traverse(control) { 
-	        control.children.forEach(function(v) { v.forEach(function(c) { 
-	            (!field || c.field.data.name == field) && (!model || c.model.data == model.data ) && ret.add(c); 
-	            traverse(c);
-	        })});
-	        control.fixedChildren.forEach(function(c) { 
-	            (!field || c.field.data.name == field) && (!model || c.model.data == model.data ) && ret.add(c); 
-	            traverse(c);
-	        });
-	    }
-	    (Array.isArray(controls) ? controls : [controls]).forEach( function (c) { 
-	        includeSelf && (!field || c.field.data.name == field) && (!model || c.model.data == model.data ) && ret.add(c); 
-	        traverse(c); 
-	    });
-	    ret.forEach(function(k) { a.push(k); });
-	    return a;
-	}
-	
-	DfeRuntime.prototype.findControls = function(fields, model_proxy) {
-	    var ret = [], array = (Array.isArray(fields) ? fields : [fields]);
-	    this.controls.forEach(function(c) {
-	        array.indexOf(c.field.data.name) != -1 && (!model_proxy || c.model.data == model_proxy.data ) && ret.push(c);
-	    })
-	    return ret;
-	}
-	
-	function startRuntime(arg) {
-		var m = arg.model, j = m instanceof JsonProxy || typeof m.shadow == 'function', listener = j && m.listener || arg.listener ||new DfeListener(), runtime = new DfeRuntime(arg.node, listener);
-	    for(var v in arg.params) runtime[v] = arg.params[v];
-	    j ? runtime.model_proxy = m.withListener(runtime.listener.For()) : runtime.setModel(m);
-	    runtime.setDfeForm(arg.form).restart(arg.initAction);
-        arg.ready && arg.ready(runtime, dfe, arg.model);
-	    return runtime;
-	} 
-	
-	return { JsonProxy: JsonProxy, DfeRuntime: DfeRuntime, startRuntime: startRuntime }
-});
-
-define('validation/component', ['dfe-common'], function(cmn) {
-    return cmn.extend({
-            cname: 'validator',
-            _render: function(control, data, errs, attrs, events) {},
-            doValidation: function(control, events, attrs) { 
-                 return attrs ? !(attrs['disabled'] || attrs['hidden'] || (attrs.vstrategy && attrs.vstrategy.indexOf('none') != -1)) : true;
-            },
-            purge: function() {}
-        }, function(n, f, c) { return cmn.extend( {name: n, children: c||[], component: arguments.callee }, f) });
-})
-
-define('component-maker', ['dfe-common', 'components/pass-through'], function(cmn, pt) {
-    return {
-        fromForm: function(dfe_form) {
-            dfe_form.store = function($$, data, method) {
-                for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
-                ctrl.component.store(ctrl, data, method)
-            }
-            dfe_form.params = function($$) {
-                for(var ctrl = $$.control; ctrl.field.data.form == dfe_form; ctrl = ctrl.parentControl);
-                return ctrl ? $$.listener.get(ctrl._, 'params') : $$.runtime;
-            }
-            var slots = Array.prototype.concat.apply([], dfe_form.dfe.map(function(d){ return d.pos })).length;
-            return cmn.extend({form: dfe_form}, function(name, attrs) {
-                return cmn.extend( { name: name, children: dfe_form.dfe, component: cmn.extend({ 
-                    _render: function(control, data, errs, attrs, events) {
-                        pt._render(control, data, errs, attrs, events);
-                    },
-                    cname: 'forms/' + dfe_form.name,
-                    slots: slots,
-                    form: dfe_form
-                }, pt, {}) }, attrs)
-            })
+	//###############################################################################################################################
+    
+    function createElement(type, attributes, children) {
+        if(typeof attributes !== 'object') {
+            return { type: type, key: type, attributes: [{}], children: [] }
+        }
+        if(attributes instanceof Node) {
+            return { type: type, key: attributes.field.name, attributes: attributes.immediateNodeInfo, childNode: attributes, children: [] }
+        } else {
+            return { type: type, ref: attributes.ref, key: attributes.key||type, attributes: [attributes], children: children||[] }
         }
     }
-})
+    
+    class DOM {
+        static calcImmediateNodeInfo(renderStructure, fpos) {
+            let fi = 0; 
+            return renderStructure.reduce( (pos, st) => pos.concat( st instanceof Node ? st.immediateNodeInfo : fpos[fi++]||{} ) , [] );
+        }
+        
+        static reconcileAttributes(type, domElement, newAttributes, oldAttributes) {
+            if(newAttributes.class != oldAttributes.class) {
+                (newAttributes.class === undefined ? domElement.removeAttribute('class') : domElement.setAttribute('class', newAttributes.class));
+            }
+            if(newAttributes.style != oldAttributes.style ) {
+                (newAttributes.style === undefined ? domElement.removeAttribute('style') : domElement.setAttribute('style', newAttributes.style));
+            }
+            if(newAttributes.onKeyDown != oldAttributes.onKeyDown) {
+                oldAttributes.onKeyDown && domElement.removeEventListener('keydown', oldAttributes.onKeyDown, false);
+                newAttributes.onKeyDown && domElement.addEventListener('keydown', newAttributes.onKeyDown, false);
+            }
+            if(newAttributes.onKeyUp != oldAttributes.onKeyUp) {
+                oldAttributes.onKeyUp && domElement.removeEventListener('keyup', oldAttributes.onKeyUp, false);
+                newAttributes.onKeyUp && domElement.addEventListener('keyup', newAttributes.onKeyUp, false);
+            }
+            if(newAttributes.onChange != oldAttributes.onChange) {
+                oldAttributes.onChange && domElement.removeEventListener('change', oldAttributes.onChange, false);
+                newAttributes.onChange && domElement.addEventListener('change', newAttributes.onChange, false);
+            }
+            if(newAttributes.onClick != oldAttributes.onClick) {
+                oldAttributes.onClick && domElement.removeEventListener('click', oldAttributes.onClick, false);
+                newAttributes.onClick && domElement.addEventListener('click', newAttributes.onClick, false);
+            }
+            if(newAttributes.html != oldAttributes.html) {
+                domElement.innerHTML = newAttributes.html;
+            }
+            if(!!newAttributes.disabled != domElement.disabled) {
+                domElement.disabled = !!newAttributes.disabled;
+            }
+            switch(type) {
+                case 'label':
+                    newAttributes.text == oldAttributes.text || (domElement.innerText = newAttributes.text);
+                    break;
+                case '#text':
+                    newAttributes.text == oldAttributes.text || (domElement.nodeValue = newAttributes.text);
+                    break;
+                case 'input':
+                    newAttributes.type == oldAttributes.type || ( domElement.type = newAttributes.type );
+                    if(newAttributes.type !== 'checkbox') {
+                        if(domElement.value != newAttributes.value) {
+                            if(document.activeElement === domElement) {
+                                //TODO...
+                                /*let s = domElement.selectionStart, e = domElement.selectionEnd;
+                                domElement.value = newAttributes.value;
+                                domElement.selectionStart = s;
+                                domElement.selectionEnd = e;*/
+                            } else {
+                                domElement.value = newAttributes.value;
+                            }
+                        }
+                    } else {
+                        domElement.checked = newAttributes.checked;
+                    }
+                    break ;
+                case 'select':
+                    newAttributes.selectedIndex == domElement.selectedIndex || (domElement.selectedIndex = newAttributes.selectedIndex);
+                    break ;
+                case 'option':
+                    newAttributes.text == oldAttributes.text || (domElement.text = newAttributes.text);
+                    newAttributes.value == oldAttributes.value || (domElement.value = newAttributes.value);
+                    break ;
+                case 'td':
+                    (newAttributes.colSpan||1) == domElement.colSpan || (domElement.colSpan = newAttributes.colSpan||1);
+                    (newAttributes.rowSpan||1) == domElement.rowSpan || (domElement.rowSpan = newAttributes.rowSpan||1);
+                    break ;
+            }
+        }
+        
+        static applyInSingleNode(node, parentDOMElement, renderStructure, lastRenderStructure) {
+            if(renderStructure === lastRenderStructure) {
+                let tail = parentDOMElement.firstChild;
+                lastRenderStructure.forEach(
+                    lst => lst.dom.forEach(e => tail = tail === e ? tail.nextSibling : (parentDOMElement.insertBefore(e, tail), tail))
+                )
+                return ;
+            }
+            if(parentDOMElement) {
+                let tail = parentDOMElement.firstChild, info, keyMap;
+                if( renderStructure.length > 1 && lastRenderStructure.length > 1 && typeof lastRenderStructure[0].key !== 'undefined' ) {
+                    keyMap = new Map();
+                    lastRenderStructure.forEach(
+                        lst => {
+                            lst.used = false;
+                            if(info = keyMap.get(lst.key)) {
+                                info.nodes.push(lst)
+                            } else {
+                                keyMap.set(lst.key, {lrs: 0, nodes: [lst]})
+                            }
+                        }
+                    )
+                    keyMap = renderStructure.map(st => (info = keyMap.get(st.key)) && info.nodes[ info.lrs++ ]);
+                }
+                for(let lrs = 0, rs = 0; rs < renderStructure.length; rs++) {
+                    let st = renderStructure[rs];
+                    if( typeof st === 'string' ) {
+                        renderStructure[rs] = st = { type: '#text', attributes: [{nodeValue: st.toString()}], children: [] }
+                    }
+
+                    let lst = keyMap ? keyMap[rs] : lastRenderStructure[lrs];
+                    let use = lst && !lst.used && st.type === lst.type && st.childNode === lst.childNode; // && lst.dom ?
+                    if( use ) {
+                        lst.used = use = !st.childNode || st.childNode.immediateNodeInfo.length === lst.dom.length;
+                        lrs++;
+                    }
+                    
+                    if( st.childNode !== undefined ) {
+                        st.dom = use ? lst.dom : Array.apply(null, {length: st.childNode.immediateNodeInfo.length}).map(() => document.createElement(st.type));
+                        DOM.applyDOMChanges(node, st.dom, [st.childNode], use ? [lst.childNode] : []);
+                    } else {
+                        st.dom = use ? lst.dom : [st.type === '#text' ? document.createTextNode('') : document.createElement(st.type)];
+                        if(st.children.length !== 0 || use && lst.children.length !== 0 ) {
+                            st.children = DOM.applyDOMChanges(node, st.dom, [st.children], use ? [lst.children] : [])[0];
+                        }
+                        use || st.ref && st.ref(st.dom[0]);
+                    }
+                    if(st.dom.length) {
+                        st.dom.forEach( (e, i) => DOM.reconcileAttributes(st.type, e, st.attributes[i]||{}, use && lst.attributes[i]||{}) );
+                        if(!use || lst.parentNode !== parentDOMElement) {
+                            st.dom.forEach(e => parentDOMElement.insertBefore(e, tail));
+                        } else {
+                            tail = st.dom[st.dom.length - 1].nextSibling;
+                        }
+                    }
+                    st.parentNode = parentDOMElement;
+                }
+            }
+            lastRenderStructure.forEach(lst => lst.used || lst.parentNode && lst.dom.forEach(e => lst.parentNode.removeChild(e)));
+        }
+
+        static applyDOMChanges(node, parentDOMElements, renderStructure, lastRenderStructure) {
+            let lrs = 0;
+            for(let rs = 0, ps = 0; rs < renderStructure.length; rs++) {
+                let st = renderStructure[rs]; 
+                let lst = lastRenderStructure[lrs];
+                let use = st === lst || lst !== undefined && st !== undefined && !(st instanceof Node || lst instanceof Node);
+                if(st !== undefined) {
+                    if( st instanceof Node ) {
+                        node.attachedChildNodes.add(st);
+                        st.parentDOMElements = parentDOMElements.slice( ps, ps += st.immediateNodeInfo.length );
+                    } else {
+                        if(st !== lst) {
+                            st = (st.forEach ? st : [st]).filter(e => typeof e === 'object' || typeof e === 'string');
+                            renderStructure[rs] = st;
+                        }
+                        DOM.applyInSingleNode(node, parentDOMElements[ps++], st, use ? lst : []);
+                    }
+                } else {
+                    ps++;
+                }         
+                use && lrs++;
+            }
+            while(lrs < lastRenderStructure.length) {
+                let lst = lastRenderStructure[lrs++];
+                lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst);
+            }
+            return renderStructure;
+        }
+        
+        static render(node) {
+            if(node.shouldRender) {
+                node.shouldRender = false;
+                node.attachedChildNodes = node.children.size && new Set();
+                node.lastRenderStructure = DOM.applyDOMChanges( node, node.parentDOMElements, node.renderStructure, node.lastRenderStructure );
+                node.lastParentDOMElements = node.parentDOMElements;
+                node.children.forEach(
+                    fieldMap => fieldMap.forEach(
+                        child => child.parentDOMElements == 0 || node.attachedChildNodes.has(child) || (child.parentDOMElements = [] /*, child.shouldRender = true */)
+                    )
+                )
+            } else if(node.parentDOMElements !== node.lastParentDOMElements) { // reposition
+                DOM.applyDOMChanges( node, node.parentDOMElements, node.lastRenderStructure, node.lastRenderStructure );
+                node.lastParentDOMElements = node.parentDOMElements;
+            }
+        }
+        
+        static calcRenderStructure(node) {
+            if(node.shouldRender) {
+                let renderStructure = node.control.render(node.lastData, node.lastError, node.attributes, node.children)||[];
+                node.renderStructure = renderStructure.filter ? renderStructure : [renderStructure];
+                node.immediateNodeInfo = DOM.calcImmediateNodeInfo(node.renderStructure, node.field.pos || []);
+                // TODO: what if immediateNodeInfo attributes changed but length didn't? 
+                if( node.parent && !node.parent.shouldRender && 
+                    node.lastParentDOMElements.length !== node.immediateNodeInfo.length &&  
+                    node.parent.attachedChildNodes.has(node) ) {
+                    node.parent.shouldRender = true ;
+                }
+            }
+        }        
+    }
+    
+    class Component {
+        constructor(node){
+            this.$node = node;
+        }
+        destroy() {
+        }
+        doValidation(events, attrs) {
+            return false;
+        }
+        store(value, method) {
+            this.$node.store(value, method);
+        }
+        render(data, error, attributes, children) {
+            let sub = [];
+            children.forEach( 
+                map => map.forEach( 
+                    child => sub.push( child ) 
+                )
+            )
+            return sub;
+        }
+        renderDefault() {
+            return []
+        }
+    }
+    
+    let nameIndex = 1;
+    
+    class Field {
+        constructor(clazz, ...args) {
+            let [name, parameters, children] = args;
+            if(typeof name !== 'string') {
+                children = parameters;
+                parameters = name;
+                name = clazz.constructor.name + '#' + nameIndex;
+            }
+            if(Array.isArray(parameters) || parameters instanceof Field) {
+                children = parameters;
+                parameters = {}
+            }
+            if(!Array.isArray(children)) {
+                children = children instanceof Field ? [children] : []
+            }
+            Object.assign( this, parameters, { name: name, children: children, component: clazz } )
+        }
+    }
+    
+    class Form extends Component {
+        static field(clazz, ...args) {
+            let field = new Field(clazz, ...args);
+            if( clazz.prototype instanceof Form ) {
+                field.children = clazz.fields(field.children);
+            }
+            return field;
+        }
+        static fields (children) { return children||[] }
+    }
+    
+    class Node {
+        constructor(parentNode, field, unboundModel, runtime) {
+            Object.assign(this, {
+                parent: parentNode,
+                runtime: runtime,
+                form: null,
+                field: field,
+                control: null,
+                dependencies : [], 
+                _: {},
+                notifications : [],
+                children : new Map(),
+                erroringChildren : new Set(),
+                lastData: undefined,
+                lastError: undefined,
+                attributes: {},
+                // rendering-related part
+                shouldRender: false, // until  'logic' returns something ...
+                parentDOMElements: [], 
+                lastParentDOMElements: [], 
+                attachedChildNodes: new Set(), 
+                renderStructure: null,
+                lastRenderStructure: [], 
+                immediateNodeInfo: [],
+                unboundModel: unboundModel
+            })            
+            let control = new (field.component)(this);
+            let renderStructure = control.renderDefault();
+
+            this.form = control instanceof Form ? control : parentNode.form;
+            this.control = control;
+            this.renderStructure = renderStructure && renderStructure.filter ? renderStructure : [renderStructure];
+        }
+        store(value, method) {
+            let setter = this.attributes.set || this.field.set;
+            typeof setter === 'function' && setter.call(this.form, this.unboundModel, value, method);
+        }
+        acceptLogic(data, error) {
+            let childrenFields = this.field.children;
+            if(typeof data !== 'undefined') {
+                if(childrenFields.length) {
+                    data = (Array.isArray(data) ? data: typeof data == 'object' ? [data] : []).map(d => typeof d.withListener == 'function' ? d : new JsonProxy(d, [], [], listener));
+                    this.runtime.reconcileChildren(this, data);
+                }
+                this.lastData = data;
+                this.lastError = error;                
+                this.shouldRender = true;
+            }
+        }
+    }
+    
+	class Runtime {
+        constructor(rootElements, listener) {
+            this.schedule = [];
+            this.rootElements = Array.isArray(rootElements) ? rootElements : [rootElements];
+            this.listener = (listener || new DfeListener()).For(); 
+            this.nodes = new Set();
+        }
+        setDfeForm(formClass) {
+            this.formClass = formClass;
+            return this;
+        }
+        setModel(model) {
+            this.rootProxy = (model instanceof JsonProxy ? model : new JsonProxy(model)).withListener(this.listener);
+            return this;
+	    }
+		stop() {
+            clearInterval(this.processor); 
+        }
+	    shutdown() { 
+            clearInterval(this.processor);
+	        this.nodes.forEach(control => this.evict(control));
+        }
+        restart(initAction) {
+	        this.shutdown();
+	        this.initAction = {action: initAction||'init'};
+            if( this.rootProxy && this.formClass ) {
+                let node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
+                node.parentDOMElements = this.rootElements;
+	            this.processor = setInterval(() => this.processInterceptors(), 50);
+                this.processInterceptors();
+            }
+            return this;
+	    }
+        processInterceptors() {
+            let all = [];
+            this.nodes.forEach(node => { this.logic(node), all.push(node) });
+            all.reverse().forEach(node => DOM.calcRenderStructure(node));
+            this.nodes.forEach(node => DOM.render(node));
+            while(this.schedule.length) this.schedule.shift()(this);
+        }
+        addNode(parentNode, modelProxy, field) {
+            let unbound = wrapProxy(modelProxy, path => unbound.get(path), this.listener);
+            let node = new Node(parentNode, field, unbound, this);
+            node.notifications.push(this.initAction);
+            this.nodes.add(node);
+            this.prep$$(node, unbound);
+            return node;
+        }
+        prep$$(node, unbound) { 
+            let runtime = this;
+            let listener = this.listener.For(node);
+            let model = wrapProxy(unbound, path => model.get(path), listener);
+            let field = node.field;
+            node.model = model;
+            model.unbound = unbound;
+            unbound.$node = model.$node = node;
+            model.result = function(data) {
+                node.acceptLogic(data, node.lastError);
+            }
+            model.error = function(error, data) {
+                if( typeof data !== 'undefined' ) {
+                    node.lastData = data;
+                }
+                if( node.doValidation ) {
+                    if( error ) {
+                        node.stickyError = error;
+                        error === 'Simulated error' || runtime.notifyErroring(node);
+                        node.acceptLogic(node.lastData, error);
+                    }
+                }
+                return error;
+            }
+            model.errorwatch = function(target) {
+                // TODO...
+                let has = false;
+                listener.get(target||node.parentNode, 'erroringChildren').forEach(function(n) {
+                    while(n && !has) has |= (n.model.data == model.data), n = n.parentNode;
+                });
+                has && model.error('Simulated error');
+            }
+            model.required = function(name, pattern, message) {
+                var val = model.get(name);
+                Array.isArray(val) && (val = val[0]);
+                if( typeof val === 'undefined' || val.toString().replace(/ /g, '') === '' ) model.error(message || 'Required');
+                else if( pattern === 'date' && !val.toString().match(arfDatePattern) || pattern && pattern !== 'date' && ! val.match(pattern) )
+                         model.error(message || 'Invalid format');
+                     else return true ;
+            }
+        }
+        removeErroring(node) {
+            // TODO...
+            if( node.lastError ) {
+                delete node.lastError;
+                
+                for( var p=node.parentNode; p && p.erroringChildren['delete'](control) && this.listener.notify(p, 'erroringChildren'); p=p.parentNode ) ;
+            }
+        }
+        notifyErroring(node) {
+            // TODO...
+            for( var p = node.parentNode; p && !p.erroringChildren.has(control); p = p.parentNode )
+                p.erroringChildren.add(control), this.listener.notify(p, 'erroringChildren', 'validate'); 
+        }
+        evict(node) {
+            node.children.forEach(fieldMap => fieldMap.forEach( node => this.evict(node)));
+            this.nodes['delete'](node);
+            this.removeErroring(node);
+            let dpMap = this.listener.dpMap;
+            node.dependencies.forEach(dep => {
+                let eleMap = dpMap.get(dep.data);
+                if(eleMap) { 
+                    let ctlSet = eleMap.get(dep.element);
+                    if(ctlSet) {
+                        ctlSet['delete'](node);
+                        ctlSet.size || eleMap['delete'](dep.element);
+                        eleMap.size || dpMap['delete'](dep.data);
+                    }
+                }
+            })
+            node.lastRenderStructure.forEach( 
+                lst => lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst)
+            )
+            node.control.destroy();
+        }
+        reconcileChildren(parent, rowProxies) {
+            // TODO... 
+            let fpx = parent.field.children;
+            let prx = parent.model.unbound;
+            let pc = parent.children;
+            if(pc.size || fpx.length ) {
+                var fields = new Map(), rows = new Map(), rkeys = new Set(), fkeys = new Set(), skeys = new Set(), i=0, m, present, a, f, n, c, d; 
+                pc.forEach((v, k) => k ? (rkeys.add(k), i++||v.forEach((_, f) => fkeys.add(f))) : v.forEach((_, f) => skeys.add(f)) );
+                (fpx||[]).forEach(fp => { d=fp,fields.set(d, fp); (typeof d['class'] == 'string' && d['class']!=''?skeys:fkeys).add(d) });
+                (rowProxies||[]).forEach(r => { rows.set(r.data, r); rkeys.add(r.data)});
+                rkeys.forEach( r => { 
+                    (m = pc.get(r))||pc.set(r, m = new Map()); 
+                    present = rows.get(r); 
+                    fkeys.forEach(function(k) {
+                        c = m.get(k);
+                        present && (f=fields.get(k)) ? c || m.set(k, this.addNode(parent, present, f)) : c && (this.evict(c), m['delete'](k));
+                    }, this);
+                    m.size || pc['delete'](r);
+                });
+                m = pc.get(null)||new Map();
+                skeys.forEach(k => {
+                    c = m.get(k);
+                    (f=fields.get(k)) ? c || m.set(k, this.addNode(parent, prx, f)) : c && (this.evict(c), m['delete'](k));
+                });
+                m.size ? pc.set(null, m) : pc['delete'](null);
+            }
+        }
+        logic(node) {
+            if(node.notifications.length) {
+                var events = node.notifications;
+                node.notifications = [];
+                try {
+                    var m = node.model, d = node.field, l = m.listener, v, fg, fv;
+                    //m.events = events;
+                    let attrs = node.attributes = typeof d.atr != 'function' ? {} : d.atr.call(node.form, m);
+                    node.doValidation = node.control.doValidation(events, attrs);
+                    this.removeErroring(node);
+                    typeof (v = typeof (fg = d.get || attrs.get) != 'function' ? [m] : fg.call(node.form, m, events)) == 'undefined' || m.result(v);
+                    node.doValidation && typeof (fv = d.val || attrs.val) == 'function' && fv.call(node.form, m, events);
+                } catch(e) { 
+                    node.doValidation = 1; try{ node.model.error(e.message) } catch (e) { } console.error(node.field + '\n' + e.message + '\n' + e.stack); 
+                }
+            }
+        }
+        notifyNodes(nodes, action) {
+           (typeof nodes.forEach === 'function' ? nodes : [nodes]).forEach(
+               node => node.notifications.push({action : action||'n'})
+           ); 
+        }
+        findChildren(nodes, deep, includeSelf, field, model) {
+            // TODO...
+            var ret = new Set(), a = [];
+            function traverse(control) { 
+                control.children.forEach(function(v) { v.forEach(function(c) { 
+                    (!field || c.field.name == field) && (!model || c.model.data == model.data ) && ret.add(c); 
+                    traverse(c);
+                })});
+                control.fixedChildren.forEach(function(c) { 
+                    (!field || c.field.name == field) && (!model || c.model.data == model.data ) && ret.add(c); 
+                    traverse(c);
+                });
+            }
+            (Array.isArray(nodes) ? nodes : [nodes]).forEach( function (c) { 
+                includeSelf && (!field || c.field.name == field) && (!model || c.model.data == model.data ) && ret.add(c); 
+                traverse(c); 
+            });
+            ret.forEach(function(k) { a.push(k); });
+            return a;
+        }
+        findNodes(fields, modelProxy) {
+            // TODO...
+            var ret = [], array = (Array.isArray(fields) ? fields : [fields]);
+            this.nodes.forEach(function(c) {
+                array.indexOf(c.field.name) != -1 && (!modelProxy || c.model.data == modelProxy.data ) && ret.push(c);
+            })
+            return ret;
+        }	
+        static startRuntime(arg) {
+            var m = arg.model, j = m instanceof JsonProxy || typeof m.shadow == 'function', listener = j && m.listener || arg.listener ||new DfeListener(), runtime = new Runtime(arg.node, listener);
+            for(var v in arg.params) runtime[v] = arg.params[v];
+            j ? runtime.model_proxy = m.withListener(runtime.listener.For()) : runtime.setModel(m);
+            runtime.setDfeForm(arg.form).restart(arg.initAction);
+            arg.ready && arg.ready(runtime, dfe, arg.model);
+            return runtime;
+        } 
+	}
+	return { 
+        JsonProxy: JsonProxy, 
+        Form: Form, 
+        Runtime: Runtime, 
+        startRuntime: Runtime.startRuntime,
+        createElement: createElement,
+        Component: Component
+    }
+});
+
+/*
 
 define('validation/validator', ['dfe-core', 'validation/component'], function(core, component) {
 	function listener(c) {
@@ -619,35 +856,12 @@ define('validation/validator', ['dfe-core', 'validation/component'], function(co
     return {
         validate: function(model, form) { //model, form
             console.time('Nashorn validation took');
-            var rt = new core.DfeRuntime(null, listener()).setDfeForm(form).setModel(model).restart('validate', true), errors = [];
-            rt.rootControls.forEach(function(r) {r.erroringControls.forEach(function(c) {errors.push(c)})});
+            var rt = new core.Runtime(null, listener()).setDfeForm(form).setModel(model).restart('validate', true), errors = [];
+            rt.rootnodes.forEach(function(r) {r.erroringChildren.forEach(function(c) {errors.push(c)})});
             rt.stop(); //shutdown(); //GC will do it for us?  - but stopping is necessary on client side since they have processInterceptors loop going
             var e = errors.map(function(c) { return {field: c.field.data.name, error: c.error}});
             console.timeEnd('Nashorn validation took');
             return { result : e.length == 0, data : e};
         }
     }
-});
-
-function defineForm(n, d, f) {
-	if(typeof n === 'string') { n = ["forms/" + n] } else { f = d, d = n, n = [] }
-	if(Array.isArray(d)) { d = d.concat('component-maker', 'module') } else { f = d, d = ['component-maker', 'module'] }
-	define.apply(null, n.concat([d], function() {
-	    var cm = arguments[arguments.length-2], a = f.apply(this, arguments);
-	    a.name = arguments[arguments.length-1].id.replace(/^forms\//,'');
-	    a.dependencies = {};
-	    f.toString().match(/\([^\)]*\)/)[0].replace(/\(|\)| /g,'').split(',').forEach(function(n, i){a.dependencies[n] = d[i]});
-	    if(!a.dfe)
-	    	throw "No dfe found in form " + a.name + "?";
-        (function _f(dfes) {
-            dfes.forEach(function(dfe) {
-            	dfe.form||(dfe.form = a);
-                Array.isArray(dfe.pos) || (dfe.pos = dfe.pos?[dfe.pos]:[]);
-                for(var i = dfe.component.slots - dfe.pos.length; i; i > 0 ? (dfe.pos.push({}), i--) : (dfe.pos.pop(), i++)) ;
-                _f(dfe.children);
-            })
-        })(Array.isArray(a.dfe)?a.dfe:(a.dfe=[a.dfe]))
-        typeof a.setup == 'function' && a.setup();
-	    return cm.fromForm(a);
-	})); 
-}
+});*/

@@ -32,7 +32,7 @@ public class AjaxHandler {
 
 	@SuppressWarnings({ "unchecked", "restriction" })
 	public static void handle(jdk.nashorn.api.scripting.ScriptObjectMirror context, String path, String meth, String dataType, Object request, Object headers) throws IOException {
-		final String localName = EnvironmentInfo.getInstance().getBaseAExUrl().toString();
+		final String localName = "";//EnvironmentInfo.getInstance().getBaseAExUrl().toString();
 		Charset cs = Charset.defaultCharset();
 		HttpUriRequest req = null;
 		String method = StringUtils.isEmpty(meth) ? "GET" : meth.toUpperCase();

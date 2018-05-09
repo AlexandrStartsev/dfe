@@ -1,4 +1,4 @@
-package com.arrow.webrate.servlets;
+package edu.alex;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,11 +24,11 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import com.arrow.common.BuildEnvironment;
+//import com.arrow.common.BuildEnvironment;
 import com.arrow.common.EnvironmentInfo;
-import com.arrow.model.annotations.Protected;
+//import com.arrow.model.annotations.Protected;
 import com.arrow.util.experimental.ExperimentalUtilsFactory;
-import com.arrow.webrate.PolicyModel;
+//import com.arrow.webrate.PolicyModel;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.reflect.TypeToken;
@@ -53,8 +53,8 @@ public class DfeServlet extends HttpServlet {
 	public static boolean modificationPermitted(HttpSession session) {
 		
 		return ("000000".equals(session.getAttribute("login_prodcode")) ||
-				"111111".equals(session.getAttribute("login_prodcode"))) &&
-			EnvironmentInfo.getInstance().getBuildEnvironment() != BuildEnvironment.LIVE;
+				"111111".equals(session.getAttribute("login_prodcode"))) /* &&
+			EnvironmentInfo.getInstance().getBuildEnvironment() != BuildEnvironment.LIVE*/;
 	} 
 	
 	@Override
@@ -72,13 +72,13 @@ public class DfeServlet extends HttpServlet {
 		try {
 			if( "model".equals(action) ) {
 				resp.setContentType("application/json");
-				resp.getWriter().write(gson.toJson( ((PolicyModel) session.getAttribute("model")).cloneAsUniformMap(Protected.UI_READONLY) ));
+				//resp.getWriter().write(gson.toJson( ((PolicyModel) session.getAttribute("model")).cloneAsUniformMap(Protected.UI_READONLY) ));
 				return ;
 			}
 			
 			if( "modelpp".equals(action) ) {
 				resp.setContentType("text/plain");
-				resp.getWriter().write(gsonpp.toJson( ((PolicyModel) session.getAttribute("model")).cloneAsUniformMap(Protected.UI_READONLY) ));
+				//resp.getWriter().write(gsonpp.toJson( ((PolicyModel) session.getAttribute("model")).cloneAsUniformMap(Protected.UI_READONLY) ));
 				return ;
 			}
 			
@@ -172,10 +172,10 @@ public class DfeServlet extends HttpServlet {
 				+ "}", strModel, getForm(formName, session).getScriptForm()); 
         Map<String, Object> validationResult = gson.fromJson(strResp, umTt.getType());
         if( (Boolean)validationResult.get("result") ) {
-	        PolicyModel model = (PolicyModel) session.getAttribute("model");
+	     //   PolicyModel model = (PolicyModel) session.getAttribute("model");
 			// TODO: ugly. need to configure gson to parse integers into integers
 			fixDoubles(json); 
-			model.mergeFromUniformMap(json, Protected.UNPROTECTED);
+			//model.mergeFromUniformMap(json, Protected.UNPROTECTED);
 		}
         return strResp;
 	}

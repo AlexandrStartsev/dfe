@@ -1,11 +1,11 @@
 require.config({
-	waitSeconds : 3600,
+	waitSeconds : 7,
     paths: {
         echarts: 'ui/echarts-en.min'
     },
     bundles: {
-        'dfe-core' : ['dfe-core', 'component-maker'],
-        'components/generic' : ['components/component', 
+        'dfe-core' : ['dfe-core'],
+        'components/generic' : ['components/base', 
                                 'components/dfe-runtime', 
                                 'components/labeled-component', 
                                 'components/switch', 
@@ -32,6 +32,9 @@ require.config({
                                 'components/label', 
                                 'components/label-i',
                                 'components/html',
+                                'components/span',
+                                'components/table',
+                                'components/text',
                                 'components/textarea',
                                 'components/editbox-P',
                                 'components/div-button',
@@ -340,7 +343,7 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
     function setupNode(node) {
 		var formName = node.getAttribute('dfe-form'), args = eval(node.getAttribute('dfe-arguments')), model = eval(node.getAttribute('dfe-model'))||{}, pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
 		Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
-			var dfe = values[0].form, arf = values[1], cur = node._dfe_runtime;
+			var dfe = values[0], arf = values[1], cur = node._dfe_runtime;
 			if(cur && cur.form.name != formName) {
 				cur.shutdown();
 				cur = null;
@@ -359,9 +362,9 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
     link.setAttribute('href', styleUri);
     var document_head = _isIE7 || _isIE8 ? document.getElementsByTagName('head')[0] : document.head;
     document_head.appendChild(link);
-    function lookup() { for(var n = document.querySelectorAll('div[dfe-form]'), i = 0; i < n.length; setupNode(n[i++])); }
+    /*function lookup() { for(var n = document.querySelectorAll('div[dfe-form]'), i = 0; i < n.length; setupNode(n[i++])); }
     setInterval(lookup, 100);
-    setTimeout(lookup, 0);  
+    setTimeout(lookup, 0);  */
     return {
         setAttribute: function (node, name, value) { 
         	if(value===true) value = '';
@@ -396,8 +399,8 @@ var ajaxCache = (function() {
         },
         get: function(opt) {
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
-                //var u = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
-                var u = '/AJAXServlet.srv?';
+                var u = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
+                //var u = '/AJAXServlet.srv?';
                 for(var o in opt)
                     (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
                         u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';

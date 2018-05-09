@@ -41,7 +41,7 @@ var console = {
     timeEnd : function(s) { print(s + ": " + (java.lang.System.currentTimeMillis() - this.timeMap.get(s)) + "ms" ); this.timeMap.delete(s); }
 }
 
-var alert = console.log;
+var alert = console.error;
 
 var executor = java.util.concurrent.Executors.newCachedThreadPool();
 

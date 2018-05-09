@@ -1,0 +1,186 @@
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {s}->https://arrowheadexchange.com:443][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 0][route: {s}->https://arrowheadexchange.com:443][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Opening connection {s}->https://arrowheadexchange.com:443
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to arrowheadexchange.com/12.162.203.145:443
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Connecting socket to arrowheadexchange.com/12.162.203.145:443 with timeout 0
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Enabled protocols: [TLSv1, TLSv1.1, TLSv1.2]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Enabled cipher suites:[TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_DSS_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_EMPTY_RENEGOTIATION_INFO_SCSV]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Starting handshake
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Secure session established
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  negotiated protocol: TLSv1.2
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  negotiated cipher suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  peer principal: CN=*.arrowheadexchange.com, O=Arrowhead General Insurance Agency, L=San Diego, ST=California, C=US
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  peer alternative names: [*.arrowheadexchange.com, arrowheadexchange.com]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  issuer principal: CN=Symantec Class 3 Secure Server SHA256 SSL CA, OU=Symantec Trust Network, O=Symantec Corporation, C=US
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 192.168.1.3:62780<->12.162.203.145:443
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Executing request GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Content-Type: application/x-www-form-urlencoded
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Accept: application/json
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Host: arrowheadexchange.com
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Connection: Keep-Alive
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> User-Agent: Apache-HttpClient/4.5.3 (Java/1.8.0_131)
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Accept-Encoding: gzip,deflate
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Content-Type: application/x-www-form-urlencoded[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Accept: application/json[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Host: arrowheadexchange.com[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Connection: Keep-Alive[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "User-Agent: Apache-HttpClient/4.5.3 (Java/1.8.0_131)[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Accept-Encoding: gzip,deflate[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "HTTP/1.1 200 OK[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Cache-Control: no-cache[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Content-Length: 3475[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Content-Type: application/json;charset=ISO-8859-1[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Server: Microsoft-IIS/7.5[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Set-Cookie: JSESSIONID=B38874E81937042B78E57ABD1A3181AD.aex2; Path=/; HttpOnly[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "X-Powered-By: ASP.NET[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Date: Sun, 29 Apr 2018 03:44:07 GMT[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "{"status":"success","result":{"isMatch":true,"vinNumber":"5YFBURHE7HP596257","vehicleType":"car","vehicleYear":"2017","vehicleMake":"TOYOTA","vehicleModel":"COROLLA","vehicleCost":"18500","vehicleYearOptions":[{"text":"2019","value":"2019"},{"text":"2018","value":"2018"},{"text":"2017","value":"2017"},{"text":"2016","value":"2016"},{"text":"2015","value":"2015"},{"text":"2014","value":"2014"},{"text":"2013","value":"2013"},{"text":"2012","value":"2012"},{"text":"2011","value":"2011"},{"text":"2010","value":"2010"},{"text":"2009","value":"2009"},{"text":"2008","value":"2008"},{"text":"2007","value":"2007"},{"text":"2006","value":"2006"},{"text":"2005","value":"2005"},{"text":"2004","value":"2004"},{"text":"2003","value":"2003"},{"text":"2002","value":"2002"},{"text":"2001","value":"2001"},{"text":"2000","value":"2000"},{"text":"1999","value":"1999"},{"text":"1998","value":"1998"},{"text":"1997","value":"1997"},{"text":"1996","value":"1996"},{"text":"1995","value":"1995"},{"text":"1994","value":"1994"},{"text":"1993","value":"1993"},{"text":"1992","value":"1992"},{"text":"1991","value":"1991"},{"text":"1990","value":"1990"},{"text":"1989","value":"1989"},{"tex"
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << HTTP/1.1 200 OK
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Cache-Control: no-cache
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Content-Length: 3475
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Content-Type: application/json;charset=ISO-8859-1
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Server: Microsoft-IIS/7.5
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Set-Cookie: JSESSIONID=B38874E81937042B78E57ABD1A3181AD.aex2; Path=/; HttpOnly
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << X-Powered-By: ASP.NET
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Date: Sun, 29 Apr 2018 03:44:07 GMT
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.ResponseProcessCookies - Cookie accepted [JSESSIONID="B38874E81937042B78E57ABD1A3181AD.aex2", version:0, domain:arrowheadexchange.com, path:/, expiry:null]
+DEBUG pool-1-thread-1 org.apache.http.wire - http-outgoing-0 << "t":"1988","value":"1988"},{"text":"1987","value":"1987"},{"text":"1986","value":"1986"},{"text":"1985","value":"1985"},{"text":"1984","value":"1984"},{"text":"1983","value":"1983"},{"text":"1982","value":"1982"},{"text":"1981","value":"1981"}],"vehicleMakeOptions":[{"text":"ACURA","value":"ACURA"},{"text":"ALFA ROMEO","value":"ALFA ROMEO"},{"text":"ASTON MARTIN","value":"ASTON MARTIN"},{"text":"AUDI","value":"AUDI"},{"text":"BENTLEY","value":"BENTLEY"},{"text":"BMW","value":"BMW"},{"text":"BUICK","value":"BUICK"},{"text":"CADILLAC","value":"CADILLAC"},{"text":"CHEVROLET","value":"CHEVROLET"},{"text":"CHRYSLER","value":"CHRYSLER"},{"text":"DODGE","value":"DODGE"},{"text":"FERRARI","value":"FERRARI"},{"text":"FIAT","value":"FIAT"},{"text":"FORD","value":"FORD"},{"text":"GENESIS","value":"GENESIS"},{"text":"GLOBAL ELECTRIC MOTORS","value":"GLOBAL ELECTRIC MOTORS"},{"text":"HONDA","value":"HONDA"},{"text":"HYUNDAI","value":"HYUNDAI"},{"text":"INFINITI","value":"INFINITI"},{"text":"JAGUAR","value":"JAGUAR"},{"text":"KARMA AUTOMOTIVE LLC","value":"KARMA AUTOMOTIVE LLC"},{"text":"KIA","value":"KIA"},{"text":"LAMBORGHINI","value":"LAMBORGHINI"},{"text":"LEXUS","value":"LEXUS"},{"text":"LINCOLN","value":"LINCOLN"},{"text":"LOTUS","value":"LOTUS"},{"text":"MASERATI","value":"MASERATI"},{"text":"MAZDA","value":"MAZDA"},{"text":"MCLAREN AUTOMOTIVE","value":"MCLAREN AUTOMOTIVE"},{"text":"MERCEDES-BENZ","value":"MERCEDES-BENZ"},{"text":"MINI","value""
+DEBUG pool-1-thread-1 org.apache.http.wire - http-outgoing-0 << ":"MINI"},{"text":"MITSUBISHI","value":"MITSUBISHI"},{"text":"NISSAN","value":"NISSAN"},{"text":"PORSCHE","value":"PORSCHE"},{"text":"ROLLS-ROYCE","value":"ROLLS-ROYCE"},{"text":"SMART","value":"SMART"},{"text":"SUBARU","value":"SUBARU"},{"text":"TESLA","value":"TESLA"},{"text":"TOYOTA","value":"TOYOTA"},{"text":"VOLKSWAGEN","value":"VOLKSWAGEN"},{"text":"VOLVO","value":"VOLVO"}],"vehicleModelOptions":[{"text":"86","value":"86"},{"text":"AVALON","value":"AVALON"},{"text":"CAMRY","value":"CAMRY"},{"text":"COROLLA","value":"COROLLA"},{"text":"COROLLA IM","value":"COROLLA IM"},{"text":"MIRAI","value":"MIRAI"},{"text":"PRIUS","value":"PRIUS"},{"text":"PRIUS C","value":"PRIUS C"},{"text":"PRIUS PRIME","value":"PRIUS PRIME"},{"text":"PRIUS V","value":"PRIUS V"},{"text":"YARIS","value":"YARIS"},{"text":"YARIS IA","value":"YARIS IA"}]}}"
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 0][route: {s}->https://arrowheadexchange.com:443] can be kept alive indefinitely
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 0][route: {s}->https://arrowheadexchange.com:443][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection manager is shutting down
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.DefaultManagedHttpClientConnection - http-outgoing-0: Close connection
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection manager shut down
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {s}->https://arrowheadexchange.com:443][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 0][route: {s}->https://arrowheadexchange.com:443][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Opening connection {s}->https://arrowheadexchange.com:443
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to arrowheadexchange.com/12.162.203.145:443
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Connecting socket to arrowheadexchange.com/12.162.203.145:443 with timeout 0
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Enabled protocols: [TLSv1, TLSv1.1, TLSv1.2]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Enabled cipher suites:[TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_DSS_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_EMPTY_RENEGOTIATION_INFO_SCSV]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Starting handshake
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Secure session established
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  negotiated protocol: TLSv1.2
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  negotiated cipher suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  peer principal: CN=*.arrowheadexchange.com, O=Arrowhead General Insurance Agency, L=San Diego, ST=California, C=US
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  peer alternative names: [*.arrowheadexchange.com, arrowheadexchange.com]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  issuer principal: CN=Symantec Class 3 Secure Server SHA256 SSL CA, OU=Symantec Trust Network, O=Symantec Corporation, C=US
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 192.168.1.3:62824<->12.162.203.145:443
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Executing request GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Content-Type: application/x-www-form-urlencoded
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Accept: application/json
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Host: arrowheadexchange.com
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Connection: Keep-Alive
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> User-Agent: Apache-HttpClient/4.5.3 (Java/1.8.0_131)
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Accept-Encoding: gzip,deflate
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Content-Type: application/x-www-form-urlencoded[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Accept: application/json[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Host: arrowheadexchange.com[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Connection: Keep-Alive[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "User-Agent: Apache-HttpClient/4.5.3 (Java/1.8.0_131)[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Accept-Encoding: gzip,deflate[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "HTTP/1.1 200 OK[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Cache-Control: no-cache[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Content-Length: 3475[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Content-Type: application/json;charset=ISO-8859-1[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Server: Microsoft-IIS/7.5[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Set-Cookie: JSESSIONID=4A125470BAB3107E9A51E624192F083B.aex2; Path=/; HttpOnly[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "X-Powered-By: ASP.NET[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Date: Sun, 29 Apr 2018 03:44:37 GMT[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "{"status":"success","result":{"isMatch":true,"vinNumber":"5YFBURHE7HP596257","vehicleType":"car","vehicleYear":"2017","vehicleMake":"TOYOTA","vehicleModel":"COROLLA","vehicleCost":"18500","vehicleYearOptions":[{"text":"2019","value":"2019"},{"text":"2018","value":"2018"},{"text":"2017","value":"2017"},{"text":"2016","value":"2016"},{"text":"2015","value":"2015"},{"text":"2014","value":"2014"},{"text":"2013","value":"2013"},{"text":"2012","value":"2012"},{"text":"2011","value":"2011"},{"text":"2010","value":"2010"},{"text":"2009","value":"2009"},{"text":"2008","value":"2008"},{"text":"2007","value":"2007"},{"text":"2006","value":"2006"},{"text":"2005","value":"2005"},{"text":"2004","value":"2004"},{"text":"2003","value":"2003"},{"text":"2002","value":"2002"},{"text":"2001","value":"2001"},{"text":"2000","value":"2000"},{"text":"1999","value":"1999"},{"text":"1998","value":"1998"},{"text":"1997","value":"1997"},{"text":"1996","value":"1996"},{"text":"1995","value":"1995"},{"text":"1994","value":"1994"},{"text":"1993","value":"1993"},{"text":"1992","value":"1992"},{"text":"1991","value":"1991"},{"text":"1990","value":"1990"},{"text":"1989","value":"1989"},{"tex"
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << HTTP/1.1 200 OK
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Cache-Control: no-cache
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Content-Length: 3475
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Content-Type: application/json;charset=ISO-8859-1
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Server: Microsoft-IIS/7.5
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Set-Cookie: JSESSIONID=4A125470BAB3107E9A51E624192F083B.aex2; Path=/; HttpOnly
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << X-Powered-By: ASP.NET
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Date: Sun, 29 Apr 2018 03:44:37 GMT
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.ResponseProcessCookies - Cookie accepted [JSESSIONID="4A125470BAB3107E9A51E624192F083B.aex2", version:0, domain:arrowheadexchange.com, path:/, expiry:null]
+DEBUG pool-1-thread-1 org.apache.http.wire - http-outgoing-0 << "t":"1988","value":"1988"},{"text":"1987","value":"1987"},{"text":"1986","value":"1986"},{"text":"1985","value":"1985"},{"text":"1984","value":"1984"},{"text":"1983","value":"1983"},{"text":"1982","value":"1982"},{"text":"1981","value":"1981"}],"vehicleMakeOptions":[{"text":"ACURA","value":"ACURA"},{"text":"ALFA ROMEO","value":"ALFA ROMEO"},{"text":"ASTON MARTIN","value":"ASTON MARTIN"},{"text":"AUDI","value":"AUDI"},{"text":"BENTLEY","value":"BENTLEY"},{"text":"BMW","value":"BMW"},{"text":"BUICK","value":"BUICK"},{"text":"CADILLAC","value":"CADILLAC"},{"text":"CHEVROLET","value":"CHEVROLET"},{"text":"CHRYSLER","value":"CHRYSLER"},{"text":"DODGE","value":"DODGE"},{"text":"FERRARI","value":"FERRARI"},{"text":"FIAT","value":"FIAT"},{"text":"FORD","value":"FORD"},{"text":"GENESIS","value":"GENESIS"},{"text":"GLOBAL ELECTRIC MOTORS","value":"GLOBAL ELECTRIC MOTORS"},{"text":"HONDA","value":"HONDA"},{"text":"HYUNDAI","value":"HYUNDAI"},{"text":"INFINITI","value":"INFINITI"},{"text":"JAGUAR","value":"JAGUAR"},{"text":"KARMA AUTOMOTIVE LLC","value":"KARMA AUTOMOTIVE LLC"},{"text":"KIA","value":"KIA"},{"text":"LAMBORGHINI","value":"LAMBORGHINI"},{"text":"LEXUS","value":"LEXUS"},{"text":"LINCOLN","value":"LINCOLN"},{"text":"LOTUS","value":"LOTUS"},{"text":"MASERATI","value":"MASERATI"},{"text":"MAZDA","value":"MAZDA"},{"text":"MCLAREN AUTOMOTIVE","value":"MCLAREN AUTOMOTIVE"},{"text":"MERCEDES-BENZ","value":"MERCEDES-BENZ"},{"text":"MINI","value""
+DEBUG pool-1-thread-1 org.apache.http.wire - http-outgoing-0 << ":"MINI"},{"text":"MITSUBISHI","value":"MITSUBISHI"},{"text":"NISSAN","value":"NISSAN"},{"text":"PORSCHE","value":"PORSCHE"},{"text":"ROLLS-ROYCE","value":"ROLLS-ROYCE"},{"text":"SMART","value":"SMART"},{"text":"SUBARU","value":"SUBARU"},{"text":"TESLA","value":"TESLA"},{"text":"TOYOTA","value":"TOYOTA"},{"text":"VOLKSWAGEN","value":"VOLKSWAGEN"},{"text":"VOLVO","value":"VOLVO"}],"vehicleModelOptions":[{"text":"86","value":"86"},{"text":"AVALON","value":"AVALON"},{"text":"CAMRY","value":"CAMRY"},{"text":"COROLLA","value":"COROLLA"},{"text":"COROLLA IM","value":"COROLLA IM"},{"text":"MIRAI","value":"MIRAI"},{"text":"PRIUS","value":"PRIUS"},{"text":"PRIUS C","value":"PRIUS C"},{"text":"PRIUS PRIME","value":"PRIUS PRIME"},{"text":"PRIUS V","value":"PRIUS V"},{"text":"YARIS","value":"YARIS"},{"text":"YARIS IA","value":"YARIS IA"}]}}"
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 0][route: {s}->https://arrowheadexchange.com:443] can be kept alive indefinitely
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 0][route: {s}->https://arrowheadexchange.com:443][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection manager is shutting down
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.DefaultManagedHttpClientConnection - http-outgoing-0: Close connection
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection manager shut down
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {s}->https://arrowheadexchange.com:443][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 0][route: {s}->https://arrowheadexchange.com:443][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Opening connection {s}->https://arrowheadexchange.com:443
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to arrowheadexchange.com/12.162.203.145:443
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Connecting socket to arrowheadexchange.com/12.162.203.145:443 with timeout 0
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Enabled protocols: [TLSv1, TLSv1.1, TLSv1.2]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Enabled cipher suites:[TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_DSS_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_EMPTY_RENEGOTIATION_INFO_SCSV]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Starting handshake
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory - Secure session established
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  negotiated protocol: TLSv1.2
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  negotiated cipher suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  peer principal: CN=*.arrowheadexchange.com, O=Arrowhead General Insurance Agency, L=San Diego, ST=California, C=US
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  peer alternative names: [*.arrowheadexchange.com, arrowheadexchange.com]
+DEBUG pool-1-thread-2 org.apache.http.conn.ssl.SSLConnectionSocketFactory -  issuer principal: CN=Symantec Class 3 Secure Server SHA256 SSL CA, OU=Symantec Trust Network, O=Symantec Corporation, C=US
+DEBUG pool-1-thread-2 org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 192.168.1.3:62841<->12.162.203.145:443
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Executing request GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Content-Type: application/x-www-form-urlencoded
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Accept: application/json
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Host: arrowheadexchange.com
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Connection: Keep-Alive
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> User-Agent: Apache-HttpClient/4.5.3 (Java/1.8.0_131)
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 >> Accept-Encoding: gzip,deflate
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "GET /AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getVinLookupResults&vinNumber=5YFBURHE7HP596257 HTTP/1.1[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Content-Type: application/x-www-form-urlencoded[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Accept: application/json[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Host: arrowheadexchange.com[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Connection: Keep-Alive[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "User-Agent: Apache-HttpClient/4.5.3 (Java/1.8.0_131)[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "Accept-Encoding: gzip,deflate[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 >> "[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "HTTP/1.1 200 OK[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Cache-Control: no-cache[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Content-Length: 3475[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Content-Type: application/json;charset=ISO-8859-1[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Server: Microsoft-IIS/7.5[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Set-Cookie: JSESSIONID=1E3C38AB2A8C422F4C1FF3B4408B19C9.aex2; Path=/; HttpOnly[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "X-Powered-By: ASP.NET[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "Date: Sun, 29 Apr 2018 03:44:50 GMT[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "[\r][\n]"
+DEBUG pool-1-thread-2 org.apache.http.wire - http-outgoing-0 << "{"status":"success","result":{"isMatch":true,"vinNumber":"5YFBURHE7HP596257","vehicleType":"car","vehicleYear":"2017","vehicleMake":"TOYOTA","vehicleModel":"COROLLA","vehicleCost":"18500","vehicleYearOptions":[{"text":"2019","value":"2019"},{"text":"2018","value":"2018"},{"text":"2017","value":"2017"},{"text":"2016","value":"2016"},{"text":"2015","value":"2015"},{"text":"2014","value":"2014"},{"text":"2013","value":"2013"},{"text":"2012","value":"2012"},{"text":"2011","value":"2011"},{"text":"2010","value":"2010"},{"text":"2009","value":"2009"},{"text":"2008","value":"2008"},{"text":"2007","value":"2007"},{"text":"2006","value":"2006"},{"text":"2005","value":"2005"},{"text":"2004","value":"2004"},{"text":"2003","value":"2003"},{"text":"2002","value":"2002"},{"text":"2001","value":"2001"},{"text":"2000","value":"2000"},{"text":"1999","value":"1999"},{"text":"1998","value":"1998"},{"text":"1997","value":"1997"},{"text":"1996","value":"1996"},{"text":"1995","value":"1995"},{"text":"1994","value":"1994"},{"text":"1993","value":"1993"},{"text":"1992","value":"1992"},{"text":"1991","value":"1991"},{"text":"1990","value":"1990"},{"text":"1989","value":"1989"},{"tex"
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << HTTP/1.1 200 OK
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Cache-Control: no-cache
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Content-Length: 3475
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Content-Type: application/json;charset=ISO-8859-1
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Server: Microsoft-IIS/7.5
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Set-Cookie: JSESSIONID=1E3C38AB2A8C422F4C1FF3B4408B19C9.aex2; Path=/; HttpOnly
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << X-Powered-By: ASP.NET
+DEBUG pool-1-thread-2 org.apache.http.headers - http-outgoing-0 << Date: Sun, 29 Apr 2018 03:44:50 GMT
+DEBUG pool-1-thread-2 org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+DEBUG pool-1-thread-2 org.apache.http.client.protocol.ResponseProcessCookies - Cookie accepted [JSESSIONID="1E3C38AB2A8C422F4C1FF3B4408B19C9.aex2", version:0, domain:arrowheadexchange.com, path:/, expiry:null]
+DEBUG pool-1-thread-1 org.apache.http.wire - http-outgoing-0 << "t":"1988","value":"1988"},{"text":"1987","value":"1987"},{"text":"1986","value":"1986"},{"text":"1985","value":"1985"},{"text":"1984","value":"1984"},{"text":"1983","value":"1983"},{"text":"1982","value":"1982"},{"text":"1981","value":"1981"}],"vehicleMakeOptions":[{"text":"ACURA","value":"ACURA"},{"text":"ALFA ROMEO","value":"ALFA ROMEO"},{"text":"ASTON MARTIN","value":"ASTON MARTIN"},{"text":"AUDI","value":"AUDI"},{"text":"BENTLEY","value":"BENTLEY"},{"text":"BMW","value":"BMW"},{"text":"BUICK","value":"BUICK"},{"text":"CADILLAC","value":"CADILLAC"},{"text":"CHEVROLET","value":"CHEVROLET"},{"text":"CHRYSLER","value":"CHRYSLER"},{"text":"DODGE","value":"DODGE"},{"text":"FERRARI","value":"FERRARI"},{"text":"FIAT","value":"FIAT"},{"text":"FORD","value":"FORD"},{"text":"GENESIS","value":"GENESIS"},{"text":"GLOBAL ELECTRIC MOTORS","value":"GLOBAL ELECTRIC MOTORS"},{"text":"HONDA","value":"HONDA"},{"text":"HYUNDAI","value":"HYUNDAI"},{"text":"INFINITI","value":"INFINITI"},{"text":"JAGUAR","value":"JAGUAR"},{"text":"KARMA AUTOMOTIVE LLC","value":"KARMA AUTOMOTIVE LLC"},{"text":"KIA","value":"KIA"},{"text":"LAMBORGHINI","value":"LAMBORGHINI"},{"text":"LEXUS","value":"LEXUS"},{"text":"LINCOLN","value":"LINCOLN"},{"text":"LOTUS","value":"LOTUS"},{"text":"MASERATI","value":"MASERATI"},{"text":"MAZDA","value":"MAZDA"},{"text":"MCLAREN AUTOMOTIVE","value":"MCLAREN AUTOMOTIVE"},{"text":"MERCEDES-BENZ","value":"MERCEDES-BENZ"},{"text":"MINI","value""
+DEBUG pool-1-thread-1 org.apache.http.wire - http-outgoing-0 << ":"MINI"},{"text":"MITSUBISHI","value":"MITSUBISHI"},{"text":"NISSAN","value":"NISSAN"},{"text":"PORSCHE","value":"PORSCHE"},{"text":"ROLLS-ROYCE","value":"ROLLS-ROYCE"},{"text":"SMART","value":"SMART"},{"text":"SUBARU","value":"SUBARU"},{"text":"TESLA","value":"TESLA"},{"text":"TOYOTA","value":"TOYOTA"},{"text":"VOLKSWAGEN","value":"VOLKSWAGEN"},{"text":"VOLVO","value":"VOLVO"}],"vehicleModelOptions":[{"text":"86","value":"86"},{"text":"AVALON","value":"AVALON"},{"text":"CAMRY","value":"CAMRY"},{"text":"COROLLA","value":"COROLLA"},{"text":"COROLLA IM","value":"COROLLA IM"},{"text":"MIRAI","value":"MIRAI"},{"text":"PRIUS","value":"PRIUS"},{"text":"PRIUS C","value":"PRIUS C"},{"text":"PRIUS PRIME","value":"PRIUS PRIME"},{"text":"PRIUS V","value":"PRIUS V"},{"text":"YARIS","value":"YARIS"},{"text":"YARIS IA","value":"YARIS IA"}]}}"
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 0][route: {s}->https://arrowheadexchange.com:443] can be kept alive indefinitely
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 0][route: {s}->https://arrowheadexchange.com:443][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection manager is shutting down
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.DefaultManagedHttpClientConnection - http-outgoing-0: Close connection
+DEBUG pool-1-thread-1 org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection manager shut down
