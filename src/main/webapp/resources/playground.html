@@ -19,24 +19,25 @@
                     $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
                 })
             });*/
-            require.config({ baseUrl: '/js', paths: {/* 'dfe-core': 'es5', 'components/generic': 'es5', 'forms/test': 'es5',*/ forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
+            require.config({ baseUrl: '/js', paths: { /*'dfe-core': 'es5', 'components/generic': 'es5', 'forms/test': 'es5', */ forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
             
-            require(['ui/utils'/*, 'babel'*/], function() {
+            require(['ui/utils'], function() {
                 require(['forms/test', 'dfe-core', 'ui/jquery'], function(form, core, $){
                     $.get('/test/test-arf-2.json', function(arf) { 
-                        //arf.policy[0].cmau[0].location.shift();
+                        arf.policy[0].cmau[0].location.shift();
                         core.startRuntime({ model : arf, node: [document.getElementById('dfe'), document.getElementById('dfe2')], form: form });
                     })
                     
-                    
-                    /*Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get("forms/test.js")]).then( // "transform-react-jsx",   , "react"
+                   /* require(['babel'], function(babel) {
+                        Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get("forms/test.js")]).then( // "transform-react-jsx",   , "react"
                         function(a) {
                             var s = require('babel').transform(a.join('\n\n\n'), {  plugins: [ "transform-object-rest-spread", "transform-object-assign"],  presets: ["es2015"] }).code;
                             window.es5source = s;
                             //s = uglify.parse(s); s.figure_out_scope(); s.compute_char_frequency(); s.mangle_names(); s = s.print_to_string({ ie8: true, max_line_len: 1000});
                             //window.es5uglified = s;
                             //console.log(s);
-                        });*/
+                        });
+                    })*/
                 })
                 
             });

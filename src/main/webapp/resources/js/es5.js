@@ -463,10 +463,10 @@ define('dfe-core', function () {
                         break;
                     case 'input':
                         newAttributes.type == oldAttributes.type || (domElement.type = newAttributes.type);
-                        if (newAttributes.type !== 'checkbox') {
+                        if (newAttributes.type !== 'checkbox' && newAttributes.type !== 'radio') {
                             if (domElement.value != newAttributes.value) {
                                 if (document.activeElement === domElement) {
-                                    //TODO...
+                                    //TODO - if it s between "keydown" and "keyup" - delay? update / don't update
                                     /*let s = domElement.selectionStart, e = domElement.selectionEnd;
                                     domElement.value = newAttributes.value;
                                     domElement.selectionStart = s;
@@ -647,13 +647,49 @@ define('dfe-core', function () {
                 if (node.shouldRender) {
                     node.shouldRender = false;
                     var renderStructure = node.control.render(node.lastData, node.lastError, node.attributes, node.children);
+                    var pos = node.field.pos || [];
                     node.renderStructure = Array.isArray(renderStructure) ? renderStructure : [renderStructure];
-                    node.immediateNodeInfo = DOM.calcImmediateNodeInfo(node.renderStructure, node.field.pos || []);
+                    node.immediateNodeInfo = DOM.calcImmediateNodeInfo(node.renderStructure, pos);
+                    if (node.control instanceof Form) {
+                        pos.forEach(function (pos, i) {
+                            var info = node.immediateNodeInfo[i];
+                            if (info) {
+                                _extends(info, pos);
+                            }
+                        });
+                    }
                     // TODO: what if immediateNodeInfo attributes changed but length didn't? 
                     if (node.parent && !node.parent.shouldRender && node.lastParentDOMElements.length !== node.immediateNodeInfo.length && node.parent.attachedChildNodes.has(node)) {
                         node.parent.shouldRender = true;
                     }
                 }
+            }
+        }, {
+            key: 'nodeFromElement',
+            value: function nodeFromElement(runtime, domElement) {
+                function isChild(parentNode) {
+                    for (var e = domElement; e; e = e.parentNode) {
+                        if (e === parentNode) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                var node = runtime.rootNode;
+                if (node.parentDOMElements.some(isChild)) {
+                    for (var step = node; step; node = step) {
+                        step.children.forEach(function (map) {
+                            return map.forEach(function (child) {
+                                return child.parentDOMElements.some(isChild) && (step = child);
+                            });
+                        });
+                        if (step === node) {
+                            break;
+                        }
+                    }
+                    return node;
+                }
+                return null;
             }
         }]);
 
@@ -813,10 +849,10 @@ define('dfe-core', function () {
             key: 'acceptLogic',
             value: function acceptLogic(data, error) {
                 var childrenFields = this.field.children;
-                if (typeof data !== 'undefined') {
+                if (typeof data !== 'undefined' && !this.evicted) {
                     if (childrenFields.length) {
                         data = (Array.isArray(data) ? data : (typeof data === 'undefined' ? 'undefined' : _typeof(data)) == 'object' ? [data] : []).map(function (d) {
-                            return typeof d.withListener == 'function' ? d : new JsonProxy(d, [], [], listener);
+                            return typeof d.withListener == 'function' ? d : new JsonProxy(d);
                         });
                         this.runtime.reconcileChildren(this, data);
                     }
@@ -837,7 +873,7 @@ define('dfe-core', function () {
             this.schedule = [];
             this.rootElements = Array.isArray(rootElements) ? rootElements : [rootElements];
             this.listener = (listener || new DfeListener()).For();
-            this.nodes = new Set();
+            this.nodes = []; //new Set();
         }
 
         _createClass(Runtime, [{
@@ -875,8 +911,8 @@ define('dfe-core', function () {
                 this.shutdown();
                 this.initAction = { action: initAction || 'init' };
                 if (this.rootProxy && this.formClass) {
-                    var node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
-                    node.parentDOMElements = this.rootElements;
+                    this.rootNode = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
+                    this.rootNode.parentDOMElements = this.rootElements;
                     this.processor = setInterval(function () {
                         return _this3.processInterceptors();
                     }, 50);
@@ -887,18 +923,20 @@ define('dfe-core', function () {
         }, {
             key: 'processInterceptors',
             value: function processInterceptors() {
-                var _this4 = this;
-
-                var all = [];
-                this.nodes.forEach(function (node) {
-                    _this4.logic(node), all.push(node);
-                });
-                all.reverse().forEach(function (node) {
-                    return DOM.calcRenderStructure(node);
-                });
+                for (var i = 0; i < this.nodes.length; i++) {
+                    this.logic(this.nodes[i]);
+                }
+                this.removeEvicted();
+                for (var _i = this.nodes.length - 1; _i >= 0; _i--) {
+                    DOM.calcRenderStructure(this.nodes[_i]);
+                }
                 this.nodes.forEach(function (node) {
                     return DOM.render(node);
                 });
+                /*let all = [];
+                this.nodes.forEach(node => { this.logic(node), all.push(node) });
+                all.reverse().forEach(node => DOM.calcRenderStructure(node));
+                this.nodes.forEach(node => DOM.render(node));*/
                 while (this.schedule.length) {
                     this.schedule.shift()(this);
                 }
@@ -911,7 +949,8 @@ define('dfe-core', function () {
                 }, this.listener);
                 var node = new Node(parent, field, unbound, this);
                 node.notifications.push(this.initAction);
-                this.nodes.add(node);
+                node.index = this.nodes.push(node) - 1;
+                //this.nodes.add(node);
                 this.prep$$(node, unbound);
                 return node;
             }
@@ -976,31 +1015,69 @@ define('dfe-core', function () {
         }, {
             key: 'evict',
             value: function evict(node) {
-                var _this5 = this;
+                var _this4 = this;
 
+                node.evicted = true;
+                node.notifications = [];
                 node.children.forEach(function (fieldMap) {
                     return fieldMap.forEach(function (node) {
-                        return _this5.evict(node);
+                        return _this4.evict(node);
                     });
                 });
+            }
+        }, {
+            key: 'removeEvicted',
+            value: function removeEvicted() {
+                var _this5 = this;
+
+                var cur = 0;
+                this.nodes.forEach(function (node, index) {
+                    if (node.evicted) {
+                        _this5.removeErroring(node);
+                        var dpMap = _this5.listener.dpMap;
+                        node.dependencies.forEach(function (dep) {
+                            var eleMap = dpMap.get(dep.data);
+                            if (eleMap) {
+                                var ctlSet = eleMap.get(dep.element);
+                                if (ctlSet) {
+                                    ctlSet['delete'](node);
+                                    ctlSet.size || eleMap['delete'](dep.element);
+                                    eleMap.size || dpMap['delete'](dep.data);
+                                }
+                            }
+                        });
+                        node.lastRenderStructure.forEach(function (lst) {
+                            return lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst);
+                        });
+                        node.control.destroy();
+                    } else {
+                        _this5.nodes[cur++] = _this5.nodes[index];
+                    }
+                });
+                this.nodes.splice(cur);
+
+                /*node.children.forEach(fieldMap => fieldMap.forEach( node => this.evict(node)));
                 this.nodes['delete'](node);
                 this.removeErroring(node);
-                var dpMap = this.listener.dpMap;
-                node.dependencies.forEach(function (dep) {
-                    var eleMap = dpMap.get(dep.data);
-                    if (eleMap) {
-                        var ctlSet = eleMap.get(dep.element);
-                        if (ctlSet) {
+                let dpMap = this.listener.dpMap;
+                node.dependencies.forEach(dep => {
+                    let eleMap = dpMap.get(dep.data);
+                    if(eleMap) { 
+                        let ctlSet = eleMap.get(dep.element);
+                        if(ctlSet) {
                             ctlSet['delete'](node);
                             ctlSet.size || eleMap['delete'](dep.element);
                             eleMap.size || dpMap['delete'](dep.data);
                         }
                     }
-                });
-                node.lastRenderStructure.forEach(function (lst) {
-                    return lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst);
-                });
+                })
+                node.lastRenderStructure.forEach( 
+                    lst => lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst)
+                )
                 node.control.destroy();
+                if( node === this.rootNode ) {
+                    this.rootNode = null;
+                }*/
             }
         }, {
             key: 'reconcileChildren',
@@ -1058,7 +1135,7 @@ define('dfe-core', function () {
         }, {
             key: 'logic',
             value: function logic(node) {
-                if (node.notifications.length) {
+                if (node.notifications.length && !node.evicted) {
                     var events = node.notifications;
                     node.notifications = [];
                     try {
@@ -1159,6 +1236,7 @@ define('dfe-core', function () {
         Runtime: Runtime,
         startRuntime: Runtime.startRuntime,
         createElement: createElement,
+        nodeFromElement: DOM.nodeFromElement,
         Component: Component
     };
 });
@@ -1444,10 +1522,7 @@ define('components/div-r', ['dfe-core', 'components/table'], function (Core, Tab
                     return row.data;
                 });
                 var columns = this.orderFilterFields(skip, colOrder);
-                var head = this.makeRows(columns, [null], children, 'header', { style: headerStyle, class: headerClass }, 'div', 'div');
-                var foot = this.makeRows(columns, [null], children, 'footer', { style: footerStyle, class: footerClass }, 'div', 'div');
-                var body = this.makeRows(columns, data, children, '', { style: rowStyle, class: rowClass }, 'div', 'div');
-                return Core.createElement('div', rest, [].concat(_toConsumableArray(head), _toConsumableArray(body), _toConsumableArray(foot)));
+                return Core.createElement('div', rest, [].concat(_toConsumableArray(this.makeRows(columns, [null], children, 'header', { style: headerStyle, class: headerClass }, 'div', 'div')), _toConsumableArray(this.makeRows(columns, data, children, '', { style: rowStyle, class: rowClass }, 'div', 'div')), _toConsumableArray(this.makeRows(columns, [null], children, 'footer', { style: footerStyle, class: footerClass }, 'div', 'div'))));
             }
         }]);
 
@@ -1474,7 +1549,7 @@ define('components/labeled-component', ['dfe-core', 'components/base'], function
                         return firstChild || (firstChild = child);
                     });
                 });
-                return [[attributes.html ? Core.createElement('span', attributes) : attributes.text, error && Core.createElement('label', { class: 'dfe-error', text: error.toString() })], firstChild];
+                return [[attributes.html ? Core.createElement('span', attributes) : attributes.text, error && !attributes.hideError && Core.createElement('label', { class: 'dfe-error', text: error.toString() })], firstChild];
             }
         }, {
             key: 'renderDefault',
@@ -1589,8 +1664,8 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
                     var t = [];
                     for (var i = 0; i < transform.length; i++) {
                         data.length > transform[i] && (t[i] = data.charAt(transform[i]));
-                    }for (var _i = 0; _i < t.length; _i++) {
-                        t[_i] = t[_i] || ' ';
+                    }for (var _i2 = 0; _i2 < t.length; _i2++) {
+                        t[_i2] = t[_i2] || ' ';
                     }data = t.join('');
                 }
                 this.getValueProcessed(data, e.target);
@@ -1970,144 +2045,200 @@ define('components/tab-s', ['dfe-core', 'components/base'], function (Core, Base
     }(BaseComponent);
 });
 
-/*
-
-define('components/tab-d', ['components/tab-s', 'ui/utils'], function(CTabS, uiUtils) {
-    return _extend({
-        cname: 'tab-d',
-        render: function(nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                var ch = this.orderFilterColumns(control, attrs), rt = this.runtime(control), _a = typeof attrs.activeTab == 'function' ? attrs.activeTab() : rt.activeTab ? rt.activeTab.hfield : '';
-                attrs.hfield = ch.filter(function(cf) { return (cf.class||0) == 0 }).pop();
-                attrs.hfield && (attrs.hfield = attrs.hfield.name);
-                (data||[]).forEach(function(r) { _a == r.data.hfield && (rt.activeTab = r.data) });
-                CTabS.render.call(this, nodes, control, data, errs, attrs, events);
-                control.fixedChildren.forEach(function(cc) { cc.component.setParentNode(cc)})
-                var d = rt.fieldData.filter(function(fd) { return fd.field.name == rt.activeTab.hfield });
-                rt.footAlloc || (rt.footAlloc = this.allocateNodes(control, control.ui, attrs, d));
-                this.positionChildren(control, rt.footAlloc, d);
-                this.setAttributes(control, errs, attrs);
-            }
-        },
-        activeTabChange: function(control, attrs, modelData) {
-             typeof attrs.activeTab == 'function' && attrs.activeTab(modelData.hfield);
-        },
-        orderFilter: function(control, attrs, newRows) { CTabS.orderFilter.call(this, control, attrs, newRows); return [] },
-    }, CTabS, CTabS.base())
-})    
-
-define('components/div-c', ['components/div', 'ui/utils'], function(CDiv, uiUtils) {
-    return _extend({
-        cname: 'div-c',
-        allocateNodes: function(control, ui, attrs, fieldData, nextAllocs) {
-            var ret = { nodes: [], rows: [] }, nodes;
-            for(var columns = this.runtime(control).columns, i = 0, j = 0; i < fieldData.length; i++) {
-                ret.nodes.push(nodes = []);
-                fieldData[i].pos.forEach(function(pos, p){
-                    var div = document.createElement('div');
-                    uiUtils.setAttribute(div, 'class', pos.colclass);
-                    uiUtils.setAttribute(div, 'style', pos.colstyle);
-                    columns[j++].insertBefore(div, nextAllocs && nextAllocs.nodes[i][p]||null);
-                    ret.rows.push(div);
-                    nodes.push(div);
-                })
-            } 
-            return ret;
-        },
-        renderFx: function(nodes, control, data, errs, attrs) {
-            nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-            var rt = this.runtime(control), fd = rt.fieldData, hf = fd.filter(function(fd) { return fd.clazz!='' }), elem;
-            rt.columns = [];
-            for(var i = 0; i < Math.max(hf.length, fd.length - hf.length); i++) {
-                rt.columns.push(elem = document.createElement('div')); control.ui.appendChild(elem);
-            }
-            hf.length > 0 && this.positionChildren(control, rt.headAlloc = this.allocateNodes(control, control.ui, attrs, hf), hf);
-        },
-        setAttributes: function(control, errs, attrs) {
-            CDiv.setAttributes.call(this, control, errs, attrs);
-            var rt = this.runtime(control);
-            for(var i = 0; i < rt.columns.length; i++) {
-                uiUtils.setAttribute(rt.columns[i], 'class', attrs['rowclass$'+i]||attrs['rowclass$header']);
-                uiUtils.setAttribute(rt.columns[i], 'style', attrs['rowstyle$'+i]||attrs['rowstyle$header']);
-            }
-        },
-        removeDataRow: function(control, oldAlloc, or) {
-            var prevChildren = control.children.get(or);
-            prevChildren && prevChildren.forEach(function(c) {c.component.setParentNode(c)});
-            for(var columns = this.runtime(control).columns, i=0; i < oldAlloc.rows.length; i++)
-                columns[i].removeChild(oldAlloc.rows[i]);
-        },
-        moveRow: function(control, nrA, orA) {
-            for(var columns = this.runtime(control).columns, i = orA.rows.length-1; i>=0; i--)
-                columns[i].insertBefore(nrA.rows[i], orA.rows[i])
+define('components/tab-d', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
+    var ActiveTabHandler = function () {
+        function ActiveTabHandler() {
+            _classCallCheck(this, ActiveTabHandler);
         }
-    }, CDiv, _base())
-})
 
-define('components/radiolist', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    var incId = 0;
-    return _extend({
-        cname: 'radiolist',
-        render: function (nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('span'))._dfe_ = control;
-                    uiUtils.addEventListener(control.ui, 'change', function(e){
-                        var selected = [], cc = control.ui.children;
-                        for(var i = cc.length - 1; i >= 0; i--)
-                            if(cc[i].checked) { selected = cc[i].dataValue; break ; }
-                        control.component.store(control, selected);
-                    }, true);
-                    this.setEvents(control.ui, control, data, errs, attrs);
+        _createClass(ActiveTabHandler, [{
+            key: 'prepare',
+            value: function prepare(children) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'activeTab',
+            value: function activeTab(model) {
+                throw new Error('Not implemented');
+            }
+        }, {
+            key: 'store',
+            value: function store(model) {}
+        }]);
+
+        return ActiveTabHandler;
+    }();
+
+    return function (_BaseComponent9) {
+        _inherits(TabD, _BaseComponent9);
+
+        function TabD(node) {
+            _classCallCheck(this, TabD);
+
+            var _this29 = _possibleConstructorReturn(this, (TabD.__proto__ || Object.getPrototypeOf(TabD)).call(this, node));
+
+            _this29.handler = new ActiveTabHandler(_this29);
+            return _this29;
+        }
+
+        _createClass(TabD, [{
+            key: 'render',
+            value: function render(data, error, attributes, children) {
+                var _this30 = this;
+
+                var headerClass = attributes.rowclass$header,
+                    headerStyle = attributes.rowstyle$header,
+                    rowClass = attributes.rowclass,
+                    rowStyle = attributes.rowstyle,
+                    haclass = attributes.haclass,
+                    activeTab = attributes.activeTab,
+                    rest = _objectWithoutProperties(attributes, ['rowclass$header', 'rowstyle$header', 'rowclass', 'rowstyle', 'haclass', 'activeTab']);
+
+                var useHandler = typeof activeTab !== 'function';
+                if (useHandler) {
+                    this.handler.prepare(children);
                 }
-                var orientation = attrs.orientation;
-                if( orientation != 'horizontal') orientation = 'vertical';
-                typeof data == 'string' && (data = {value: data});
-                data = (Array.isArray(data) ? data[0] : data) || {};
-                data.value = (Array.isArray(data.value) ? data.value[0] : data.value) || 0;
-                control.radioname || (control.radioname = ++incId);
-                if(!data.items) data.items =  [{value :'Y', description : 'Yes'}, {value :'N', description : 'No'}];
-                var r;
-                while(control.ui.firstChild) control.ui.removeChild(control.ui.firstChild);
-                if(data.items) {
-                    data.items.forEach( function(it) {
-                        control.ui.appendChild(r = document.createElement('input')); 
-                        r.setAttribute('type', 'radio'); 
-                        r.setAttribute('name', control.radioname); 
-                        r.dataValue = it.value; 
-                        _test(data.value, it.value) &&  r.setAttribute('checked', 'checked');
-                        control.ui.appendChild(r = document.createElement('label'));
-                        r.innerText = it.description || it.value; 
-                        orientation == 'vertical' && control.ui.appendChild(document.createElement('br'));
+
+                var head = Core.createElement('div', { class: headerClass, style: headerStyle });
+                var body = Core.createElement('div', { class: rowClass, style: rowStyle });
+                var headField = this.$node.field.children.filter(function (field) {
+                    return !field.class;
+                }).pop();
+                data.forEach(function (model) {
+                    var child = children.get(model.data).get(headField),
+                        isActive = (useHandler ? _this30.handler.activeTab : activeTab)(model);
+                    if (child) {
+                        head.children.push(Core.createElement('div', child, function (pos) {
+                            return _extends({}, pos, isActive ? { class: (pos.class ? pos.class + ' ' : '') + haclass } : {}, {
+                                onClick: function onClick() {
+                                    return _this30.handler.store(model), _this30.store(model);
+                                }
+                            });
+                        }));
+                    }
+                });
+                children.get(null).forEach(function (child, field) {
+                    return field.name === (useHandler ? _this30.handler.activeTab : activeTab)() && body.children.push(Core.createElement('div', child));
+                });
+                return Core.createElement('div', rest, [head, body]);
+            }
+        }]);
+
+        return TabD;
+    }(BaseComponent);
+});
+
+define('components/div-c', ['dfe-core', 'components/table'], function (Core, Table) {
+    return function (_Table2) {
+        _inherits(DivC, _Table2);
+
+        function DivC() {
+            _classCallCheck(this, DivC);
+
+            return _possibleConstructorReturn(this, (DivC.__proto__ || Object.getPrototypeOf(DivC)).apply(this, arguments));
+        }
+
+        _createClass(DivC, [{
+            key: 'render',
+            value: function render(data, error, attributes, children) {
+                var _this32 = this;
+
+                var rowClass = attributes.rowclass,
+                    rowStyle = attributes.rowstyle,
+                    skip = attributes.skip,
+                    colOrder = attributes.colOrder,
+                    filter = attributes.filter,
+                    order = attributes.order,
+                    rest = _objectWithoutProperties(attributes, ['rowclass', 'rowstyle', 'skip', 'colOrder', 'filter', 'order']);
+
+                var fields = {
+                    header: [],
+                    footer: [],
+                    "": []
+                };
+                var rows = this.orderFilterRows(data, filter, order);
+                this.orderFilterFields(skip, colOrder).forEach(function (field) {
+                    return fields[field.class || ''].push(field);
+                });
+                var columns = fields[""].map(function (field) {
+                    return Core.createElement('div', { key: field.name, style: rowStyle, class: rowClass });
+                });
+                this.toColumns(children.get(null), fields.header, columns);
+                rows.forEach(function (model) {
+                    return _this32.toColumns(children.get(model.data), fields[""], columns);
+                });
+                this.toColumns(children.get(null), fields.footer, columns);
+                return Core.createElement('div', rest, columns);
+            }
+        }, {
+            key: 'toColumns',
+            value: function toColumns(map, fields, out) {
+                if (map) {
+                    map.forEach(function (child, field) {
+                        var column = out[fields.indexOf(field)];
+                        if (column) {
+                            column.children.push(Core.createElement('div', child));
+                        }
                     });
                 }
-                //control.ui.innerHTML = innerHTML;
-                this.setAttributes(control, errs, attrs);
-                this.appendError(control, nodes[0], errs, attrs);
             }
-        }
-    }, Component, _base())
-})
+        }]);
 
-define('components/label', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'label',
-        render: function (nodes, control, data, errs, attrs, events) {    
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('label'))._dfe_ = control;
-                    uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, undefined, 'click')});
-                    this.setEvents(control.ui, control, data, errs, attrs);
+        return DivC;
+    }(Table);
+});
+
+define('components/radiolist', ['dfe-core', 'components/validation-component'], function (Core, ValidationComponent) {
+    function testChoice(a, b) {
+        return a == b || (typeof a === 'undefined' ? 'undefined' : _typeof(a)) === 'object' && (typeof b === 'undefined' ? 'undefined' : _typeof(b)) === 'object' && Object.getOwnPropertyNames(a).every(function (i) {
+            return a[i] == b[i];
+        });
+    }
+    var radioNameCounter = 0;
+    return function (_ValidationComponent5) {
+        _inherits(Radiolist, _ValidationComponent5);
+
+        function Radiolist(node) {
+            _classCallCheck(this, Radiolist);
+
+            var _this33 = _possibleConstructorReturn(this, (Radiolist.__proto__ || Object.getPrototypeOf(Radiolist)).call(this, node));
+
+            _this33.defaultName = 'Radiolist#' + ++radioNameCounter;
+            return _this33;
+        }
+
+        _createClass(Radiolist, [{
+            key: 'render',
+            value: function render(data, error, attributes, children) {
+                var _this34 = this;
+
+                var orientation = attributes.orientation,
+                    hideError = attributes.hideError,
+                    rest = _objectWithoutProperties(attributes, ['orientation', 'hideError']);
+
+                var normalized = (Array.isArray(data) ? data[0] : data) || 'N';
+                if (typeof normalized === 'string') {
+                    normalized = { value: data, items: [{ value: 'Y', description: 'Yes' }, { value: 'N', description: 'No' }] };
                 }
-                attrs.html ? (control.ui.innerHTML = data) : (control.ui.innerText = data);
-                this.setAttributes(control, errs, attrs);
-                this.appendError(control, nodes[0], errs, attrs);
+                return [[].concat(_toConsumableArray(Array.prototype.concat.apply([], normalized.items.map(function (item) {
+                    return [Core.createElement('input', _extends({
+                        name: _this34.defaultName
+                    }, rest, {
+                        type: 'radio',
+                        checked: testChoice(normalized.value, item.value),
+                        onChange: function onChange() {
+                            return _this34.store(item.value);
+                        }
+                    })), item.description || item.value.toString(), orientation === 'vertical' && Core.createElement('br')];
+                }))), [_get(Radiolist.prototype.__proto__ || Object.getPrototypeOf(Radiolist.prototype), 'render', this).call(this, null, error, { hideError: hideError })])];
             }
-        }
-    }, Component, _base())
-})
+        }]);
 
+        return Radiolist;
+    }(ValidationComponent);
+});
 
+/*
 
 define('components/iframe', ['components/component', 'ui/utils'], function(Component, uiUtils) {
     return _extend({
@@ -2478,26 +2609,39 @@ define('components/c-switch', ['components/labeled-component', 'components/switc
 })   
 */
 
-define('forms/test',["dfe-core", "ui/shapes", 'dfe-field-helper', "components/labeled-component", "components/editbox", "components/container", "components/table", "components/button", "components/checkbox", "components/text", "components/dropdown", "components/html", "components/div-r", "components/tab-s"], function (Core, shapes, _fields, Labeled, Editbox, Container, Table, Button, Checkbox, Text, Dropdown, Html, DivR, TabS) {
+define('forms/test', ["dfe-core", "ui/shapes", 'dfe-field-helper', "components/labeled-component", "components/editbox", "components/container", "components/table", "components/button", "components/checkbox", "components/text", "components/dropdown", "components/html", "components/div-r", "components/tab-s", "components/tab-d", "components/div-c", "components/radiolist"], function (Core, shapes, _fields, Labeled, Editbox, Container, Table, Button, Checkbox, Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist) {
     var Form = Core.Form;
 
-    /*class SubForm extends Form {
-        static fields() {
-            return ([
-                Form.field(Container, "field-2", { get: $$ => $$('.showStuff') == 'Y' ? [] : [$$] }, [
-                    Form.field(Editbox, "field-3", {
-                        atr: () => fields.simple('.address1', { vstrategy: 'always' })
-                    })
-                ]),
-                Form.field(Checkbox, "field-4", { get: $$ => $$('.showStuff'), set: ($$, value) => $$.set('.showStuff', value) }),
-                Form.field(Text, "field-5", { get: function() { 
-                    return this.$node.attributes.someProperty;
-                }})
-            ])
+    var SubForm = function (_Form) {
+        _inherits(SubForm, _Form);
+
+        function SubForm() {
+            _classCallCheck(this, SubForm);
+
+            return _possibleConstructorReturn(this, (SubForm.__proto__ || Object.getPrototypeOf(SubForm)).apply(this, arguments));
         }
-    }
-    Form.field(SubForm, "subform", { atr: $$ => ({someProperty: 'someValue#' + $$.index()}) } )
-    */
+
+        _createClass(SubForm, null, [{
+            key: 'fields',
+            value: function fields() {
+                return [Form.field(Container, "field-2", { get: function get($$) {
+                        return $$('.showStuff') == 'Y' ? [] : [$$];
+                    } }, [Form.field(Editbox, "field-3", {
+                    atr: function atr() {
+                        return _fields.simple('.ModelYr', { vstrategy: 'always' });
+                    }
+                })]), Form.field(Checkbox, "field-4", { get: function get($$) {
+                        return $$('.showStuff');
+                    }, set: function set($$, value) {
+                        return $$.set('.showStuff', value);
+                    } }), Form.field(Text, "field-5", { get: function get() {
+                        return this.$node.attributes.someProperty;
+                    } })];
+            }
+        }]);
+
+        return SubForm;
+    }(Form);
 
     var typeMap = {
         car: {
@@ -2516,6 +2660,78 @@ define('forms/test',["dfe-core", "ui/shapes", 'dfe-field-helper', "components/la
         antique: {
             name: "Antique Autos"
         }
+        /* return class TestForm extends Core.Form {
+             static fields() {
+                 return [
+                     Form.field(DivC, { get: $$ => $$('policy.cmau.location.car'), atr: () => ({style: 'display: flex'})}, [
+                         Form.field(Text, 'h1', { get: () => 'Vin number', class: 'header' }),
+                         Form.field(Text, 'h2', { get: () => 'Type', class: 'header' }),
+                         Form.field(Text, 'h3', { get: () => 'Has vin', class: 'header' }),
+                         Form.field(Text, 'r1', { get: $$ => ($$('.hasvin') == 'Y' ? '' : '*') + $$('.vinnumber') }),
+                         Form.field(Dropdown, 'r2', {
+                             atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
+                                 value: k,
+                                 description: typeMap[k].name
+                             })))
+                         }),
+                         Form.field(Radiolist, 'r3', { atr: () => fields.simple('.hasvin') }) // , {orientation : 'vertical'}
+                     ]),
+                     Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [
+                         Form.field(TabD, 'tab-fld', { 
+                             get: () => [{caption: 'This is VIN', hfield: 'h1'}, {caption: 'This is type', hfield: 'h2'}], 
+                             set: ($$, px) => $$.set('.activeTab', px.get('.hfield')),
+                             atr: $$ => ({
+                                 activeTab: function(px) {
+                                     let at = $$('.activeTab').toString() || 'h1';
+                                     return px ? px.get('.hfield') == at : at;
+                                 }
+                             }) 
+                         }, [
+                             Form.field(Text, 'hRow', { get: $$ => $$('.caption') }),
+                             Form.field(Text, 'h1', { get: $$ => $$('.vinnumber'), class: 'header' }),
+                             Form.field(Dropdown, 'h2', {
+                                 atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
+                                     value: k,
+                                     description: typeMap[k].name
+                                 }))),
+                                 class: 'header'
+                             })
+                         ]),
+                         Form.field(SubForm, "subform", { atr: $$ => ({someProperty: 'someValue#' + $$.index()}), pos: [{newRow: true}] })
+                     ])
+                 ]
+             }
+         }*/
+
+        /*return class TestForm extends Core.Form {
+            static fields() {
+                return (
+                    Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [
+                        Form.field(TabD, 'tab-fld', { 
+                            get: () => [{caption: 'This is VIN', hfield: 'h1'}, {caption: 'This is type', hfield: 'h2'}], 
+                            set: ($$, px) => $$.set('.activeTab', px.get('.hfield')),
+                            atr: $$ => ({
+                                activeTab: function(px) {
+                                    let at = $$('.activeTab').toString() || 'h1';
+                                    return px ? px.get('.hfield') == at : at;
+                                }
+                            }) 
+                        }, [
+                            Form.field(Text, 'hRow', { get: $$ => $$('.caption') }),
+                            Form.field(Text, 'h1', { get: $$ => $$('.vinnumber'), class: 'header' }),
+                            Form.field(Dropdown, 'h2', {
+                                atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
+                                    value: k,
+                                    description: typeMap[k].name
+                                }))),
+                                class: 'header'
+                            })
+                        ])
+                    ])
+                )
+            }
+        }*/
+
         /* return class TestForm extends Core.Form {
              static fields() {
                  return (
@@ -2589,6 +2805,10 @@ define('forms/test',["dfe-core", "ui/shapes", 'dfe-field-helper', "components/la
                         return 'skip';
                     }, set: function set($$) {
                         return $$.set('skip', $$('skip') == 'Y' ? 'N' : 'Y');
+                    } }), Form.field(Button, { get: function get() {
+                        return 'append';
+                    }, set: function set($$) {
+                        return $$('policy.cmau.location').pop().append('.car', { vinnumber: 'New' });
                     } }), Form.field(Table, {
                     get: function get($$) {
                         return $$('policy.cmau.location.car');
@@ -2605,7 +2825,7 @@ define('forms/test',["dfe-core", "ui/shapes", 'dfe-field-helper', "components/la
                             }
                         };
                     },
-                    pos: [{ newRow: true, colSpan: 2 }]
+                    pos: [{ newRow: true, colSpan: 3 }]
                 }, [Form.field(Text, { get: function get($$) {
                         return $$(".key");
                     } }), Form.field(Dropdown, "field-1", {
@@ -2639,6 +2859,10 @@ define('forms/test',["dfe-core", "ui/shapes", 'dfe-field-helper', "components/la
                         return $$(".VehUseCd");
                     } }), Form.field(Text, { get: function get($$) {
                         return $$(".vinvalid");
+                    } }), Form.field(Button, { get: function get() {
+                        return 'Delete';
+                    }, set: function set($$) {
+                        return $$.detach();
                     } })])]);
             }
         }]);

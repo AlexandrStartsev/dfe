@@ -155,7 +155,7 @@ define('components/labeled-component', ['dfe-core', 'components/base'], function
             children.forEach(map => map.forEach(child => firstChild || (firstChild = child) ));
             return [[ 
                 attributes.html ? Core.createElement('span', attributes) : attributes.text,
-                error && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
+                error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
             ], firstChild]
         }
         renderDefault() {

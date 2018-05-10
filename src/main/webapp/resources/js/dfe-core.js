@@ -377,7 +377,7 @@ define('dfe-core', function() {
                     if(newAttributes.type !== 'checkbox' && newAttributes.type !== 'radio') {
                         if(domElement.value != newAttributes.value) {
                             if(document.activeElement === domElement) {
-                                //TODO...
+                                //TODO - if it s between "keydown" and "keyup" - delay? update / don't update
                                 /*let s = domElement.selectionStart, e = domElement.selectionEnd;
                                 domElement.value = newAttributes.value;
                                 domElement.selectionStart = s;
@@ -533,8 +533,19 @@ define('dfe-core', function() {
             if(node.shouldRender) {
                 node.shouldRender = false;
                 let renderStructure = node.control.render(node.lastData, node.lastError, node.attributes, node.children);
+                let pos = node.field.pos || [];
                 node.renderStructure = Array.isArray(renderStructure) ? renderStructure : [renderStructure];
-                node.immediateNodeInfo = DOM.calcImmediateNodeInfo(node.renderStructure, node.field.pos || []);
+                node.immediateNodeInfo = DOM.calcImmediateNodeInfo(node.renderStructure, pos);
+                if(node.control instanceof Form) {
+                    pos.forEach(
+                        (pos, i) => {
+                            let info = node.immediateNodeInfo[i]; 
+                            if( info ) {
+                                Object.assign(info, pos);
+                            }
+                        }
+                    );
+                }
                 // TODO: what if immediateNodeInfo attributes changed but length didn't? 
                 if( node.parent && !node.parent.shouldRender && 
                     node.lastParentDOMElements.length !== node.immediateNodeInfo.length &&  
@@ -553,8 +564,8 @@ define('dfe-core', function() {
                 }
                 return false;
             }
-            let node = runtime.rootNode;
-            if( node.parentDOMElements.some(isChild) ) {
+            let node = runtime.nodes[0];
+            if( node && node.parentDOMElements.some(isChild) ) {
                 for(let step = node; step; node = step) {
                     step.children.forEach(
                         map => map.forEach(
@@ -672,7 +683,7 @@ define('dfe-core', function() {
         }
         acceptLogic(data, error) {
             let childrenFields = this.field.children;
-            if(typeof data !== 'undefined') {
+            if(typeof data !== 'undefined' && !this.evicted) {
                 if(childrenFields.length) {
                     data = (Array.isArray(data) ? data: typeof data == 'object' ? [data] : []).map(d => typeof d.withListener == 'function' ? d : new JsonProxy(d));
                     this.runtime.reconcileChildren(this, data);
@@ -689,7 +700,7 @@ define('dfe-core', function() {
             this.schedule = [];
             this.rootElements = Array.isArray(rootElements) ? rootElements : [rootElements];
             this.listener = (listener || new DfeListener()).For(); 
-            this.nodes = new Set();
+            this.nodes = []; //new Set();
         }
         setDfeForm(formClass) {
             this.formClass = formClass;
@@ -704,31 +715,43 @@ define('dfe-core', function() {
         }
 	    shutdown() { 
             clearInterval(this.processor);
-	        this.nodes.forEach(control => this.evict(control));
+            if(this.nodes.length) {
+	            this.evict(this.nodes[0]);
+                this.removeEvicted();
+            }
         }
         restart(initAction) {
 	        this.shutdown();
 	        this.initAction = {action: initAction||'init'};
             if( this.rootProxy && this.formClass ) {
-                this.rootNode = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
-                this.rootNode.parentDOMElements = this.rootElements;
+                let node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
+                node.parentDOMElements = this.rootElements;
 	            this.processor = setInterval(() => this.processInterceptors(), 50);
                 this.processInterceptors();
             }
             return this;
 	    }
         processInterceptors() {
-            let all = [];
+            for(let i = 0; i < this.nodes.length; i++) {
+                this.logic(this.nodes[i]);
+            }
+            this.removeEvicted();
+            for(let i = this.nodes.length - 1; i >= 0; i--) {
+                DOM.calcRenderStructure(this.nodes[i]);
+            }
+            this.nodes.forEach(node => DOM.render(node));
+            /*let all = [];
             this.nodes.forEach(node => { this.logic(node), all.push(node) });
             all.reverse().forEach(node => DOM.calcRenderStructure(node));
-            this.nodes.forEach(node => DOM.render(node));
+            this.nodes.forEach(node => DOM.render(node));*/
             while(this.schedule.length) this.schedule.shift()(this);
         }
         addNode(parent, modelProxy, field) {
             let unbound = wrapProxy(modelProxy, path => unbound.get(path), this.listener);
             let node = new Node(parent, field, unbound, this);
             node.notifications.push(this.initAction);
-            this.nodes.add(node);
+            this.nodes.push(node);
+            //this.nodes.add(node);
             this.prep$$(node, unbound);
             return node;
         }
@@ -786,7 +809,38 @@ define('dfe-core', function() {
             }
         }
         evict(node) {
+            node.evicted = true;
+            node.notifications = [];
             node.children.forEach(fieldMap => fieldMap.forEach( node => this.evict(node)));
+        }
+        removeEvicted() {
+            let cur = 0;
+            this.nodes.forEach( (node, index) => {
+                if(node.evicted) {
+                    this.removeErroring(node);
+                    let dpMap = this.listener.dpMap;
+                    node.dependencies.forEach(dep => {
+                        let eleMap = dpMap.get(dep.data);
+                        if(eleMap) { 
+                            let ctlSet = eleMap.get(dep.element);
+                            if(ctlSet) {
+                                ctlSet['delete'](node);
+                                ctlSet.size || eleMap['delete'](dep.element);
+                                eleMap.size || dpMap['delete'](dep.data);
+                            }
+                        }
+                    })
+                    node.lastRenderStructure.forEach(
+                        lst => lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst)
+                    )
+                    node.control.destroy();
+                } else {
+                    this.nodes[cur++] = this.nodes[index];
+                }
+            })
+            this.nodes.splice(cur);
+
+            /*node.children.forEach(fieldMap => fieldMap.forEach( node => this.evict(node)));
             this.nodes['delete'](node);
             this.removeErroring(node);
             let dpMap = this.listener.dpMap;
@@ -807,7 +861,7 @@ define('dfe-core', function() {
             node.control.destroy();
             if( node === this.rootNode ) {
                 this.rootNode = null;
-            }
+            }*/
         }
         reconcileChildren(parent, rowProxies) {
             // TODO... 
@@ -837,7 +891,7 @@ define('dfe-core', function() {
             }
         }
         logic(node) {
-            if(node.notifications.length) {
+            if(node.notifications.length && !node.evicted) {
                 var events = node.notifications;
                 node.notifications = [];
                 try {
