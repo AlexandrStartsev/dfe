@@ -83,10 +83,10 @@ define('components/table', ['dfe-core', 'components/base'], function(Core, BaseC
             ]);
         }
         makeRows( orderedFilteredColumns, orderedFilteredRows, children, clazz, rowAttributes, rowElement, cellElement) {
-            let rows = [], current;
+            let rows = [];
             orderedFilteredRows.forEach(
                 row => {
-                    let map = children.get(row);
+                    let map = children.get(row), current;
                     if(map) {
                         orderedFilteredColumns.forEach(
                             field => {
@@ -108,9 +108,9 @@ define('components/table', ['dfe-core', 'components/base'], function(Core, BaseC
             return rows;
         }
         orderFilterFields(skip, colOrder) {
-            let field = this.$node.field, form = this.$node.form, model = this.$node.model;
-            let children = skip ? field.children.filter( field => typeof skip === 'function' ? !skip.call(form, field.name, model) : skip.indexOf(field.name) === -1 ) : field.children;
-            return typeof colOrder === 'function' ? children.sort((c1, c2) => colOrder.call(form, c1.name, c2.name, model) ) : children;
+            let field = this.$node.field, form = this.$node.form;
+            let children = skip ? field.children.filter( field => typeof skip === 'function' ? !skip.call(form, field.name) : skip.indexOf(field.name) === -1 ) : field.children;
+            return typeof colOrder === 'function' ? children.sort((c1, c2) => colOrder.call(form, c1.name, c2.name) ) : children;
         }
         orderFilterRows(allRows, filter, order) {
             if(typeof filter == 'function') {
@@ -139,10 +139,11 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
             } = attributes;
             data = this.orderFilterRows(data, filter, order).map(row => row.data);
             let columns = this.orderFilterFields(skip, colOrder);
-            let head = this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'div', 'div' );
-            let foot = this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'div', 'div' );
-            let body = this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'div', 'div' );
-            return Core.createElement('div', rest, [...head, ...body, ...foot]);
+            return Core.createElement('div', rest, [
+                ...this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'div', 'div' ), 
+                ...this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'div', 'div' ),
+                ...this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'div', 'div' )
+            ]);
         }
     }
 })
@@ -417,7 +418,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
         }
         setActiveTab(key) {
             this.activeTab = key;
-            this.$node.notifications.push({ action : 'self' }); 
+            this.update(); 
         }
         render(data, error, attributes, children) {
             let {
@@ -440,16 +441,17 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
             })
             this.activeTab = activeTab;
             this.lastRows = curRows;
-            children.forEach( 
+            children.forEach(
                 (map, row) => {
                     if(row) {
                         map.forEach(
                             (child, field) => {
                                 if( field.name === headField ) {
-                                    head.children.push( Core.createElement('div', {
-                                        onClick: () => this.setActiveTab(row.key),
-                                        ...(row.key === activeTab ? {class: haclass} : {})
-                                    }, Core.createElement('div', child)) ) 
+                                    head.children.push( Core.createElement('div', child, pos => ({
+                                        ...pos, 
+                                        ...(row.key === activeTab ? {class: (pos.class ? pos.class + ' ' : '') + haclass} : {}),
+                                        onClick: () => this.setActiveTab(row.key)
+                                    })))
                                 } else {
                                     row.key === activeTab && body.children.push( Core.createElement('div', child) );
                                 }
@@ -462,236 +464,140 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
         }
     }
 })
-    /*
-    return _extend({
-        cname: 'tab-s',
-        render: function(nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                var rt = this.runtime(control), _this = this;
-                attrs.focusnew && events.forEach(function(e) {  rt.activeTab = e.action == 'a' ? e.d1 : rt.activeTab });
-                CDivR.render.call(this, nodes, control, data, errs, attrs, events);
-                var headAlloc = this.runtime(control).headAlloc.rows[0], headField = rt.fieldData.headField;
-                while(headAlloc.lastChild) headAlloc.removeChild(headAlloc.lastChild);
-                if(headField) {
-                    control.children.forEach(function(fl, modelData){ 
-                        var c = fl.get(headField.field), div, span, pnode = [];
-                        headField.pos.forEach(function(pos){
-                            headAlloc.appendChild(div = document.createElement('div'));
-                            pnode.push(div);
-                            uiUtils.setAttribute(div, 'class', (pos && pos.colclass||'') + (modelData == rt.activeTab && attrs.haclass ? ' ' + attrs.haclass : ''));
-                            uiUtils.setAttribute(div, 'style', pos && pos.colstyle);
-                            uiUtils.addEventListener(div, 'click', function(e) {
-                                if(modelData != rt.activeTab) {
-                                    _this.activeTabChange(control, attrs, modelData);
-                                    rt.activeTab = modelData; 
-                                    control.notifications.push({ action : 'self' }); 
-                                }
-                            }, false);
-                        })
-                        c.component.setParentNode(c, pnode);
-                    });
-                }
-            }
-        },
-        activeTabChange: function(control, attrs, modelData) {},
-        orderFilter: function(control, attrs, newRows) {
-            var l = control.model.listener, rt = this.runtime(control), nrS = new Set(), has, at = rt.activeTrack; rt.activeTrack = [];
-            newRows.forEach(function(r) { nrS.add(r.data); has |= r.data == rt.activeTab });
-            for(var i = 0; at && i < at.length; i++) nrS.has(at[i]) && rt.activeTrack.push(at[i]);
-            has ? rt.activeTrack.push(rt.activeTab) : rt.activeTab = rt.activeTrack[rt.activeTrack.length - 1] || newRows.length && newRows[0].data;
-            return rt.activeTab ? [rt.activeTab]:[];
-        },
-        renderFx: function(nodes, control, data, errs, attrs) {
-            nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-            this.runtime(control).headAlloc = { rows: [control.ui.appendChild(document.createElement('div'))] };
+
+define('components/tab-d', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
+    class ActiveTabHandler {
+        prepare(children) {
+            throw new Error('Not implemented')
         }
-    }, CDivR, _base())
-})*/
+        activeTab(model) {
+            throw new Error('Not implemented');
+        }
+        store(model) {}
+    }
+    return class TabD extends BaseComponent {
+        constructor(node){
+            super(node);
+            this.handler = new ActiveTabHandler(this);
+        }
+        render(data, error, attributes, children) {
+            let {
+                rowclass$header: headerClass,
+                rowstyle$header: headerStyle, 
+                rowclass: rowClass,
+                rowstyle: rowStyle,
+                haclass: haclass,
+                activeTab: activeTab,
+                ...rest
+            } = attributes;
+            let useHandler = typeof activeTab !== 'function';
+            if(useHandler) {
+                this.handler.prepare(children);
+            }
+            
+            let head = Core.createElement('div', { class: headerClass, style : headerStyle });
+            let body = Core.createElement('div', { class: rowClass, style : rowStyle });
+            let headField = this.$node.field.children.filter(field => !field.class).pop();
+            data.forEach(
+                model => {
+                    let child = children.get(model.data).get(headField), isActive = (useHandler ? this.handler.activeTab : activeTab)(model);
+                    if(child) {
+                        head.children.push( Core.createElement('div', child, pos => ({
+                            ...pos, 
+                            ...(isActive ? {class: (pos.class ? pos.class + ' ' : '') + haclass} : {}),
+                            onClick: () => (this.handler.store(model), this.store(model))
+                        })));
+                    }
+                }
+            )
+            children.get(null).forEach(
+                (child, field) => field.name === (useHandler ? this.handler.activeTab : activeTab)() && body.children.push( Core.createElement('div', child) )
+            )
+            return Core.createElement('div', rest, [head, body]);
+        }
+    }
+})
+
+define('components/div-c', ['dfe-core', 'components/table'], function(Core, Table) {
+    return class DivC extends Table {
+        render(data, error, attributes, children) {
+            let {
+                rowclass: rowClass,
+                rowstyle: rowStyle,
+                skip: skip,
+                colOrder: colOrder,
+                filter: filter,
+                order: order,
+                ...rest
+            } = attributes;
+            let fields = {
+                header: [], 
+                footer: [], 
+                "": [] 
+            }
+            let rows = this.orderFilterRows(data, filter, order);
+            this.orderFilterFields(skip, colOrder).forEach( 
+                field => fields[field.class||''].push(field) 
+            )
+            let columns = fields[""].map(
+                field => Core.createElement( 'div', { key: field.name, style: rowStyle, class: rowClass} ) 
+            );
+            this.toColumns(children.get(null), fields.header, columns);
+            rows.forEach( model => this.toColumns(children.get(model.data), fields[""], columns) );
+            this.toColumns(children.get(null), fields.footer, columns);
+            return Core.createElement('div', rest, columns);
+        }
+        toColumns(map, fields, out) {
+            if(map) {
+                map.forEach(
+                    (child, field) => {
+                        let column = out[ fields.indexOf(field) ];
+                        if( column ) {
+                            column.children.push( Core.createElement('div', child ) )
+                        }
+                    }
+                )
+            }
+        }
+    }
+})
+
+define('components/radiolist', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
+    function testChoice(a, b) {
+        return a == b || typeof a === 'object' && typeof b === 'object' && Object.getOwnPropertyNames(a).every(i => a[i] == b[i]);
+    }
+    let radioNameCounter = 0;
+    return class Radiolist extends ValidationComponent {
+        constructor(node) {
+            super(node);
+            this.defaultName = 'Radiolist#' + (++radioNameCounter);
+        }
+        render(data, error, attributes, children) {
+            let { orientation: orientation, hideError: hideError, ...rest } = attributes;
+            let normalized = (Array.isArray(data) ? data[0] : data)||'N';
+            if(typeof normalized === 'string') {
+                normalized = {value: data, items: [{value :'Y', description : 'Yes'}, {value :'N', description : 'No'}]}
+            }
+            return [[
+                ...Array.prototype.concat.apply([], normalized.items.map(
+                    item => [
+                        Core.createElement('input', {
+                            name: this.defaultName,
+                            ...rest, 
+                            type: 'radio', 
+                            checked: testChoice( normalized.value, item.value ), 
+                            onChange: () => this.store(item.value)
+                        }), 
+                        item.description || item.value.toString(),
+                        orientation === 'vertical' && Core.createElement('br') 
+                    ]
+                )), super.render(null, error, {hideError: hideError})
+            ]]
+        }
+    }
+}) 
 
 /*
-
-define('components/tab-s', ['components/div-r', 'ui/utils'], function(CDivR, uiUtils) {
-    return _extend({
-        cname: 'tab-s',
-        render: function(nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                var rt = this.runtime(control), _this = this;
-                attrs.focusnew && events.forEach(function(e) {  rt.activeTab = e.action == 'a' ? e.d1 : rt.activeTab });
-                CDivR.render.call(this, nodes, control, data, errs, attrs, events);
-                var headAlloc = this.runtime(control).headAlloc.rows[0], headField = rt.fieldData.headField;
-                while(headAlloc.lastChild) headAlloc.removeChild(headAlloc.lastChild);
-                if(headField) {
-                    control.children.forEach(function(fl, modelData){ 
-                        var c = fl.get(headField.field), div, span, pnode = [];
-                        headField.pos.forEach(function(pos){
-                            headAlloc.appendChild(div = document.createElement('div'));
-                            pnode.push(div);
-                            uiUtils.setAttribute(div, 'class', (pos && pos.colclass||'') + (modelData == rt.activeTab && attrs.haclass ? ' ' + attrs.haclass : ''));
-                            uiUtils.setAttribute(div, 'style', pos && pos.colstyle);
-                            uiUtils.addEventListener(div, 'click', function(e) {
-                                if(modelData != rt.activeTab) {
-                                    _this.activeTabChange(control, attrs, modelData);
-                                    rt.activeTab = modelData; 
-                                    control.notifications.push({ action : 'self' }); 
-                                }
-                            }, false);
-                        })
-                        c.component.setParentNode(c, pnode);
-                    });
-                }
-            }
-        },
-        activeTabChange: function(control, attrs, modelData) {},
-        orderFilter: function(control, attrs, newRows) {
-            var l = control.model.listener, rt = this.runtime(control), nrS = new Set(), has, at = rt.activeTrack; rt.activeTrack = [];
-            newRows.forEach(function(r) { nrS.add(r.data); has |= r.data == rt.activeTab });
-            for(var i = 0; at && i < at.length; i++) nrS.has(at[i]) && rt.activeTrack.push(at[i]);
-            has ? rt.activeTrack.push(rt.activeTab) : rt.activeTab = rt.activeTrack[rt.activeTrack.length - 1] || newRows.length && newRows[0].data;
-            return rt.activeTab ? [rt.activeTab]:[];
-        },
-        renderFx: function(nodes, control, data, errs, attrs) {
-            nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-            this.runtime(control).headAlloc = { rows: [control.ui.appendChild(document.createElement('div'))] };
-        }
-    }, CDivR, _base())
-})
-
-define('components/tab-d', ['components/tab-s', 'ui/utils'], function(CTabS, uiUtils) {
-    return _extend({
-        cname: 'tab-d',
-        render: function(nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                var ch = this.orderFilterColumns(control, attrs), rt = this.runtime(control), _a = typeof attrs.activeTab == 'function' ? attrs.activeTab() : rt.activeTab ? rt.activeTab.hfield : '';
-                attrs.hfield = ch.filter(function(cf) { return (cf.class||0) == 0 }).pop();
-                attrs.hfield && (attrs.hfield = attrs.hfield.name);
-                (data||[]).forEach(function(r) { _a == r.data.hfield && (rt.activeTab = r.data) });
-                CTabS.render.call(this, nodes, control, data, errs, attrs, events);
-                control.fixedChildren.forEach(function(cc) { cc.component.setParentNode(cc)})
-                var d = rt.fieldData.filter(function(fd) { return fd.field.name == rt.activeTab.hfield });
-                rt.footAlloc || (rt.footAlloc = this.allocateNodes(control, control.ui, attrs, d));
-                this.positionChildren(control, rt.footAlloc, d);
-                this.setAttributes(control, errs, attrs);
-            }
-        },
-        activeTabChange: function(control, attrs, modelData) {
-             typeof attrs.activeTab == 'function' && attrs.activeTab(modelData.hfield);
-        },
-        orderFilter: function(control, attrs, newRows) { CTabS.orderFilter.call(this, control, attrs, newRows); return [] },
-    }, CTabS, CTabS.base())
-})    
-
-define('components/div-c', ['components/div', 'ui/utils'], function(CDiv, uiUtils) {
-    return _extend({
-        cname: 'div-c',
-        allocateNodes: function(control, ui, attrs, fieldData, nextAllocs) {
-            var ret = { nodes: [], rows: [] }, nodes;
-            for(var columns = this.runtime(control).columns, i = 0, j = 0; i < fieldData.length; i++) {
-                ret.nodes.push(nodes = []);
-                fieldData[i].pos.forEach(function(pos, p){
-                    var div = document.createElement('div');
-                    uiUtils.setAttribute(div, 'class', pos.colclass);
-                    uiUtils.setAttribute(div, 'style', pos.colstyle);
-                    columns[j++].insertBefore(div, nextAllocs && nextAllocs.nodes[i][p]||null);
-                    ret.rows.push(div);
-                    nodes.push(div);
-                })
-            } 
-            return ret;
-        },
-        renderFx: function(nodes, control, data, errs, attrs) {
-            nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-            var rt = this.runtime(control), fd = rt.fieldData, hf = fd.filter(function(fd) { return fd.clazz!='' }), elem;
-            rt.columns = [];
-            for(var i = 0; i < Math.max(hf.length, fd.length - hf.length); i++) {
-                rt.columns.push(elem = document.createElement('div')); control.ui.appendChild(elem);
-            }
-            hf.length > 0 && this.positionChildren(control, rt.headAlloc = this.allocateNodes(control, control.ui, attrs, hf), hf);
-        },
-        setAttributes: function(control, errs, attrs) {
-            CDiv.setAttributes.call(this, control, errs, attrs);
-            var rt = this.runtime(control);
-            for(var i = 0; i < rt.columns.length; i++) {
-                uiUtils.setAttribute(rt.columns[i], 'class', attrs['rowclass$'+i]||attrs['rowclass$header']);
-                uiUtils.setAttribute(rt.columns[i], 'style', attrs['rowstyle$'+i]||attrs['rowstyle$header']);
-            }
-        },
-        removeDataRow: function(control, oldAlloc, or) {
-            var prevChildren = control.children.get(or);
-            prevChildren && prevChildren.forEach(function(c) {c.component.setParentNode(c)});
-            for(var columns = this.runtime(control).columns, i=0; i < oldAlloc.rows.length; i++)
-                columns[i].removeChild(oldAlloc.rows[i]);
-        },
-        moveRow: function(control, nrA, orA) {
-            for(var columns = this.runtime(control).columns, i = orA.rows.length-1; i>=0; i--)
-                columns[i].insertBefore(nrA.rows[i], orA.rows[i])
-        }
-    }, CDiv, _base())
-})
-
-define('components/radiolist', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    var incId = 0;
-    return _extend({
-        cname: 'radiolist',
-        render: function (nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('span'))._dfe_ = control;
-                    uiUtils.addEventListener(control.ui, 'change', function(e){
-                        var selected = [], cc = control.ui.children;
-                        for(var i = cc.length - 1; i >= 0; i--)
-                            if(cc[i].checked) { selected = cc[i].dataValue; break ; }
-                        control.component.store(control, selected);
-                    }, true);
-                    this.setEvents(control.ui, control, data, errs, attrs);
-                }
-                var orientation = attrs.orientation;
-                if( orientation != 'horizontal') orientation = 'vertical';
-                typeof data == 'string' && (data = {value: data});
-                data = (Array.isArray(data) ? data[0] : data) || {};
-                data.value = (Array.isArray(data.value) ? data.value[0] : data.value) || 0;
-                control.radioname || (control.radioname = ++incId);
-                if(!data.items) data.items =  [{value :'Y', description : 'Yes'}, {value :'N', description : 'No'}];
-                var r;
-                while(control.ui.firstChild) control.ui.removeChild(control.ui.firstChild);
-                if(data.items) {
-                    data.items.forEach( function(it) {
-                        control.ui.appendChild(r = document.createElement('input')); 
-                        r.setAttribute('type', 'radio'); 
-                        r.setAttribute('name', control.radioname); 
-                        r.dataValue = it.value; 
-                        _test(data.value, it.value) &&  r.setAttribute('checked', 'checked');
-                        control.ui.appendChild(r = document.createElement('label'));
-                        r.innerText = it.description || it.value; 
-                        orientation == 'vertical' && control.ui.appendChild(document.createElement('br'));
-                    });
-                }
-                //control.ui.innerHTML = innerHTML;
-                this.setAttributes(control, errs, attrs);
-                this.appendError(control, nodes[0], errs, attrs);
-            }
-        }
-    }, Component, _base())
-})
-
-define('components/label', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'label',
-        render: function (nodes, control, data, errs, attrs, events) {    
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('label'))._dfe_ = control;
-                    uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, undefined, 'click')});
-                    this.setEvents(control.ui, control, data, errs, attrs);
-                }
-                attrs.html ? (control.ui.innerHTML = data) : (control.ui.innerText = data);
-                this.setAttributes(control, errs, attrs);
-                this.appendError(control, nodes[0], errs, attrs);
-            }
-        }
-    }, Component, _base())
-})
-
-
 
 define('components/iframe', ['components/component', 'ui/utils'], function(Component, uiUtils) {
     return _extend({

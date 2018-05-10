@@ -304,7 +304,8 @@ define('dfe-core', function() {
             return { type: type, key: type, attributes: [{}], children: [] }
         }
         if(attributes instanceof Node) {
-            return { type: type, key: attributes.field.name, attributes: attributes.immediateNodeInfo, childNode: attributes, children: [] }
+            let info = attributes.immediateNodeInfo;
+            return { type: type, key: attributes.field.name, attributes: typeof children === 'function' ? info.map(children) : info, childNode: attributes, children: [] }
         } else {
             return { type: type, ref: attributes.ref, key: attributes.key||type, attributes: [attributes], children: children||[] }
         }
@@ -373,7 +374,7 @@ define('dfe-core', function() {
                     break;
                 case 'input':
                     newAttributes.type == oldAttributes.type || ( domElement.type = newAttributes.type );
-                    if(newAttributes.type !== 'checkbox') {
+                    if(newAttributes.type !== 'checkbox' && newAttributes.type !== 'radio') {
                         if(domElement.value != newAttributes.value) {
                             if(document.activeElement === domElement) {
                                 //TODO...
@@ -463,11 +464,10 @@ define('dfe-core', function() {
                     }
                     if(st.dom.length) {
                         st.dom.forEach( (e, i) => DOM.reconcileAttributes(st.type, e, st.attributes[i]||{}, use && lst.attributes[i]||{}) );
-                        if(!use || lst.parentNode !== parentDOMElement) {
+                        if(!use || lst.parentNode !== parentDOMElement || tail && tail !== st.dom[0] ) {
                             st.dom.forEach(e => parentDOMElement.insertBefore(e, tail));
-                        } else {
-                            tail = st.dom[st.dom.length - 1].nextSibling;
                         }
+                        tail = st.dom[st.dom.length - 1].nextSibling;
                     }
                     st.parentNode = parentDOMElement;
                 }
@@ -532,8 +532,8 @@ define('dfe-core', function() {
         static calcRenderStructure(node) {
             if(node.shouldRender) {
                 node.shouldRender = false;
-                let renderStructure = node.control.render(node.lastData, node.lastError, node.attributes, node.children)||[];
-                node.renderStructure = renderStructure.filter ? renderStructure : [renderStructure];
+                let renderStructure = node.control.render(node.lastData, node.lastError, node.attributes, node.children);
+                node.renderStructure = Array.isArray(renderStructure) ? renderStructure : [renderStructure];
                 node.immediateNodeInfo = DOM.calcImmediateNodeInfo(node.renderStructure, node.field.pos || []);
                 // TODO: what if immediateNodeInfo attributes changed but length didn't? 
                 if( node.parent && !node.parent.shouldRender && 
@@ -542,7 +542,33 @@ define('dfe-core', function() {
                     node.parent.shouldRender = true ;
                 }
             }
-        }        
+        }
+        
+        static nodeFromElement(runtime, domElement) {
+            function isChild(parentNode) {
+                for(let e = domElement; e; e = e.parentNode) {
+                    if(e === parentNode) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            let node = runtime.rootNode;
+            if( node.parentDOMElements.some(isChild) ) {
+                for(let step = node; step; node = step) {
+                    step.children.forEach(
+                        map => map.forEach(
+                            child => child.parentDOMElements.some(isChild) && (step = child)
+                        )
+                    )
+                    if(step === node) {
+                        break ;
+                    }
+                }
+                return node;
+            }
+            return null;
+        }
     }
     
     class Component {
@@ -550,6 +576,9 @@ define('dfe-core', function() {
             this.$node = node;
         }
         destroy() {
+        }
+        update() {
+            this.$node.notifications.push({ action : 'self' }); 
         }
         doValidation(events, attrs) {
             return false;
@@ -571,7 +600,7 @@ define('dfe-core', function() {
         }
     }
     
-    let nameIndex = 1;
+    let fieldIndex = 0;
     
     class Field {
         constructor(clazz, ...args) {
@@ -579,7 +608,7 @@ define('dfe-core', function() {
             if(typeof name !== 'string') {
                 children = parameters;
                 parameters = name;
-                name = clazz.constructor.name + '#' + nameIndex;
+                name = clazz.prototype.constructor.name + '#' + (++fieldIndex);
             }
             if(Array.isArray(parameters) || parameters instanceof Field) {
                 children = parameters;
@@ -645,7 +674,7 @@ define('dfe-core', function() {
             let childrenFields = this.field.children;
             if(typeof data !== 'undefined') {
                 if(childrenFields.length) {
-                    data = (Array.isArray(data) ? data: typeof data == 'object' ? [data] : []).map(d => typeof d.withListener == 'function' ? d : new JsonProxy(d, [], [], listener));
+                    data = (Array.isArray(data) ? data: typeof data == 'object' ? [data] : []).map(d => typeof d.withListener == 'function' ? d : new JsonProxy(d));
                     this.runtime.reconcileChildren(this, data);
                 }
                 this.lastData = data;
@@ -681,8 +710,8 @@ define('dfe-core', function() {
 	        this.shutdown();
 	        this.initAction = {action: initAction||'init'};
             if( this.rootProxy && this.formClass ) {
-                let node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
-                node.parentDOMElements = this.rootElements;
+                this.rootNode = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
+                this.rootNode.parentDOMElements = this.rootElements;
 	            this.processor = setInterval(() => this.processInterceptors(), 50);
                 this.processInterceptors();
             }
@@ -776,6 +805,9 @@ define('dfe-core', function() {
                 lst => lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst)
             )
             node.control.destroy();
+            if( node === this.rootNode ) {
+                this.rootNode = null;
+            }
         }
         reconcileChildren(parent, rowProxies) {
             // TODO... 
@@ -874,6 +906,7 @@ define('dfe-core', function() {
         Runtime: Runtime, 
         startRuntime: Runtime.startRuntime,
         createElement: createElement,
+        nodeFromElement: DOM.nodeFromElement,
         Component: Component
     }
 });
