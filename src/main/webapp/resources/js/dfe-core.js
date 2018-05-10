@@ -276,7 +276,7 @@ define('dfe-core', function() {
 	DfeListener.prototype.notify = function(data, element, action, d1) {
 	    var e, s;
 	    (e = this.dpMap.get(data)) && (s = e.get(element)) && s.forEach(function (cc) {
-	        cc.notifications.push({data : data, element : element, action : action, d1 : d1});
+	        cc.notify({data : data, element : element, action : action, d1 : d1});
 	    });
 	    return true;
 	}
@@ -589,7 +589,7 @@ define('dfe-core', function() {
         destroy() {
         }
         update() {
-            this.$node.notifications.push({ action : 'self' }); 
+            this.$node.notify({ action : 'self' }); 
         }
         doValidation(events, attrs) {
             return false;
@@ -677,6 +677,10 @@ define('dfe-core', function() {
             this.renderStructure = renderStructure && renderStructure.filter ? renderStructure : [renderStructure];
             this.immediateNodeInfo = DOM.calcImmediateNodeInfo(this.renderStructure, field.pos || []);
         }
+        notify(action) {
+            this.notifications.push(action);
+            this.runtime.shouldAnythingRender = true;
+        }
         store(value, method) {
             let setter = this.attributes.set || this.field.set;
             typeof setter === 'function' && setter.call(this.form, this.unboundModel, value, method);
@@ -701,6 +705,8 @@ define('dfe-core', function() {
             this.rootElements = Array.isArray(rootElements) ? rootElements : [rootElements];
             this.listener = (listener || new DfeListener()).For(); 
             this.nodes = []; //new Set();
+            this.shouldAnythingRender = false;
+            this.pendingLogic = new Set();
         }
         setDfeForm(formClass) {
             this.formClass = formClass;
@@ -732,24 +738,27 @@ define('dfe-core', function() {
             return this;
 	    }
         processInterceptors() {
-            for(let i = 0; i < this.nodes.length; i++) {
-                this.logic(this.nodes[i]);
+            if(this.shouldAnythingRender) {
+                this.shouldAnythingRender = false;
+                for(let i = 0; i < this.nodes.length; i++) {
+                    this.logic(this.nodes[i]);
+                }
+                this.removeEvicted();
+                for(let i = this.nodes.length - 1; i >= 0; i--) {
+                    DOM.calcRenderStructure(this.nodes[i]);
+                }
+                this.nodes.forEach(node => DOM.render(node));
+                /*let all = [];
+                this.nodes.forEach(node => { this.logic(node), all.push(node) });
+                all.reverse().forEach(node => DOM.calcRenderStructure(node));
+                this.nodes.forEach(node => DOM.render(node));*/
             }
-            this.removeEvicted();
-            for(let i = this.nodes.length - 1; i >= 0; i--) {
-                DOM.calcRenderStructure(this.nodes[i]);
-            }
-            this.nodes.forEach(node => DOM.render(node));
-            /*let all = [];
-            this.nodes.forEach(node => { this.logic(node), all.push(node) });
-            all.reverse().forEach(node => DOM.calcRenderStructure(node));
-            this.nodes.forEach(node => DOM.render(node));*/
             while(this.schedule.length) this.schedule.shift()(this);
         }
         addNode(parent, modelProxy, field) {
             let unbound = wrapProxy(modelProxy, path => unbound.get(path), this.listener);
             let node = new Node(parent, field, unbound, this);
-            node.notifications.push(this.initAction);
+            node.notify(this.initAction);
             this.nodes.push(node);
             //this.nodes.add(node);
             this.prep$$(node, unbound);
@@ -914,7 +923,7 @@ define('dfe-core', function() {
         }
         notifyNodes(nodes, action) {
            (typeof nodes.forEach === 'function' ? nodes : [nodes]).forEach(
-               node => node.notifications.push({action : action||'n'})
+               node => node.notify({action : action||'n'})
            ); 
         }
         findChildren(nodes, deep, includeSelf, field, model) {
