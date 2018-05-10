@@ -472,30 +472,39 @@ define('dfe-core', function() {
                     st.parentNode = parentDOMElement;
                 }
             }
-            lastRenderStructure.forEach(lst => lst.used || lst.parentNode && lst.dom.forEach(e => lst.parentNode.removeChild(e)));
+            lastRenderStructure.forEach(
+                lst => {
+                    if(!lst.used && lst.parentNode) {
+                        lst.dom.forEach(e => lst.parentNode.removeChild(e));
+                        delete lst.parentNode;
+                    }
+                }
+            );
         }
 
         static applyDOMChanges(node, parentDOMElements, renderStructure, lastRenderStructure) {
             let lrs = 0;
-            for(let rs = 0, ps = 0; rs < renderStructure.length; rs++) {
-                let st = renderStructure[rs]; 
-                let lst = lastRenderStructure[lrs];
-                let use = st === lst || lst !== undefined && st !== undefined && !(st instanceof Node || lst instanceof Node);
-                if(st !== undefined) {
-                    if( st instanceof Node ) {
-                        node.attachedChildNodes.add(st);
-                        st.parentDOMElements = parentDOMElements.slice( ps, ps += st.immediateNodeInfo.length );
-                    } else {
-                        if(st !== lst) {
-                            st = (st.forEach ? st : [st]).filter(e => typeof e === 'object' || typeof e === 'string');
-                            renderStructure[rs] = st;
+            if( parentDOMElements != 0 ) {
+                for(let rs = 0, ps = 0; rs < renderStructure.length; rs++) {
+                    let st = renderStructure[rs]; 
+                    let lst = lastRenderStructure[lrs];
+                    let use = st === lst || lst !== undefined && st !== undefined && !(st instanceof Node || lst instanceof Node);
+                    if(st !== undefined) {
+                        if( st instanceof Node ) {
+                            node.attachedChildNodes.add(st);
+                            st.parentDOMElements = parentDOMElements.slice( ps, ps += st.immediateNodeInfo.length );
+                        } else {
+                            if(st !== lst) {
+                                st = (st.forEach ? st : [st]).filter(e => typeof e === 'object' || typeof e === 'string');
+                                renderStructure[rs] = st;
+                            }
+                            DOM.applyInSingleNode(node, parentDOMElements[ps++], st, use ? lst : []);
                         }
-                        DOM.applyInSingleNode(node, parentDOMElements[ps++], st, use ? lst : []);
-                    }
-                } else {
-                    ps++;
-                }         
-                use && lrs++;
+                    } else {
+                        ps++;
+                    }         
+                    use && lrs++;
+                }
             }
             while(lrs < lastRenderStructure.length) {
                 let lst = lastRenderStructure[lrs++];
@@ -505,17 +514,16 @@ define('dfe-core', function() {
         }
         
         static render(node) {
-            if(node.shouldRender) {
-                node.shouldRender = false;
+            if( node.renderStructure !== node.lastRenderStructure && node.parentDOMElements != 0 ) {
                 node.attachedChildNodes = node.children.size && new Set();
-                node.lastRenderStructure = DOM.applyDOMChanges( node, node.parentDOMElements, node.renderStructure, node.lastRenderStructure );
+                node.lastRenderStructure = node.renderStructure = DOM.applyDOMChanges( node, node.parentDOMElements, node.renderStructure, node.lastRenderStructure );
                 node.lastParentDOMElements = node.parentDOMElements;
                 node.children.forEach(
                     fieldMap => fieldMap.forEach(
                         child => child.parentDOMElements == 0 || node.attachedChildNodes.has(child) || (child.parentDOMElements = [] /*, child.shouldRender = true */)
                     )
                 )
-            } else if(node.parentDOMElements !== node.lastParentDOMElements) { // reposition
+            } else if(node.parentDOMElements !== node.lastParentDOMElements && (node.parentDOMElements != 0 || node.lastParentDOMElements != 0) ) { // reposition
                 DOM.applyDOMChanges( node, node.parentDOMElements, node.lastRenderStructure, node.lastRenderStructure );
                 node.lastParentDOMElements = node.parentDOMElements;
             }
@@ -523,6 +531,7 @@ define('dfe-core', function() {
         
         static calcRenderStructure(node) {
             if(node.shouldRender) {
+                node.shouldRender = false;
                 let renderStructure = node.control.render(node.lastData, node.lastError, node.attributes, node.children)||[];
                 node.renderStructure = renderStructure.filter ? renderStructure : [renderStructure];
                 node.immediateNodeInfo = DOM.calcImmediateNodeInfo(node.renderStructure, node.field.pos || []);

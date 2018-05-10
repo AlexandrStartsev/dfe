@@ -10,8 +10,9 @@ define([ "dfe-core",
         "components/text",
         "components/dropdown",
         "components/html",
-        "components/div-r" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
-            Text, Dropdown, Html, DivR) {
+        "components/div-r",
+        "components/tab-s" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+            Text, Dropdown, Html, DivR, TabS) {
     let Form = Core.Form;
     
     /*class SubForm extends Form {
@@ -50,8 +51,22 @@ define([ "dfe-core",
             name: "Antique Autos"
         }
     }
-    
     return class TestForm extends Core.Form {
+        static fields() {
+            return (
+                Form.field(TabS, 'tab-fld', { get: $$ => $$('policy.cmau.location.car'), atr: () => ({headField: 'hd-fld', haclass: "me-active"}) }, [
+                    Form.field(Text, 'hd-fld', { get: $$ => $$('.vinnumber') }),
+                    Form.field(Dropdown, 'bd-fld', {
+                        atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
+                            value: k,
+                            description: typeMap[k].name
+                        })))
+                    })
+                ])
+            )
+        }
+    }
+    /*return class TestForm extends Core.Form {
         static fields() {
             return (
                 Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [
@@ -87,5 +102,5 @@ define([ "dfe-core",
                 ])
             )
         }
-    }
+    }*/
 });

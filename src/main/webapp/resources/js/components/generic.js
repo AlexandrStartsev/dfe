@@ -408,29 +408,107 @@ define('components/form', ['dfe-core', 'components/div'], function(Core, Div) {
     }
 })
 
-/*
-
-define('components/div-r', ['components/container', 'components/div', 'ui/utils'], function(CContainer, CDiv, uiUtils) {
-   return _extend({
-        cname: 'div-r',
-        setAttributes: CContainer.setAttributes,
-        allocateNodes: function(control, ui, attrs, fieldData, nextAllocs) {
-            var ret = { nodes: [], rows: [] }, nodes, rdiv, div, ib = nextAllocs && nextAllocs.rows[0];
-            ui.insertBefore(rdiv = document.createElement('div'), ib||null);
-            ret.rows.push(rdiv);
-            fieldData.forEach(function(fd) {
-                ret.nodes.push(nodes = []);
-                fd.pos.forEach(function(pos) {
-                    rdiv.appendChild(div = document.createElement('div'));
-                    nodes.push(div);
-                    uiUtils.setAttribute(div, 'class', pos.colclass);
-                    uiUtils.setAttribute(div, 'style', pos.colstyle);
-                });
-            }); 
-            return ret;
+define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
+    return class TabS extends BaseComponent {
+        constructor(node){
+            super(node);
+            this.activeTab = -1;
+            this.lastRows = new Set();
         }
-    }, CDiv, _base())
+        setActiveTab(key) {
+            this.activeTab = key;
+            this.$node.notifications.push({ action : 'self' }); 
+        }
+        render(data, error, attributes, children) {
+            let {
+                rowclass$header: headerClass,
+                rowstyle$header: headerStyle, 
+                rowclass: rowClass,
+                rowstyle: rowStyle,
+                headField: headField,
+                focusnew: focusnew,
+                haclass: haclass,
+                ...rest
+            } = attributes, curRows = new Set(), activeTab;
+            let head = Core.createElement('div', { class: headerClass, style : headerStyle });
+            let body = Core.createElement('div', { class: rowClass, style : rowStyle });
+            data.forEach(proxy => {
+                let key = proxy.data.key;
+                this.lastRows.has(key) || focusnew && (this.activeTab = key);
+                activeTab = !activeTab || this.activeTab === key ? key : activeTab;
+                curRows.add(key);
+            })
+            this.activeTab = activeTab;
+            this.lastRows = curRows;
+            children.forEach( 
+                (map, row) => {
+                    if(row) {
+                        map.forEach(
+                            (child, field) => {
+                                if( field.name === headField ) {
+                                    head.children.push( Core.createElement('div', {
+                                        onClick: () => this.setActiveTab(row.key),
+                                        ...(row.key === activeTab ? {class: haclass} : {})
+                                    }, Core.createElement('div', child)) ) 
+                                } else {
+                                    row.key === activeTab && body.children.push( Core.createElement('div', child) );
+                                }
+                            }
+                        )
+                    }
+                }
+            )
+            return Core.createElement('div', rest, [head, body]);
+        }
+    }
 })
+    /*
+    return _extend({
+        cname: 'tab-s',
+        render: function(nodes, control, data, errs, attrs, events) {
+            if(!defer(nodes, control, data, errs, attrs, events)) {
+                var rt = this.runtime(control), _this = this;
+                attrs.focusnew && events.forEach(function(e) {  rt.activeTab = e.action == 'a' ? e.d1 : rt.activeTab });
+                CDivR.render.call(this, nodes, control, data, errs, attrs, events);
+                var headAlloc = this.runtime(control).headAlloc.rows[0], headField = rt.fieldData.headField;
+                while(headAlloc.lastChild) headAlloc.removeChild(headAlloc.lastChild);
+                if(headField) {
+                    control.children.forEach(function(fl, modelData){ 
+                        var c = fl.get(headField.field), div, span, pnode = [];
+                        headField.pos.forEach(function(pos){
+                            headAlloc.appendChild(div = document.createElement('div'));
+                            pnode.push(div);
+                            uiUtils.setAttribute(div, 'class', (pos && pos.colclass||'') + (modelData == rt.activeTab && attrs.haclass ? ' ' + attrs.haclass : ''));
+                            uiUtils.setAttribute(div, 'style', pos && pos.colstyle);
+                            uiUtils.addEventListener(div, 'click', function(e) {
+                                if(modelData != rt.activeTab) {
+                                    _this.activeTabChange(control, attrs, modelData);
+                                    rt.activeTab = modelData; 
+                                    control.notifications.push({ action : 'self' }); 
+                                }
+                            }, false);
+                        })
+                        c.component.setParentNode(c, pnode);
+                    });
+                }
+            }
+        },
+        activeTabChange: function(control, attrs, modelData) {},
+        orderFilter: function(control, attrs, newRows) {
+            var l = control.model.listener, rt = this.runtime(control), nrS = new Set(), has, at = rt.activeTrack; rt.activeTrack = [];
+            newRows.forEach(function(r) { nrS.add(r.data); has |= r.data == rt.activeTab });
+            for(var i = 0; at && i < at.length; i++) nrS.has(at[i]) && rt.activeTrack.push(at[i]);
+            has ? rt.activeTrack.push(rt.activeTab) : rt.activeTab = rt.activeTrack[rt.activeTrack.length - 1] || newRows.length && newRows[0].data;
+            return rt.activeTab ? [rt.activeTab]:[];
+        },
+        renderFx: function(nodes, control, data, errs, attrs) {
+            nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
+            this.runtime(control).headAlloc = { rows: [control.ui.appendChild(document.createElement('div'))] };
+        }
+    }, CDivR, _base())
+})*/
+
+/*
 
 define('components/tab-s', ['components/div-r', 'ui/utils'], function(CDivR, uiUtils) {
     return _extend({
