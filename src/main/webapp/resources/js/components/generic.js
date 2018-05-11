@@ -178,7 +178,7 @@ define('components/validation-component', ['dfe-core', 'components/base'], funct
             if( vs.indexOf('notified') != -1 && events[0].action != 'init' ) {
                 return true;
             }
-            return this.$node.lastError || events.some(e => 'validate' === e.action); 
+            return events.some(e => 'validate' === e.action); 
         }
         render(data, error, attributes, children) {
             return !!error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})

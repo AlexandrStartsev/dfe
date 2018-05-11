@@ -718,7 +718,7 @@ define('dfe-core', function() {
             this.schedule = [];
             this.rootElement = rootElement;
             this.listener = (listener || new DfeListener()).For(); 
-            this.nodes = []; //new Set();
+            this.nodes = [];
             this.shouldAnythingRender = false;
             this.pendingLogic = new Set();
         }
@@ -772,10 +772,6 @@ define('dfe-core', function() {
                     DOM.calcRenderStructure(this.nodes[i]);
                 }
                 this.nodes.forEach(node => DOM.render(node));
-                /*let all = [];
-                this.nodes.forEach(node => { this.logic(node), all.push(node) });
-                all.reverse().forEach(node => DOM.calcRenderStructure(node));
-                this.nodes.forEach(node => DOM.render(node));*/
             }
             while(this.schedule.length) this.schedule.shift()(this);
         }
@@ -784,7 +780,6 @@ define('dfe-core', function() {
             let node = new Node(parent, field, unbound, this);
             node.notify(this.initAction);
             this.nodes.push(node);
-            //this.nodes.add(node);
             this.prep$$(node, unbound);
             return node;
         }
@@ -872,29 +867,6 @@ define('dfe-core', function() {
                 }
             })
             this.nodes.splice(cur);
-
-            /*node.children.forEach(fieldMap => fieldMap.forEach( node => this.evict(node)));
-            this.nodes['delete'](node);
-            this.removeErroring(node);
-            let dpMap = this.listener.dpMap;
-            node.dependencies.forEach(dep => {
-                let eleMap = dpMap.get(dep.data);
-                if(eleMap) { 
-                    let ctlSet = eleMap.get(dep.element);
-                    if(ctlSet) {
-                        ctlSet['delete'](node);
-                        ctlSet.size || eleMap['delete'](dep.element);
-                        eleMap.size || dpMap['delete'](dep.data);
-                    }
-                }
-            })
-            node.lastRenderStructure.forEach( 
-                lst => lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst)
-            )
-            node.control.destroy();
-            if( node === this.rootNode ) {
-                this.rootNode = null;
-            }*/
         }
         reconcileChildren(parent, rowProxies) {
             // TODO... 
@@ -928,7 +900,7 @@ define('dfe-core', function() {
                 var events = node.notifications;
                 node.notifications = [];
                 try {
-                    var m = node.model, d = node.field, l = m.listener, v, fg, fv;
+                    var m = node.model, d = node.field, v, fg, fv;
                     //m.events = events;
                     let attrs = node.attributes = typeof d.atr != 'function' ? {} : d.atr.call(node.form, m);
                     node.doValidation = attrs.errorwatch || node.control.doValidation(events, attrs);
@@ -1029,3 +1001,65 @@ define('validation/validator', ['dfe-core', 'validation/component'], function(co
         }
     }
 });*/
+
+
+/*  TODO: idk about this. it s tempting to run delayed response based on promises but then we'll lose $$.required and $$.error features. probably
+
+        acceptLogic(data, error) {
+            error = error === undefined || error === null ? '' : error.toString();
+            if( typeof data !== 'undefined' && !this.evicted && (data !== this.lastData || error !== this.lastError) ) {
+                this.lastData = data;
+                if( this.field.children.length ) {
+                    data = (Array.isArray(data) ? data: typeof data == 'object' ? [data] : []).map(d => typeof d.withListener == 'function' ? d : new JsonProxy(d));
+                    this.runtime.reconcileChildren(this, data);
+                }
+                this.lastError = error;                
+                this.shouldRender = true;
+            }
+        }
+        static acceptError(node, payload) {
+            if(Array.isArray(payload)) {
+                let {data, error} = payload.reduce( (out, cur) => typeof cur === 'object' ? { data: cur.data || out.data, error: cur.error || out.error } : { data: out.data, error: cur && cur.toString() || out.error }, {} )
+                node.acceptLogic( data || node.lastData, error );
+            } else {
+                typeof payload === 'object' ? node.acceptLogic(payload.data, payload.error) : node.acceptLogic(node.lastData, payload);
+            }
+        }
+		
+		logic(node) {
+            if(node.notifications.length && !node.evicted) {
+                var events = node.notifications;
+                node.notifications = [];
+                try {
+                    let attributes = node.attributes = typeof node.field.atr === 'function' && node.field.atr.call(node.form, node.model) || {}
+                    let getter = node.field.get || attributes.get;
+                    let validate = node.field.val || attributes.val;
+                    let doValidation = typeof validate === 'function' && node.control.doValidation(events, attributes);
+                    let result = typeof getter === 'function' ? getter.call(node.form, node.model, events) : [node.model];
+                    let error;
+                    if(attributes.errorwatch) {
+                        let { target: target, accept: reducer } = attributes.errorwatch;
+                        error = node.model.errorwatch(target, reducer);
+                    } else {
+                        error = doValidation && typeof validate === 'function' && validate.call(node.form, node.model, events) || '';
+                    }
+                    if( result instanceof Promise ) {
+                        this.pendingLogic.add(result);
+                        result.then( data => node.acceptLogic(data, node.lastError), node.acceptError ).then(() => this.pendingLogic.delete(result));
+                    } else {
+                        node.acceptLogic(result, node.lastError);
+                    }
+                    if( error instanceof Promise ) {
+                        this.pendingLogic.add(error);
+                        error.then(node.acceptError, node.acceptError).then(() => this.pendingLogic.delete(error));
+                    } else {
+                        node.acceptError(error);
+                    }
+                } catch(e) { 
+                    node.acceptError(e.message);
+                    console.error('Unhandled error', node.field, e.message, e.stack); 
+                }
+            }
+        }
+
+*/
