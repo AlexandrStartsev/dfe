@@ -307,6 +307,7 @@ define('dfe-core', function() {
             let info = attributes.immediateNodeInfo;
             return { type: type, key: attributes.field.name, attributes: typeof children === 'function' ? info.map(children) : info, childNode: attributes, children: [] }
         } else {
+            // attributes may have get, set, val, ref and key ... and bunch of stuff meant to put in dom
             return { type: type, ref: attributes.ref, key: attributes.key||type, attributes: [attributes], children: children||[] }
         }
     }
@@ -366,13 +367,11 @@ define('dfe-core', function() {
                 domElement.disabled = !!newAttributes.disabled;
             }
             switch(type) {
-                case 'label':
-                    newAttributes.text == oldAttributes.text || (domElement.innerText = newAttributes.text);
-                    break;
                 case '#text':
                     newAttributes.text == oldAttributes.text || (domElement.nodeValue = newAttributes.text);
                     break;
                 case 'input':
+                case 'textarea':
                     newAttributes.type == oldAttributes.type || ( domElement.type = newAttributes.type );
                     if(newAttributes.type !== 'checkbox' && newAttributes.type !== 'radio') {
                         if(domElement.value != newAttributes.value) {
@@ -390,6 +389,9 @@ define('dfe-core', function() {
                         domElement.checked = newAttributes.checked;
                     }
                     break ;
+                case 'label':
+                    newAttributes.text == oldAttributes.text || (domElement.innerText = newAttributes.text);
+                    break;
                 case 'select':
                     newAttributes.selectedIndex == domElement.selectedIndex || (domElement.selectedIndex = newAttributes.selectedIndex);
                     break ;
@@ -412,18 +414,23 @@ define('dfe-core', function() {
                         (newAttributes.target === undefined ? domElement.removeAttribute('target') : domElement.setAttribute('target', newAttributes.target));
                     }
                     break ;
+                case 'iframe':
+                    if(newAttributes.src != oldAttributes.src) {
+                        (newAttributes.src === undefined ? domElement.removeAttribute('src') : domElement.setAttribute('src', newAttributes.src));
+                    }
+                    break ;
             }
         }
         
         static applyInSingleNode(node, parentDOMElement, renderStructure, lastRenderStructure) {
-            if(renderStructure === lastRenderStructure) {
-                let tail = parentDOMElement.firstChild;
-                lastRenderStructure.forEach(
-                    lst => lst.dom.forEach(e => tail = tail === e ? tail.nextSibling : (parentDOMElement.insertBefore(e, tail), tail))
-                )
-                return ;
-            }
             if(parentDOMElement) {
+                if(renderStructure === lastRenderStructure) {
+                    let tail = parentDOMElement.firstChild;
+                    lastRenderStructure.forEach(
+                        lst => lst.dom.forEach(e => tail = tail === e ? tail.nextSibling : (parentDOMElement.insertBefore(e, tail), tail))
+                    )
+                    return ;
+                }
                 let tail = parentDOMElement.firstChild, info, keyMap;
                 if( renderStructure.length > 1 && lastRenderStructure.length > 1 && typeof lastRenderStructure[0].key !== 'undefined' ) {
                     keyMap = new Map();
@@ -448,6 +455,7 @@ define('dfe-core', function() {
                     let lst = keyMap ? keyMap[rs] : lastRenderStructure[lrs];
                     let use = lst && !lst.used && st.type === lst.type && st.childNode === lst.childNode; // && lst.dom ?
                     if( use ) {
+                        // TODO: maybe we can do better. maybe we can add needed / remove excessive nodes instead of claiming all existing nodes unusable 
                         lst.used = use = !st.childNode || st.childNode.immediateNodeInfo.length === lst.dom.length;
                         lrs++;
                     }
@@ -484,7 +492,7 @@ define('dfe-core', function() {
 
         static applyDOMChanges(node, parentDOMElements, renderStructure, lastRenderStructure) {
             let lrs = 0;
-            if( parentDOMElements != 0 ) {
+            //if( parentDOMElements != 0 ) { // otherwise make sure if child needs zero nodes it gets to attachedChildNodes and gets parentDOMElements updated
                 for(let rs = 0, ps = 0; rs < renderStructure.length; rs++) {
                     let st = renderStructure[rs]; 
                     let lst = lastRenderStructure[lrs];
@@ -505,7 +513,7 @@ define('dfe-core', function() {
                     }         
                     use && lrs++;
                 }
-            }
+            //}
             while(lrs < lastRenderStructure.length) {
                 let lst = lastRenderStructure[lrs++];
                 lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst);
@@ -640,7 +648,13 @@ define('dfe-core', function() {
             }
             return field;
         }
-        static fields (children) { return children||[] }
+        static fields (children) { 
+            return children||[] 
+        }
+        render(...params) {
+            let sub = super.render(...params);
+            return this.$node.parent !== null ? sub : [sub.map(child => createElement('div', child))];
+        }
     }
     
     class Node {
@@ -700,9 +714,9 @@ define('dfe-core', function() {
     }
     
 	class Runtime {
-        constructor(rootElements, listener) {
+        constructor(rootElement, listener) {
             this.schedule = [];
-            this.rootElements = Array.isArray(rootElements) ? rootElements : [rootElements];
+            this.rootElement = rootElement;
             this.listener = (listener || new DfeListener()).For(); 
             this.nodes = []; //new Set();
             this.shouldAnythingRender = false;
@@ -731,12 +745,22 @@ define('dfe-core', function() {
 	        this.initAction = {action: initAction||'init'};
             if( this.rootProxy && this.formClass ) {
                 let node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
-                node.parentDOMElements = this.rootElements;
+                node.parentDOMElements = this.rootElement ? [this.rootElement] : [];
 	            this.processor = setInterval(() => this.processInterceptors(), 50);
                 this.processInterceptors();
             }
             return this;
 	    }
+        setRoot(rootElement) {
+            if(this.rootElement !== rootElement) {
+                this.rootElement = rootElement;
+                let node = this.nodes[0];
+                if( node ) {
+                    node.parentDOMElements = this.rootElement ? [this.rootElement] : [];
+                    node.update();
+                }
+            }
+        }
         processInterceptors() {
             if(this.shouldAnythingRender) {
                 this.shouldAnythingRender = false;
@@ -957,7 +981,7 @@ define('dfe-core', function() {
         static startRuntime(arg) {
             var m = arg.model, j = m instanceof JsonProxy || typeof m.shadow == 'function', listener = j && m.listener || arg.listener ||new DfeListener(), runtime = new Runtime(arg.node, listener);
             for(var v in arg.params) runtime[v] = arg.params[v];
-            j ? runtime.model_proxy = m.withListener(runtime.listener.For()) : runtime.setModel(m);
+            j ? runtime.rootProxy = m.withListener(runtime.listener.For()) : runtime.setModel(m);
             runtime.setDfeForm(arg.form).restart(arg.initAction);
             arg.ready && arg.ready(runtime, dfe, arg.model);
             return runtime;

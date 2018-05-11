@@ -25,7 +25,7 @@
                 require(['forms/test', 'dfe-core', 'ui/jquery'], function(form, core, $){
                     $.get('/test/test-arf-2.json', function(arf) { 
                         arf.policy[0].cmau[0].location.shift();
-                        core.startRuntime({ model : arf, node: [document.getElementById('dfe'), document.getElementById('dfe2')], form: form });
+                        core.startRuntime({ model : arf, node: document.getElementById('dfe'), form: form });
                     })
                     
                    /* require(['babel'], function(babel) {

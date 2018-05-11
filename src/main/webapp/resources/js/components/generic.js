@@ -155,7 +155,7 @@ define('components/labeled-component', ['dfe-core', 'components/base'], function
             children.forEach(map => map.forEach(child => firstChild || (firstChild = child) ));
             return [[ 
                 attributes.html ? Core.createElement('span', attributes) : attributes.text,
-                error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
+                !!error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
             ], firstChild]
         }
         renderDefault() {
@@ -181,7 +181,27 @@ define('components/validation-component', ['dfe-core', 'components/base'], funct
             return this.$node.lastError || events.some(e => 'validate' === e.action); 
         }
         render(data, error, attributes, children) {
-            return error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
+            return !!error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
+        }
+        splitAttributes(attributes, error) {
+            let ret = {}, hideError = attributes.hideError;
+            if( !!error && !hideError && attributes.eclass ) {
+                ret.class = (attributes.class ? attributes.class + ' ' : '') + attributes.eclass;
+                hideError = true;
+                delete attributes.class;
+            }
+            delete attributes.eclass;
+            delete attributes.hideError;
+            Object.getOwnPropertyNames(attributes).forEach( 
+                a => { 
+                    ret[a] = attributes[a]; 
+                    delete attributes[a]; 
+                }
+            )
+            if( hideError ) {
+                attributes.hideError = true ;
+            }
+            return ret;
         }
     }
 })
@@ -283,11 +303,11 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
             return data;
         }
         render(data, error, attributes, children) {
-            let { formatting: format, pattern: pattern, transform: transform, trigger: trigger, hideError: hideError, ...rest } = attributes;
+            let { formatting: format, pattern: pattern, transform: transform, trigger: trigger, ...rest } = attributes;
             Object.assign(this, {format: format, pattern: pattern, transform: transform, trigger: trigger});
             return [[
-                Core.createElement( 'input', { ...rest, ...this.events, value: this.getValueProcessed(data.toString()) }), 
-                super.render(null, error, {hideError: hideError}) 
+                Core.createElement( 'input', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }), 
+                typeof eclass !== 'string' && super.render(null, error, rest)
             ]]
         }
     }
@@ -335,10 +355,10 @@ define('components/editbox-$', ['components/editbox'], function(Editbox) {
 define('components/button', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
     return class Button extends ValidationComponent {
         render(data, error, attributes, children) {
-            let value = data.toString(), {hideError: hideError, ...rest} = attributes;
+            let value = data.toString(), {...rest} = attributes;
             return [[
-                Core.createElement('input', { ...rest, value: value, type: 'button', onClick: () => this.store(value, 'click') }),
-                super.render(null, error, {hideError: hideError})
+                Core.createElement('input', { ...this.splitAttributes(rest, error), value: value, type: 'button', onClick: () => this.store(value, 'click') }),
+                super.render(null, error, rest)
             ]]
         }
     }   
@@ -350,13 +370,13 @@ define('components/checkbox', ['dfe-core', 'components/validation-component'], f
             if( Array.isArray(data) ) {
                 data = data[0];
             }
-            let {hideError: hideError, ...rest} = attributes;
+            let {...rest} = attributes;
             let checked = data && (typeof data === 'object' ? data.checked && data.checked.toString().match(/Y|y/) : data.toString().match(/Y|y/));
             let text = typeof data === 'object' && data.text;
             return [[
-                Core.createElement('input', { ...rest, checked: !!checked, type: 'checkbox', onChange: e => this.store(e.target.checked ? 'Y' : 'N') }),
+                Core.createElement('input', { ...this.splitAttributes(rest, error), checked: !!checked, type: 'checkbox', onChange: e => this.store(e.target.checked ? 'Y' : 'N') }),
                 text,
-                super.render(null, error, {hideError: hideError})
+                super.render(null, error, rest)
             ]]
         }
     }
@@ -368,7 +388,7 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
     }
     return class Dropdown extends ValidationComponent {
         render(data, error, attributes, children) {
-            let {'default': def, hideError: hideError, ...rest} = attributes;
+            let {'default': def, ...rest} = attributes;
             let options = def ? [{text: 'Please select...', value: def}] : [];
             let selectedIndex = 0;
             if(Array.isArray(data.items)) {
@@ -380,10 +400,10 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
             return [[
                 Core.createElement(
                     'select', 
-                    { ...rest, selectedIndex: selectedIndex, onChange: e => this.store(options[e.target.selectedIndex].value) },
+                    { ...this.splitAttributes(rest, error), selectedIndex: selectedIndex, onChange: e => this.store(options[e.target.selectedIndex].value) },
                     options.map( opt => Core.createElement('option', { text: opt.text }) )
                 ),
-                super.render(null, error, {hideError: hideError})
+                super.render(null, error, rest)
             ]]
         }
         renderDefault() {
@@ -573,7 +593,7 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
             this.defaultName = 'Radiolist#' + (++radioNameCounter);
         }
         render(data, error, attributes, children) {
-            let { orientation: orientation, hideError: hideError, ...rest } = attributes;
+            let { orientation: orientation, ...rest } = attributes;
             let normalized = (Array.isArray(data) ? data[0] : data)||'N';
             if(typeof normalized === 'string') {
                 normalized = {value: data, items: [{value :'Y', description : 'Yes'}, {value :'N', description : 'No'}]}
@@ -583,7 +603,7 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
                     item => [
                         Core.createElement('input', {
                             name: this.defaultName,
-                            ...rest, 
+                            ...this.splitAttributes(rest, error), 
                             type: 'radio', 
                             checked: testChoice( normalized.value, item.value ), 
                             onChange: () => this.store(item.value)
@@ -591,51 +611,172 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
                         item.description || item.value.toString(),
                         orientation === 'vertical' && Core.createElement('br') 
                     ]
-                )), super.render(null, error, {hideError: hideError})
+                )), super.render(null, error, rest)
             ]]
         }
     }
 }) 
 
-/*
-
-define('components/iframe', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'iframe',
-        render: function (nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('iframe'))._dfe_ = control;
-                    this.setEvents(control.ui, control, data, errs, attrs);
-                }
-                uiUtils.setAttribute(control.ui, 'src', data.toString());
-                this.setAttributes(control, errs, attrs);
-                this.appendError(control, nodes[0], errs, attrs);
-            }
+define('components/iframe', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
+    return class Iframe extends BaseComponent {
+        render(data, error, attributes, children) {
+            return Core.createElement('iframe', { src: data.toString(), ...attributes });
         }
-    }, Component, _base())
-})    
+    }
+}) 
 
-define('components/textarea', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
-    return _extend({
-        cname: 'textarea',
-        render: function (nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('textarea'))._dfe_ = control;
-                    function store() { delete control.inputLock; control.component.store(control, control.ui.value);  }
-                    uiUtils.addEventListener(control.ui, 'keydown', function() { control.inputLock = true; })
-                    uiUtils.addEventListener(control.ui, attrs.trigger||'keyup', store );
-                    attrs.trigger == 'change' || uiUtils.addEventListener(control.ui, 'change', store);
-                    this.setEvents(control.ui, control, data, errs, attrs);
-                }
-                if(control.ui.value != data && !control.inputLock) control.ui.value = data;
-                this.setAttributes(control, errs, attrs);
-                this.appendError(control, nodes[0], errs, attrs);
-            }
+define('components/textarea', ['dfe-core', 'components/editbox', 'components/validation-component'], function(Core, Editbox, ValidationComponent) {
+    return class Textarea extends Editbox {
+        render(data, error, attributes, children) {
+            let { formatting: format, pattern: pattern, transform: transform, trigger: trigger, ...rest } = attributes;
+            Object.assign(this, {format: format, pattern: pattern, transform: transform, trigger: trigger});
+            return [[
+                Core.createElement('textarea', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }), 
+                ValidationComponent.prototype.render.call(this, null, error, rest)
+            ]]
         }
-    }, CEditbox, _base())
+    }
 })
+
+define('components/dfe-runtime', ['dfe-core'], function(Core) {
+    return class ChildRuntime extends Core.Component {
+        render(data, error, attributes, children) {
+            // TODO ... 
+            let { form: formName, editTarget: editTarget, ...rest } = attributes;
+            let model = (Array.isArray(data) ? data[0] : data) || {}
+            if( this.formName !== formName ) {
+                this.runtime && this.runtime.shutdown();
+                require([formName], 
+                    formClass => this.runtime = Core.startRuntime({
+                        params: {parentControl: null}, 
+                        form: formClass, 
+                        model: model, 
+                        node: this.domElement
+                    })
+                )
+            }
+            if( this.domElement ) {
+                element.setAttribute('dfe-form', formName);
+                editTarget ? element.setAttribute('dfe-edit-target', '') : element.removeAttribute('dfe-edit-target');
+            }
+            return Core.createElement('div', { ...rest, ref: element => {
+                this.domElement = element;
+                element.setAttribute('dfe-form', formName);
+                if( editTarget ) {
+                    element.setAttribute('dfe-edit-target', '');
+                }
+                if( this.runtime ) {
+                    this.runtime.setRoot(element);
+                }
+            }})
+        }
+        renderDefault() {
+            return [undefined]
+        }
+        destroy() {
+            this.runtime && this.runtime.shutdown();
+            super.destroy();
+        }
+    }
+})
+
+define('components/div-button', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
+    return class DivButton extends ValidationComponent {
+        render(data, error, attributes, children) {
+            let value = data.toString(), {...rest} = attributes;
+            return (
+                Core.createElement('div', { ...this.splitAttributes(rest, error), onClick: () => this.store(value, 'click') }, [
+                    Core.createElement('label', { class: 'div-button-text', text: value }),
+                    super.render(null, error, rest)
+                ])
+            )
+        }
+    }   
+})
+
+define('components/multioption', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
+    return class Multioption extends ValidationComponent {
+        render(data, error, attributes, children) {
+            let value = data.value.toString(), {...rest} = attributes;
+            return (
+                Core.createElement('div', { ...this.splitAttributes(rest, error) }, [
+                    ...Array.prototype.concat.apply([], data.options.map(
+                        option => [
+                            Core.createElement('input', { 
+                                type: 'checkbox', 
+                                checked: option === value, 
+                                onChange: e => this.store(e.target.checked ? option : []) 
+                            }),
+                            option
+                        ]
+                    )),
+                    super.render(null, error, rest)
+                ])
+            )
+        }
+    }   
+})
+
+define('components/labeled', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
+    return class Labeled extends ValidationComponent {
+        constructor(node) {
+            super(node);
+            this.renderComponent = this.getComponent().prototype.render.bind(new (this.getComponent())(this.$node));
+        }
+        render(data, error, attributes, children) {
+            let { cclass: cclass, cstyle: cstyle, text: text, html: html, hideError: hideError, ...rest } = attributes;
+            return [[
+                html || cclass || cstyle ? Core.createElement('span', { class: cclass, style: cstyle, text: text, html: html }) : text,
+                super.render(null, error, { hideError: hideError })
+            ], ...this.renderComponent(data, null, rest, children) ]
+        }
+        renderDefault() {
+            return [undefined, undefined]
+        }
+    }
+})
+
+define('components/c-checkbox', ['dfe-core', 'components/checkbox', 'components/labeled'], function(Core, Checkbox, Labeled) {
+    return class LabeledCheckbox extends Labeled {
+        getComponent() {
+            return Checkbox;
+        }
+    }
+})
+
+define('components/c-editbox', ['dfe-core', 'components/editbox', 'components/labeled'], function(Core, Editbox, Labeled) {
+    return class LabeledEditbox extends Labeled {
+        getComponent() {
+            return Editbox;
+        }
+    }
+})
+
+define('components/c-dropdown', ['dfe-core', 'components/dropdown', 'components/labeled'], function(Core, Dropdown, Labeled) {
+    return class LabeledDropdown extends Labeled {
+        getComponent() {
+            return Dropdown;
+        }
+    }
+})
+
+define('components/c-editbox-$', ['dfe-core', 'components/editbox-$', 'components/labeled'], function(Core, EditboxMoney, Labeled) {
+    return class LabeledEditboxMoney extends Labeled {
+        getComponent() {
+            return EditboxMoney;
+        }
+    }
+})
+
+define('components/c-radiolist', ['dfe-core', 'components/radiolist', 'components/labeled'], function(Core, Radiolist, Labeled) {
+    return class LabeledRadiolist extends Labeled {
+        getComponent() {
+            return Radiolist;
+        }
+    }
+})
+
+/*  TODO: 
 
 define('components/editbox-P', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
     return _extend({
@@ -756,214 +897,4 @@ define('components/editbox-P', ['components/editbox', 'ui/utils'], function(CEdi
         }
     }, CEditbox, _base())
 })
-
-define('components/div-button', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'div-button',
-        render: function (nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-                    control.ui.appendChild(control.ui_text = document.createElement('label'));
-                    control.ui.appendChild(control.ui_error = document.createElement('label'));
-                    control.ui_text.setAttribute('class', 'div-button-text');
-                    control.ui_error.setAttribute('class', attrs.eclass || 'div-button-error'); 
-                    uiUtils.addEventListener(control.ui, 'click', function(e){control.component.store(control, data)});
-                    this.setEvents(control.ui, control, data, errs, attrs);
-                }
-                var e = errs ? 'error' : '';
-                if(control.ui_text.innerHTML != data) control.ui_text.innerHTML = data;
-                if(control.ui_error.innerHTML != e) control.ui_error.innerHTML = e;
-                this.setAttributes(control, errs, attrs);
-            }
-        }
-    }, Component, _base())
-})
-
-define('components/multioption', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'multioption',
-        render: function (nodes, control, data, errs, attrs, events) {
-            data.value = Array.isArray(data.value) ? data.value[0] : data.value;
-            control.ui && this.emptyUI(control);
-            if( data && Array.isArray(data.options) ) {
-                (control.ui = document.createElement('div'))._dfe_ = control;
-                this.setAttributes(control, errs, attrs);
-                this.setEvents(control.ui, control, data, errs, attrs);
-                var select = new Set(), d, c, cc = [];
-                (typeof data.value == 'string' ? data.value.split(';') : []).forEach(function(a) { select.add(a) });
-                data.options.forEach(function (o) {
-                    control.ui.appendChild(d = document.createElement('div'));
-                    attrs.rowclass && d.setAttribute('class', attrs.rowclass);
-                    attrs.rowstyle && d.setAttribute('style', attrs.rowstyle);
-                    c = document.createElement('input');
-                    c.setAttribute('type', 'checkbox');
-                    d.appendChild(c);
-                    cc.push(c);
-                    c.checked = select.has(c.value = o.value||o);
-                    uiUtils.addEventListener(c, 'change', function(e){
-                        control.component.store(control, cc.map(function(c) {return c.checked ? c.value : -1}).filter(function(v) {return v != -1}).join(';'));
-                    }, true);
-                    d.appendChild(c = document.createElement('label'));
-                    c.setAttribute('style', 'align-self: center;');
-                    c.innerText = (o.description || o.value || o);
-                }, this);
-                nodes && nodes[0].appendChild(control.ui);
-            }
-        }
-    }, Component, _base())
-})
-
-define('components/div-button-x', ['components/div-button', 'ui/utils'], function(CDivButton, uiUtils) {
-    return _extend({ 
-        cname: 'div-button-x',
-        render: function (nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                CDivButton.render.call(this, nodes, control, data, errs, attrs, events);
-                control.ui.style.position = 'relative';
-                if(!control.ui_x) {
-                    control.ui_x = document.createElement('input')
-                    control.ui_x.value = 'x';
-                    control.ui_x.setAttribute('type', 'button');
-                    control.ui_x.setAttribute('class', 'div-button-x');
-                    control.ui.appendChild(control.ui_x);
-                    uiUtils.addEventListener(control.ui_x, 'click', function(e){ e.stopImmediatePropagation(); control.component.store(control, 'x') }, true);
-                    this.setEvents(control.ui, control, data, errs, attrs);        
-                }
-                control.ui_x.style.visibility = (attrs.ta && !attrs.ta.visible) ? 'hidden' : 'visible';
-            }
-        }
-    }, CDivButton, _base())
-})
-
-define('components/dfe-runtime', ['components/component', 'dfe-core', 'ui/utils'], function(Component, core, uiUtils) {
-    var map = new Map();
-    function load(f, p, c, d, e, a, t) { 
-        var fform = map.get(f);
-        fform||map.set(f, fform=require(['forms/'+f], function(form){ return fform.formComponent = form }));
-        var k = c._deferred = fform.formComponent && p ? 0 : function(p) {c.component.render(p, c, d, e, a, t)} 
-        if(!fform.formComponent) {
-            fform.then(function(){
-                c._deferred == k && c._deferred(p);
-            })
-        }
-        return fform.formComponent;
-    }
-    return _extend({
-        purge: function (control) { 
-            var rt = this.runtime(control);
-            rt.runtime && rt.runtime.shutdown();
-            Component.purge.call(this,control); 
-        },
-        cname: 'dfe-runtime',
-        render: function(nodes, control, data, errs, attrs, events) {
-            var form = typeof attrs.form == 'object' ? attrs.form : load(attrs.form, nodes, control, data, errs, attrs, events), rt = this.runtime(control);
-            Array.isArray(data)&&(data=data[0]);
-            if(nodes && form) {
-                form = form.form;
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('div'))._dfe_ = control;
-                    if( form.dfe.length == 1 && form.dfe[0].component.slots == 1)
-                        rt.nodes = [control.ui];
-                    else
-                        form.dfe.forEach(function(dfe){
-                            for(var i = 0; i < dfe.component.slots; i++)
-                                rt.nodes.push(control.ui.appendChild(document.createElement('div')));
-                        })
-                }
-                uiUtils.setAttribute( control.ui, "dfe-form", form.name);
-                uiUtils.setAttribute( control.ui, "dfe-edit-target", attrs.editTarget? "" : undefined);
-                this.setAttributes(control, errs, attrs);
-                rt.runtime && rt.runtime.shutdown();
-                control.ui._dfe_runtime = rt.runtime = core.startRuntime({params: {parentControl: control}, form: form, model: data||{}, node: rt.nodes});
-            }
-        }
-    }, Component, _base());
-})
-
-define('components/labeled-component', ['components/component', 'ui/utils'], function(Component, uiUtils) {
-    return _extend({
-        cname: 'labeled-component',
-        slots: 2,
-        renderingComponent: null,
-        attachUI: function (control, nodes) {
-            this.renderingComponent.attachUI(control, nodes.slice(1));
-            control.captionUi && nodes[0].appendChild(control.captionUi); 
-            control.captureError && control.errorUi && nodes[0].appendChild(control.errorUi);
-        },
-        detachUI: function (control) {
-            this.renderingComponent.detachUI(control);
-            uiUtils.removeNode(control.captionUi);
-        },
-        emptyUI: function (control) {
-            this.renderingComponent.emptyUI(control);
-            uiUtils.removeNode(control.captionUi);
-            delete control.captionUi; 
-        },
-        purge: function (control) {
-            this.renderingComponent.purge(control);
-            uiUtils.removeNode(control.captionUi);
-            delete control.captionUi; 
-        },
-        render: function(nodes, control, data, errs, attrs, events) { 
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                if(!control.captionUi) {
-                    nodes[0].appendChild(control.captionUi = document.createElement('label'))._dfe_ = control;
-                }
-                attrs.html ? (control.captionUi.innerHTML = attrs.text) : (control.captionUi.innerText = attrs.text);
-                uiUtils.setAttribute(control.captionUi, 'style', attrs.cstyle);
-                var ce = attrs.captureError || this.captureError;
-                if(control.captureError = typeof ce != 'function' || ce(data, errs, attrs)) {
-                    this.renderingComponent.render(nodes.slice(1), control, data, 0, attrs, events);
-                    this.appendError(control, nodes[0], errs, attrs);
-                } else {
-                    this.renderingComponent.render(nodes.slice(1), control, data, errs, attrs, events);
-                }
-            }
-        }
-    }, Component, _base());
-})
-
-define('components/c-checkbox', ['components/labeled-component', 'components/checkbox', 'ui/utils'], function(DWC, Checkbox, uiUtils) {
-    return _extend({
-        cname: 'c-checkbox',
-        renderingComponent: Checkbox,
-    }, DWC, _base())
-})    
-
-define('components/c-dropdown', ['components/labeled-component', 'components/dropdown', 'ui/utils'], function(DWC, Dropdown, uiUtils) { 	
-    return _extend({
-        cname: 'c-dropdown',
-        renderingComponent: Dropdown,
-    }, DWC, _base())
-})
-
-define('components/c-editbox', ['components/labeled-component', 'components/editbox', 'ui/utils'], function(DWC, Editbox, uiUtils) {
-    return _extend({
-        cname: 'c-editbox',
-        captureError: function(data, errs, attrs) { return !attrs.eclass },
-        renderingComponent: Editbox,
-    }, DWC, _base())
-})  
-
-define('components/c-editbox-$', ['components/labeled-component', 'components/editbox-$', 'ui/utils'], function(DWC, Editbox$, uiUtils) {
-    return _extend({
-        cname: 'c-editbox-$',
-        renderingComponent: Editbox$,
-    }, DWC, _base())
-})     
-
-define('components/c-radiolist', ['components/labeled-component', 'components/radiolist', 'ui/utils'], function(DWC, Radiolist, uiUtils) {
-    return _extend({
-        cname: 'c-radiolist',
-        renderingComponent: Radiolist,
-    }, DWC, _base())
-})
-
-define('components/c-switch', ['components/labeled-component', 'components/switch', 'ui/utils'], function(DWC, Switch, uiUtils) {
-    return _extend({
-        cname: 'c-switch',
-        renderingComponent: Switch,
-    }, DWC, _base())
-})   
 */
