@@ -404,7 +404,7 @@ define('dfe-core', function() {
                     break ;
             }
         }
-                
+        
         static batchRender(nodes) {
             nodes.forEach(node => node.render());
         }
@@ -436,6 +436,7 @@ define('dfe-core', function() {
             }
             return null;
         }
+        
         static makeKeyMap(renderStructure, lastRenderStructure) {
             if( renderStructure.length > 1 && lastRenderStructure.length > 1 && typeof lastRenderStructure[0].key !== 'undefined' ) {
                 let keyMap = new Map(), info;
@@ -656,8 +657,8 @@ define('dfe-core', function() {
                     if(prev !== st.dom) {
                         prev = domElement.insertBefore(st.dom, prev);
                     }
-                    DOM.reconcileAttributes( st.type, st.dom, st.attributes, use ? lst.attributes : {} );
                     st.children = this.applyInPlace(st.dom, st.children, use ? lst.children : []);
+                    DOM.reconcileAttributes( st.type, st.dom, st.attributes, use ? lst.attributes : {} );
                     use || st.attributes.ref && st.attributes.ref(st.dom);
                 }
             }

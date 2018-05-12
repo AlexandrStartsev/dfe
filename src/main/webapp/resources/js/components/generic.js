@@ -52,8 +52,37 @@ define('components/div', ['dfe-core', 'components/base'], function(Core, BaseCom
     }
 })
 
-define('components/table', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
+define('components/inline-rows', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
+    return class InlineRows extends BaseComponent {         
+        render(data, error, attributes, children) {
+            let { element: cellElement, singles: singles } = attributes;
+            let rows = [], current;
+            if(['div', 'span', 'td'].indexOf(cellElement) === -1) {
+                cellElement = 'td';
+            }
+            children.forEach( 
+                (map, row) => map.forEach( 
+                    child => {
+                        let ii = child.field.pos && child.field.pos[0];
+                        if( current === undefined || singles || ii && ii.newRow ) {
+                            rows.push( current = [] );
+                        }
+                        current.push( Core.createElement( cellElement, child ) );
+                    }
+                )
+            )
+            return rows;
+        }
+    }
+})
+
+define('components/table', ['dfe-core', 'components/base', 'components/inline-rows'], function(Core, BaseComponent, InlineRows) {
     return class Table extends BaseComponent {
+        constructor(node){
+            super(node);
+            this.allColumns = node.field.children;
+            this.form = node.form;
+        }
         render(data, error, attributes, children) {
             let {
                 rowclass$header: headerClass,
@@ -61,7 +90,8 @@ define('components/table', ['dfe-core', 'components/base'], function(Core, BaseC
                 rowclass$footer: footerClass,
                 rowstyle$footer: footerStyle,
                 rowclass: rowClass,
-                rowstyle: rowStyle,
+                rowstyle: rowStyle, 
+                singles: singles,
                 skip: skip,
                 colOrder: colOrder,
                 filter: filter,
@@ -70,16 +100,16 @@ define('components/table', ['dfe-core', 'components/base'], function(Core, BaseC
             } = attributes;
             data = this.orderFilterRows(data, filter, order).map(row => row.data);
             let columns = this.orderFilterFields(skip, colOrder);
-            let head = this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'tr', 'th' );
-            let foot = this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'tr', 'td' );
-            let body = this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'tr', 'td' );
+            let head = this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'tr', 'th', singles );
+            let foot = this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'tr', 'td', singles );
+            let body = this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'tr', 'td', singles );
             return Core.createElement('table', rest, [
                 head.length && Core.createElement('thead', {}, head),
                 body.length && Core.createElement('tbody', {}, body),
                 foot.length && Core.createElement('tfoot', {}, foot)
             ]);
         }
-        makeRows( orderedFilteredColumns, orderedFilteredRows, children, clazz, rowAttributes, rowElement, cellElement) {
+        makeRows( orderedFilteredColumns, orderedFilteredRows, children, clazz, rowAttributes, rowElement, cellElement, singles) {
             let rows = [];
             orderedFilteredRows.forEach(
                 row => {
@@ -90,11 +120,16 @@ define('components/table', ['dfe-core', 'components/base'], function(Core, BaseC
                                 if((field.class||'') === clazz) {
                                     let child = map.get(field);
                                     if( child ) {
-                                        let ii = child.field.pos && child.field.pos[0];
-                                        if( current === undefined || ii && ii.newRow ) {
-                                            rows.push( current = Core.createElement(rowElement, { key: row ? row.key : 0, ...rowAttributes }));
+                                        if( child.control instanceof InlineRows ) {
+                                            rows.push( Core.createElement( rowElement,  child,  pos => ({ ...pos, ...rowAttributes }) ));
+                                            current = undefined;
+                                        } else {
+                                            let ii = child.field.pos && child.field.pos[0];
+                                            if( current === undefined || singles || ii && ii.newRow ) {
+                                                rows.push( current = Core.createElement(rowElement, { key: row ? row.key : 0, ...rowAttributes }));
+                                            }
+                                            current.children.push( Core.createElement( cellElement, child ) );
                                         }
-                                        current.children.push( Core.createElement( cellElement, child ) );
                                     }
                                 }
                             }
@@ -105,9 +140,8 @@ define('components/table', ['dfe-core', 'components/base'], function(Core, BaseC
             return rows;
         }
         orderFilterFields(skip, colOrder) {
-            let field = this.$node.field, form = this.$node.form;
-            let children = skip ? field.children.filter( field => typeof skip === 'function' ? !skip.call(form, field.name) : skip.indexOf(field.name) === -1 ) : field.children;
-            return typeof colOrder === 'function' ? children.sort((c1, c2) => colOrder.call(form, c1.name, c2.name) ) : children;
+            let columns = skip ? this.allColumns.filter( columns => typeof skip === 'function' ? !skip.call(this.form, columns.name) : skip.indexOf(columns.name) === -1 ) : this.allColumns;
+            return typeof colOrder === 'function' ? columns.sort((c1, c2) => colOrder.call(this.form, c1.name, c2.name) ) : columns;
         }
         orderFilterRows(allRows, filter, order) {
             if(typeof filter == 'function') {
@@ -128,6 +162,7 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
                 rowstyle$footer: footerStyle,
                 rowclass: rowClass,
                 rowstyle: rowStyle,
+                singles: singles,
                 skip: skip,
                 colOrder: colOrder,
                 filter: filter,
@@ -137,9 +172,9 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
             data = this.orderFilterRows(data, filter, order).map(row => row.data);
             let columns = this.orderFilterFields(skip, colOrder);
             return Core.createElement('div', rest, [
-                ...this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'div', 'div' ), 
-                ...this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'div', 'div' ),
-                ...this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'div', 'div' )
+                ...this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'div', 'div', singles ), 
+                ...this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'div', 'div', singles ),
+                ...this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'div', 'div', singles )
             ]);
         }
     }
@@ -493,6 +528,7 @@ define('components/tab-d', ['dfe-core', 'components/base'], function(Core, BaseC
         constructor(node){
             super(node);
             this.handler = new ActiveTabHandler(this);
+            this.allColumns = node.field.children;
         }
         render(data, error, attributes, children) {
             let {
@@ -511,7 +547,7 @@ define('components/tab-d', ['dfe-core', 'components/base'], function(Core, BaseC
             
             let head = Core.createElement('div', { class: headerClass, style : headerStyle });
             let body = Core.createElement('div', { class: rowClass, style : rowStyle });
-            let headField = this.$node.field.children.filter(field => !field.class).pop();
+            let headField = this.allColumns.filter(field => !field.class).pop();
             data.forEach(
                 model => {
                     let child = children.get(model.data).get(headField), isActive = (useHandler ? this.handler.activeTab : activeTab)(model);
@@ -712,7 +748,7 @@ define('components/labeled', ['dfe-core', 'components/validation-component'], fu
     return class Labeled extends ValidationComponent {
         constructor(node) {
             super(node);
-            this.renderComponent = this.getComponent().prototype.render.bind(new (this.getComponent())(this.$node));
+            this.renderComponent = this.getComponent().prototype.render.bind(new (this.getComponent())(node));
         }
         render(data, error, attributes, children) {
             let { cclass: cclass, cstyle: cstyle, text: text, html: html, hideError: hideError, ...rest } = attributes;

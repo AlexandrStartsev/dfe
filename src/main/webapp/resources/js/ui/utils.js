@@ -25,6 +25,7 @@ require.config({
                                 'components/tab-d', 
                                 'components/tab-s', 
                                 'components/div-c', 
+                                'components/inline-rows',
                                 'components/checkbox', 
                                 'components/c-checkbox', 
                                 'components/c-radiolist', 

@@ -20,9 +20,10 @@ define('forms/test',[ "dfe-core",
         "components/div-button",
         "components/multioption",
         "components/c-editbox",
-        "components/span" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+        "components/span",
+        "components/inline-rows" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
             Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea, ChildRuntime, DivButton, Multioption,
-            LabeledEditbox, Span ) {
+            LabeledEditbox, Span, InlineRows ) {
     let Form = Core.Form;
     
     /*return class TestForm extends Core.Form {
@@ -72,8 +73,62 @@ define('forms/test',[ "dfe-core",
                 ])
             ]
         }
+        
+        
     }*/
-
+    
+    let typeMap = {
+        car: {
+            name: "Private Passenger Type",
+            btn: "Passenger Vehicles"
+        },
+        truck: {
+            name: "Trucks, Tractors and Trailers"
+        },
+        golf: {
+            name: "Golf Carts and Low Speed Vehicles"
+        },
+        mobile: {
+            name: "Mobile Homes"
+        },
+        antique: {
+            name: "Antique Autos"
+        }
+    }
+    
+    return class TestForm extends Core.Form {
+        static fields() {
+            return [
+                Form.field(TabS, { get: $$ => $$('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex', style: 'width: 900px'}) }, [
+                    Form.field(DivButton, 'header', { get: $$ => 'Location#' + ($$.index()+1), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
+                    Form.field(TabS, { get: $$ => $$('.car'), atr: () => ({ rowstyle$header: 'display: flex; width: 900px; flex-flow: wrap;'}) }, [
+                        Form.field(DivButton, 'header', { get: $$ => 'Car#' + ($$.index()+1), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
+                        Form.field(Table, [
+                            Form.field(LabeledEditbox, { atr: () => fields.simple('.vinnumber', { text: 'Vin' }), pos: [{newRow: true}] }),
+                            Form.field(Labeled, { atr: () => ({text: 'Vehicle type: '}), pos: [{newRow: true}] },
+                                Form.field(Dropdown, { 
+                                    atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({ value: k, description: typeMap[k].name })))
+                                })
+                            ),
+                            Form.field(LabeledEditbox, { atr: () => fields.simple('.ModelYr', { text: 'Model Year' }), pos: [{newRow: true}] }),
+                            Form.field(LabeledEditbox, { atr: () => fields.simple('.make', { text: 'Make' }), pos: [{newRow: true}] }),
+                            Form.field(InlineRows, { get: $$ => $$('.vehicletype') === 'car' ? [$$] : [], atr: () => ({singles: true}) }, [
+                                Form.field(LabeledEditbox, { atr: () => fields.simple('.StatedAmt', { text: 'Price' }) }),
+                                Form.field(LabeledEditbox, { atr: () => fields.simple('.Horsepower', { text: 'HP' }) }),
+                                Form.field(LabeledEditbox, { atr: () => fields.simple('.vehicleocostnew', { text: 'Cost new' }) }),
+                                Form.field(LabeledEditbox, { atr: () => fields.simple('.VehUseCd', { text: 'Vehicle use' }) })
+                            ]),
+                            Form.field(InlineRows, { get: $$ => $$('.vehicletype') === 'truck' ? [$$] : [], atr: () => ({singles: true}) }, [
+                                Form.field(LabeledEditbox, { atr: () => fields.simple('.VehicleClass', { text: 'Class' }) }),
+                                Form.field(LabeledEditbox, { atr: () => fields.simple('.TrailerType', { text: 'Trailer type' }) }),
+                                Form.field(LabeledEditbox, { atr: () => fields.simple('.DumpingOpInd', { text: 'Dumping opt' }) })
+                            ])
+                        ])
+                    ])
+                ])
+            ]
+        }
+    }
     
     class SubForm extends Form {
         static fields() {
@@ -101,24 +156,7 @@ define('forms/test',[ "dfe-core",
         }
     }
     
-    let typeMap = {
-        car: {
-            name: "Private Passenger Type",
-            btn: "Passenger Vehicles"
-        },
-        truck: {
-            name: "Trucks, Tractors and Trailers"
-        },
-        golf: {
-            name: "Golf Carts and Low Speed Vehicles"
-        },
-        mobile: {
-            name: "Mobile Homes"
-        },
-        antique: {
-            name: "Antique Autos"
-        }
-    }
+
     return class TestForm extends Core.Form {
         static fields() {
             return [
