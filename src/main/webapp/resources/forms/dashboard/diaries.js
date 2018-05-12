@@ -52,7 +52,7 @@ defineForm([ "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/co
                 class: "header",
                 get: $$ => 'Task Link'
             }), __c_label("actionDate", {
-                get: $$ => cmn.mmddyyyy(Date.parse($$('.actionDate')), '/')
+                get: $$ => $$('.actionDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
             }), __c_label("appNumber", {
                 get: $$ => `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$('.appNumber')}">${$$('.appNumber')}</a>`,
                 atr: $$ => ({
@@ -67,7 +67,7 @@ defineForm([ "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/co
             }), __c_label("createdByUser", {
                 get: $$ => $$('.createdByUser')
             }), __c_label("creationDate", {
-                get: $$ => cmn.mmddyyyy(Date.parse($$('.creationDate')), '/')
+                get: $$ => $$('.creationDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
             }), __c_label("taskId", {
                 get: $$ => 'Edit',
                 atr: $$ => ({
@@ -87,7 +87,11 @@ defineForm([ "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/co
             jq.get('/AJAXServlet.srv?method=DashboardScriptHelper&action=diaries', function(data) {
                 if (data && data.status == 'success') {
                 	delete $$.data.rows;
-                	data.result.forEach(d => $$.append('.rows', d));
+                	data.result.forEach(d => {
+                		d.actionDate = cmn.yyyymmdd(Date.parse(d.actionDate));
+                		d.creationDate = cmn.yyyymmdd(Date.parse(d.creationDate));
+                		$$.append('.rows', d);
+                	});
                 }
             });
         }

@@ -1,1061 +1,563 @@
 {
-  "processingStatus": "completed",
-  "insured": [
-    {
-      "fname": "test",
-      "dba": "test",
-      "website": "",
-      "mail": [
-        {
-          "zip": "91945",
-          "address2": "test",
-          "city": "test",
-          "address1": "test",
-          "state": "CA"
-        }
-      ],
-      "applicantfname": "test",
-      "applicantlname": "test",
-      "lname": "test",
-      "entitytype": "Corporation",
-      "namedinsured": "AEX-33529",
-      "location": [
-        {
-          "zip": "91945",
-          "address2": "test",
-          "city": "test",
-          "address1": "test",
-          "state": "CA"
-        }
-      ],
-      "compname": "AEX-33529",
-      "wphone": "555-555-5555",
-      "email": "test@test.com",
-      "applicantphone": "555-555-5555"
-    }
-  ],
-  "producer": [
-    {
-      "name": "dwhittle",
-      "email": "dwhittle@arrowheadgrp.com"
-    }
-  ],
   "control": [
     {
-      "xmittype": "Submitted",
       "clienttype": "comm",
+      "quotecreated": "201805101615",
       "buildenv": "stag",
-      "dbVersion": "88",
-      "prodcode": "111111",
-      "prevstatuscd": "bi",
+      "dbVersion": "75",
+      "prodcode": "000000",
       "type": "policy",
-      "sourcesystem": "nal",
-      "version": "1",
-      "site": "nal",
+      "version": "2",
+      "sourcesystem": "NAL",
+      "site": "NAL",
+      "prodmaincode": "000000",
       "txnhistory": [
         {
-          "pendinguserid": "dwhittle",
-          "quoted": "201708041134",
-          "submitteduserid": "dwhittle",
-          "bounduserid": "dwhittle",
-          "submitted": "201708041122",
-          "quoteduserid": "dwhittle",
-          "bound": "201708041135",
-          "pending": "201708041134",
-          "dbupdate": "201708041137"
+          "work": [
+            {
+              "status": "pending"
+            }
+          ],
+          "bbop": [
+            {
+              "quoterate": "2018-05-10T16:16:55-08:00",
+              "status": "complete"
+            }
+          ]
         }
       ],
-      "xmittime": "113750",
-      "ratetimestamp": "2017-08-04T11:34:01.065-07:00",
-      "xmitdate": "20170804",
-      "xmitstatus": "SUCCESS"
-    },
-    {
-      "policy": [
-        {
-          "class": [
-            {
-              "seasonalemployeeamt": "CTL6",
-              "parttimeemployeeamt": "CTL6",
-              "subcode": "CTL3",
-              "payroll": "CTL6",
-              "fulltimeemployeeamt": "CTL6"
-            }
-          ]
-        }
-      ]
+      "overrideeffectivelimit": "N",
+      "prodsubcode": "qatest",
+      "bridgeQuoteId": ""
     }
   ],
-  "controlid": [
+  "insured": [
     {
-      "policy": [
+      "fname": "Selenium",
+      "dba": "",
+      "lname": "Test",
+      "individual": "n",
+      "instype": "Corporation",
+      "location": [
         {
-          "class": [
-            {
-              "seasonalemployeeamt": "CTL6",
-              "parttimeemployeeamt": "CTL6",
-              "subcode": "CTL3",
-              "payroll": "CTL6",
-              "fulltimeemployeeamt": "CTL6"
-            }
-          ]
+          "zip": "63101",
+          "address": "1234 SOMEWHERE ST",
+          "city": "SAINT LOUIS",
+          "state": "MO"
         }
-      ]
+      ],
+      "wphone": "8978946545",
+      "compname": "Selenium Tester 600870",
+      "email": "test@test.com"
+    }
+  ],
+  "navigation": [
+    {
+      "CompletedScreenFormName": "quote.work.class",
+      "CompletedScreenEffectiveProduct": "WORK"
     }
   ],
   "policy": [
     {
-      "mfgtextile": [
+      "indicator": [
         {
-          "ind": "N"
+          "closedzip": "N"
         }
       ],
-      "classescount": "1",
-      "county": "San Diego",
-      "formname": "tools.general_information",
-      "depositrolloverraw": "0",
-      "ofac": [
+      "agentid": "qatest",
+      "product": "BBOP",
+      "effectiveproduct": "WORK",
+      "work": [
         {
-          "ni": [
+          "finalized": "N",
+          "effective": "20180511",
+          "uw": [
             {
-              "dba": [
-                {
-                  "response": "Clear",
-                  "name": "test",
-                  "ofaccalldate": "201708040000",
-                  "hitpercentage": "0",
-                  "message": "",
-                  "referenceid": "-1"
-                }
-              ],
-              "insured": [
-                {
-                  "zip": "91945",
-                  "address": "test test",
-                  "city": "test",
-                  "response": "Clear",
-                  "name": "AEX-33529",
-                  "ofaccalldate": "201708040000",
-                  "hitpercentage": "0",
-                  "state": "CA",
-                  "message": "",
-                  "referenceid": "-1"
-                }
-              ],
-              "officerentitytype": "Corporation"
-            }
-          ]
-        },
-        {
-          "question": [
-            {
-              "question": "Y",
-              "wording": "All Named Insureds listed?"
-            },
-            {
-              "question": "Y",
-              "wording": "All Officers listed?"
-            },
-            {
-              "question": "Y",
-              "wording": "All DBAs listed?"
-            },
-            {
-              "question": "Y",
-              "wording": "All Addresses listed correctly for each Named Insured?"
-            }
-          ]
-        }
-      ],
-      "quoteid": "5770408",
-      "professional": [
-        {
-          "ind": "N"
-        }
-      ],
-      "nad": "20170809",
-      "addlinfo": [
-        {
-          "entirelist": ""
-        }
-      ],
-      "bindable": "1",
-      "parentcompany": "Everest",
-      "qqselectuw": "Roy C Ma",
-      "state": "CA",
-      "qqcompany": "CAWCEV",
-      "zspire": [
-        {
-          "companycode": "01",
-          "upc": "0619",
-          "producercode": "74401000"
-        }
-      ],
-      "governingclass": [
-        {
-          "zip": "91945",
-          "bureaucode": "CA",
-          "code": "0005",
-          "hazardlevel": "C",
-          "qqdeclineind": "N",
-          "classcodeid": "94128",
-          "description": "0005 - Nurseries-propagation and cultivation of nursery stock",
-          "subcode": "0005-14",
-          "actualhourlywage": "1",
-          "dualwagetype": "",
-          "zurichdescriptionid": "90",
-          "number": "1",
-          "seasonalemployeeamt": "1",
-          "averagehourlywage": "39.57",
-          "parttimeemployeeamt": "1",
-          "dualwagecode": "",
-          "totalemployeeamt": "1.5",
-          "industrygrp": "horticulture",
-          "decisioncode": "5",
-          "locationnum": "1",
-          "payroll": "123456",
-          "state": "CA",
-          "fulltimeemployeeamt": "1"
-        }
-      ],
-      "uwclassquestion": [
-        {
-          "questionid": "93565",
-          "question": "Any digging or excavating below 3 feet?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        },
-        {
-          "questionid": "93566",
-          "question": "Any tree planting or removal (other than saplings less than 10 feet)?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        },
-        {
-          "questionid": "93567",
-          "question": "Any tree trimming above ground level?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        },
-        {
-          "questionid": "93568",
-          "question": "Does operations include any bee culture including propagating, raising, and collecting honey for sale?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        },
-        {
-          "questionid": "93569",
-          "question": "Does operations include any tree farms including Christmas trees?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        }
-      ],
-      "needbydt": "20170804",
-      "securityguards": [
-        {
-          "ind": "N"
-        }
-      ],
-      "bindcheck": [
-        {
-          "instructions": "",
-          "rewritepolicynumber": "",
-          "flatcancel": "N",
-          "dmvcertificate": "N",
-          "losscontrol": "N",
-          "specialendorsement": "N",
-          "specificwaiver": "N",
-          "pucfiling": "N"
-        }
-      ],
-      "bill": [
-        {
-          "depositpercent": ".15",
-          "selectedoption": "5",
-          "uwoverride": "N",
-          "type": "DB - MONTHLY",
-          "numinstallments": "6"
-        }
-      ],
-      "mfgelectric": [
-        {
-          "ind": "N"
-        }
-      ],
-      "mfgmisc": [
-        {
-          "ind": "N"
-        }
-      ],
-      "uwanalysis": [
-        {
-          "carrierauthority": "N",
-          "manager": "",
-          "cpaauthority": "N",
-          "uwauthority": "Y"
-        }
-      ],
-      "cslbnumber": "",
-      "claimskitind": "N",
-      "constructorerect": [
-        {
-          "ind": "N"
-        }
-      ],
-      "numclassquestions": "5",
-      "custid": "5737919",
-      "mercantile": [
-        {
-          "ind": "N"
-        }
-      ],
-      "wholesaler": [
-        {
-          "applies": "N",
-          "shouldsubmit": "N",
-          "carrierstoavoid": "test"
-        }
-      ],
-      "status": "New",
-      "newspaper": [
-        {
-          "ind": "N"
-        }
-      ],
-      "appstatustext": "Bound",
-      "other": [
-        {
-          "ind": "N"
-        }
-      ],
-      "xmodna": "Y",
-      "mfgplastic": [
-        {
-          "ind": "N"
-        }
-      ],
-      "receiveddt": "20170804",
-      "workerscompbridge": "true",
-      "xmodestimated": "N",
-      "healthcare": [
-        {
-          "ind": "N"
-        }
-      ],
-      "undefined": [
-        {
-          "ind": "N"
-        }
-      ],
-      "mfgother": [
-        {
-          "ind": "N"
-        }
-      ],
-      "mfgmetal": [
-        {
-          "ind": "N"
-        }
-      ],
-      "totalemployeeamt": "1.5",
-      "compname": "Everest National Insurance Company",
-      "numlocations": "1",
-      "ofacquestions": [
-        {
-          "question": [
-            {
-              "question": "Y",
-              "wording": "All Named Insureds listed?"
-            },
-            {
-              "question": "Y",
-              "wording": "All Officers listed?"
-            },
-            {
-              "question": "Y",
-              "wording": "All DBAs listed?"
-            },
-            {
-              "question": "Y",
-              "wording": "All Addresses listed correctly for each Named Insured?"
-            }
-          ]
-        }
-      ],
-      "currenttransaction": [
-        {
-          "date": "201708241634",
-          "suppressedemail": "N",
-          "type": "Everest Clearance",
-          "user": "toolstester"
-        }
-      ],
-      "dandb": [
-        {
-          "dunsnumber": ""
-        }
-      ],
-      "product": "WORK",
-      "mfgwood": [
-        {
-          "ind": "N"
-        }
-      ],
-      "sfacomments": "",
-      "cusno": "82268425",
-      "eclearance": [
-        {
-          "reference": "986582-1",
-          "result": "Submission Successful! Submission Number is: 986582-1",
-          "internal": "N",
-          "status": "Cleared"
-        }
-      ],
-      "siccd": "",
-      "multistate": "N",
-      "food": [
-        {
-          "ind": "N"
-        }
-      ],
-      "sfa": "N",
-      "transportation": [
-        {
-          "ind": "N"
-        }
-      ],
-      "sameaddr": "Y",
-      "markasduplicate": "",
-      "manualrate": "N",
-      "transaction": [
-        {
-          "date": "201708041122",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Logged as New Submission",
-          "user": "dwhittle",
-          "transactionid": "7534104",
-          "status": "APPLICATION",
-          "timestamp": "2017-08-04T11:22:42.399-07:00"
-        },
-        {
-          "date": "201708041124",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Saved General Application Information Changes",
-          "user": "dwhittle",
-          "transactionid": "7534105",
-          "status": "APPLICATION",
-          "timestamp": "2017-08-04T11:24:36.935-07:00"
-        },
-        {
-          "date": "201708041124",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Saved Class Info Changes",
-          "user": "dwhittle",
-          "transactionid": "7534106",
-          "status": "APPLICATION",
-          "timestamp": "2017-08-04T11:24:50.553-07:00"
-        },
-        {
-          "date": "201708041134",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Saved Quote Worksheet Changes",
-          "user": "dwhittle",
-          "transactionid": "7534108",
-          "status": "APPLICATION",
-          "timestamp": "2017-08-04T11:34:01.393-07:00"
-        },
-        {
-          "date": "201708041134",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Saved General Application Information Changes",
-          "user": "dwhittle",
-          "transactionid": "7534109",
-          "status": "APPLICATION",
-          "timestamp": "2017-08-04T11:34:12.765-07:00"
-        },
-        {
-          "date": "201708041134",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Update Submission to Pending",
-          "user": "dwhittle",
-          "transactionid": "7534110",
-          "status": "APPLICATION_UW_REVIEW",
-          "timestamp": "2017-08-04T11:34:18.694-07:00"
-        },
-        {
-          "cc": "",
-          "date": "201708041134",
-          "comments": "",
-          "suppressedemail": "N",
-          "transactioncode": "TOOLS_EDIT",
-          "producer": [
-            {
-              "name": "dwhittle"
+              "submission": "N"
             }
           ],
-          "emailto": "dwhittle@arrowheadgrp.com",
-          "type": "Extended Quote Offer",
-          "user": "dwhittle",
-          "transactionid": "7534111",
-          "status": "QUICK_QUOTE",
-          "timestamp": "2017-08-04T11:34:29.785-07:00"
-        },
-        {
-          "date": "201708041134",
-          "suppressedemail": "N",
-          "transactioncode": "SENT_PRODUCER_EMAIL",
-          "type": "Email Sent to Producer",
-          "user": "dwhittle",
-          "transactionid": "7534112",
-          "status": "QUICK_QUOTE",
-          "timestamp": "2017-08-04T11:34:31.751-07:00"
-        },
-        {
-          "cc": "",
-          "date": "201708041135",
-          "comments": "",
-          "suppressedemail": "N",
-          "transactioncode": "TOOLS_EDIT",
-          "producer": [
+          "instec": [
             {
-              "name": "dwhittle"
+              "QuoteNumber": "",
+              "StorageId": ""
             }
           ],
-          "emailto": "dwhittle@arrowheadgrp.com",
-          "type": "Extended Binder",
-          "user": "dwhittle",
-          "transactionid": "7534114",
-          "status": "BINDER_ISSUED",
-          "timestamp": "2017-08-04T11:35:48.597-07:00"
-        },
-        {
-          "date": "201708041135",
-          "suppressedemail": "N",
-          "transactioncode": "SENT_PRODUCER_EMAIL",
-          "type": "Email Sent to Producer",
-          "user": "dwhittle",
-          "transactionid": "7534115",
-          "status": "BINDER_ISSUED",
-          "timestamp": "2017-08-04T11:35:48.769-07:00"
-        },
-        {
-          "date": "201708041137",
-          "comments": "Submitted",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Changed Policy Status",
-          "user": "dwhittle",
-          "transactionid": "7534116",
-          "status": "APPLICATION",
-          "timestamp": "2017-08-04T11:37:26.909-07:00"
-        },
-        {
-          "date": "201708041137",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Saved General Application Information Changes",
-          "user": "dwhittle",
-          "transactionid": "7534117",
-          "status": "APPLICATION",
-          "timestamp": "2017-08-04T11:37:44.615-07:00"
-        },
-        {
-          "date": "201708041137",
-          "transactioncode": "TOOLS_EDIT",
-          "type": "Database Updated",
-          "user": "dwhittle",
-          "transactionid": "7534118",
-          "status": "APPLICATION",
-          "timestamp": "2017-08-04T11:37:50.668-07:00"
-        },
-        {
-          "date": "201708151106",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7572428",
-          "status": "BINDER_ISSUED",
-          "timestamp": "2017-08-15T11:06:01.943-07:00"
-        },
-        {
-          "date": "201708151106",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7572429",
-          "status": "BINDER_ISSUED",
-          "timestamp": "2017-08-15T11:06:25.609-07:00"
-        },
-        {
-          "date": "201708171247",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582138",
-          "status": "bi",
-          "timestamp": "2017-08-17T12:47:33.859-07:00"
-        },
-        {
-          "date": "201708171249",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582149",
-          "status": "bi",
-          "timestamp": "2017-08-17T12:49:23.779-07:00"
-        },
-        {
-          "date": "201708171255",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582171",
-          "status": "bi",
-          "timestamp": "2017-08-17T12:55:56.504-07:00"
-        },
-        {
-          "date": "201708171256",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582172",
-          "status": "bi",
-          "timestamp": "2017-08-17T12:56:22.369-07:00"
-        },
-        {
-          "date": "201708171257",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582173",
-          "status": "bi",
-          "timestamp": "2017-08-17T12:57:32.805-07:00"
-        },
-        {
-          "date": "201708171306",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582250",
-          "status": "bi",
-          "timestamp": "2017-08-17T13:06:17.820-07:00"
-        },
-        {
-          "date": "201708171308",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582271",
-          "status": "bi",
-          "timestamp": "2017-08-17T13:08:27.115-07:00"
-        },
-        {
-          "date": "201708171308",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582276",
-          "status": "bi",
-          "timestamp": "2017-08-17T13:08:59.377-07:00"
-        },
-        {
-          "date": "201708171309",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582287",
-          "status": "bi",
-          "timestamp": "2017-08-17T13:09:42.324-07:00"
-        },
-        {
-          "date": "201708171313",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582334",
-          "status": "bi",
-          "timestamp": "2017-08-17T13:13:46.176-07:00"
-        },
-        {
-          "date": "201708171318",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7582376",
-          "status": "bi",
-          "timestamp": "2017-08-17T13:18:57.792-07:00"
-        },
-        {
-          "date": "201708211235",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7592690",
-          "status": "bi",
-          "timestamp": "2017-08-21T12:35:08.200-07:00"
-        },
-        {
-          "date": "201708211236",
-          "comments": "Not Submitted",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7592691",
-          "status": "bi",
-          "timestamp": "2017-08-21T12:36:48.122-07:00"
-        },
-        {
-          "date": "201708241634",
-          "comments": "Cleared",
-          "transactioncode": "CLEARANCE",
-          "type": "Everest Clearance",
-          "user": "toolstester",
-          "transactionid": "7607615",
-          "status": "bi",
-          "timestamp": "2017-08-24T16:34:40.508-07:00"
+          "hasInclExclMembers": "N",
+          "UniqueStatesList": "",
+          "namedinsured": [
+            {}
+          ],
+          "commissionmap": [
+            {
+              "PremiumTier": "2"
+            }
+          ],
+          "company": [
+            {
+              "expiringpremium": "0",
+              "feinnumber": "161244145",
+              "yrsinbusiness": "5+"
+            }
+          ],
+          "expiration": "20190511",
+          "location": [
+            {
+              "address1": "1234 SOMEWHERE ST",
+              "city": "SAINT LOUIS",
+              "state": "MO",
+              "zip": "63101",
+              "class": [
+                {
+                  "code": "0042",
+                  "fulltimeemployeeamt": "1",
+                  "parttimeemployeeamt": "1",
+                  "subcode": "0042-1"
+                },
+                {}
+              ]
+            },
+            {
+              "state": "KS",
+              "class": [
+                {}
+              ]
+            }
+          ]
         }
       ],
-      "latestcompany": "CAWCEV",
-      "municipality": [
-        {
-          "ind": "N"
-        }
-      ],
-      "blanketwaiver": "N",
-      "uuid": "-5f458558:15dab55b5a3:-7dfc",
-      "naicscd": "123456",
-      "polno": "7600033351171",
-      "splitlimit": [
-        {
-          "policydisease": "1000000",
-          "employeedisease": "1000000",
-          "accident": "1000000"
-        }
-      ],
-      "horticulture": [
-        {
-          "ind": "Y"
-        }
-      ],
-      "averagehourlywage": "39.57",
-      "totalpayrollamt": "123456",
-      "ofacenabled": "Y",
-      "contact": [
-        {
-          "claimslname": "test",
-          "claimsfname": "test",
-          "claimsphone": "555-555-5555",
-          "inspectionemail": "test@test.com",
-          "inspectionfname": "test",
-          "premiumauditphone": "555-555-5555",
-          "claimsemail": "test@test.com",
-          "inspectionphone": "555-555-5555",
-          "premiumauditfname": "test",
-          "premiumauditlname": "test",
-          "premiumauditemail": "test@test.com",
-          "inspectionlname": "test"
-        }
-      ],
-      "limit": "1000000/1000000/1000000",
-      "brokercommission": "0.05",
-      "everestbridge": [
-        {
-          "comments": "System Unavailable",
-          "programcd": "32",
-          "ind": "N"
-        }
-      ],
-      "uw": [
-        {
-          "groupcreditmodcd": "0",
-          "groupcreditmoddesc": "Not Eligible",
-          "groupcreditmembership": ""
-        },
-        {
-          "carrierauthority": "N",
-          "manager": "",
-          "cpaauthority": "N",
-          "uwauthority": "Y"
-        },
-        {
-          "questionid": "93565",
-          "question": "Any digging or excavating below 3 feet?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        },
-        {
-          "questionid": "93566",
-          "question": "Any tree planting or removal (other than saplings less than 10 feet)?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        },
-        {
-          "questionid": "93567",
-          "question": "Any tree trimming above ground level?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        },
-        {
-          "questionid": "93568",
-          "question": "Does operations include any bee culture including propagating, raising, and collecting honey for sale?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        },
-        {
-          "questionid": "93569",
-          "question": "Does operations include any tree farms including Christmas trees?",
-          "classcode": "0005",
-          "classcodeid": "94128",
-          "sfadecline": "0",
-          "subcode": "0005-14"
-        }
-      ],
+      "UniqueStatesList": "MO",
+      "formname": "quote.work.class",
       "brokerfee": "0",
-      "lifesciences": [
+      "quoteid": "6745254",
+      "bbop": [
         {
-          "ind": "N"
-        }
-      ],
-      "mining": [
-        {
-          "ind": "N"
-        }
-      ],
-      "commissioninfo": [
-        {
-          "standard": [
+          "MedicalExpenses": "5000",
+          "HasFuncBldValue": "N",
+          "HasLossPayee": "N",
+          "AutomaticIncr": "4",
+          "HasAiprem": "N",
+          "HasNoFuncBldValue": "Y",
+          "coverages": [
             {
-              "companycode": "CAWCEV",
-              "arrowheadcommissionrate": "0.075",
-              "floatingmaxtotalind": "Y",
-              "producercommissionrate": "0.10"
+              "terror": [
+                {
+                  "IncludeInd": "Y"
+                }
+              ],
+              "hireda": [
+                {
+                  "IncludeInd": "N"
+                }
+              ],
+              "busown": [
+                {
+                  "IncludeInd": "Y"
+                }
+              ],
+              "bitime": [
+                {
+                  "IncludeInd": "Y"
+                }
+              ],
+              "empben": [
+                {
+                  "IncludeInd": "N"
+                }
+              ],
+              "compf": [
+                {
+                  "IncludeInd": "N"
+                }
+              ],
+              "eqpbrk": [
+                {
+                  "IncludeInd": "Y"
+                }
+              ],
+              "cyber": [
+                {
+                  "IncludeInd": "Y",
+                  "NetworkSecLimDed": "$100,000/$10,000",
+                  "CompAttackLimDed": "$100,000/$10,000"
+                }
+              ],
+              "emplia": [
+                {
+                  "Ded": "2500",
+                  "IncludeInd": "Y",
+                  "Limit": "25000",
+                  "NumNonFTEmp": "15",
+                  "NumEmp": "30"
+                }
+              ],
+              "fellow": [
+                {
+                  "IncludeInd": "N"
+                }
+              ],
+              "liqlia": [
+                {
+                  "IncludeInd": "N"
+                }
+              ],
+              "blanket": [
+                {
+                  "IncludeInd": "N"
+                }
+              ],
+              "datcom": [
+                {
+                  "IncludeInd": "Y",
+                  "Tier": "4",
+                  "Limit": "50000"
+                }
+              ],
+              "suppr": [
+                {
+                  "IncludeInd": "N"
+                }
+              ],
+              "nonown": [
+                {
+                  "IncludeInd": "N"
+                }
+              ],
+              "blkai": [
+                {
+                  "IncludeInd": "N"
+                }
+              ]
             }
           ],
-          "final": [
+          "instec": [
             {
-              "totalcommissionrate": "0.175",
-              "arrowheadcommissionrate": "0.075",
-              "maxtotalcommissionrate": "0.175",
-              "floatingmaxtotalind": "Y",
-              "producercommissionrate": "0.10"
+              "QuoteNumber": "Q-86538",
+              "StorageId": "93033"
             }
           ],
-          "override": [
+          "HasBldCov": "Y",
+          "GLOccurrenceLimit": "1000000",
+          "PropRequestedDed": "1000",
+          "ClassCodes": "09091",
+          "LiaDed": "None",
+          "IsoClassGroups": "Fast Food Restaurants",
+          "ProductsCOA": "2000000",
+          "UniqueStatesList": "MO",
+          "commissionmap": [
             {
-              "companycode": "CAWCEV",
-              "arrowheadcommissionrate": "0.0775",
-              "producercommissionrate": "0.10",
-              "overrideind": "N"
+              "DirectBill": [
+                {
+                  "pt100": "15.0000"
+                }
+              ],
+              "AgencyBill": [
+                {
+                  "pt100": "15.0000"
+                }
+              ]
+            }
+          ],
+          "LiabCovInd": "Y",
+          "PropCovInd": "Y",
+          "OtherCOA": "2000000",
+          "HasLcompf": "N",
+          "finalized": "Y",
+          "AddtlIntInd": "N",
+          "ProfLiabInd": "N",
+          "HasAieqip": "N",
+          "HasPpCov": "Y",
+          "location": [
+            {
+              "userCountyName": "",
+              "postdir": "",
+              "city": "SAINT LOUIS",
+              "streetnum": "1234",
+              "building": [
+                {
+                  "IsoClassDescriptionId": "545",
+                  "uw": [
+                    {
+                      "playam": "N"
+                    }
+                  ],
+                  "Construction": "Non-Combustible",
+                  "PremOpsILF": "2",
+                  "Description": "test",
+                  "SoleOccupantInd": "N",
+                  "CspCode": "0542",
+                  "Sprinklered": "Y",
+                  "LOI": "500000",
+                  "IsoClassGroup": "Fast Food Restaurants",
+                  "coverages": [
+                    {
+                      "pp": [
+                        {
+                          "IncludeInd": "Y",
+                          "SeasonalIncrease": "20",
+                          "Limit": "500000"
+                        }
+                      ],
+                      "aiprem": [
+                        {
+                          "IncludeInd": "N"
+                        }
+                      ],
+                      "actrec": [
+                        {
+                          "IncludeInd": "N"
+                        }
+                      ],
+                      "lien": [
+                        {
+                          "IncludeInd": "N"
+                        }
+                      ],
+                      "lospay": [
+                        {
+                          "IncludeInd": "N"
+                        }
+                      ],
+                      "aieqip": [
+                        {
+                          "IncludeInd": "N"
+                        }
+                      ],
+                      "tenfir": [
+                        {
+                          "IncludeInd": "N"
+                        }
+                      ],
+                      "lcompf": [
+                        {
+                          "IncludeInd": "N"
+                        }
+                      ],
+                      "bld": [
+                        {
+                          "IncludeInd": "Y",
+                          "Valuation": "Replacement Cost",
+                          "Limit": "360000"
+                        }
+                      ],
+                      "liab": [
+                        {
+                          "IncludeInd": "Y",
+                          "Sales": "500000"
+                        }
+                      ],
+                      "eq": [
+                        {
+                          "CoverageType": "No Coverage"
+                        }
+                      ],
+                      "ordlaw": [
+                        {
+                          "IncludeInd": "N"
+                        }
+                      ]
+                    }
+                  ],
+                  "OccupiedSqFt": "1000",
+                  "NAICSCd": "722513",
+                  "ClassCode": "09091",
+                  "ClassOverride": "N",
+                  "Occupancy": "Non-Owner Occupied Bldg.",
+                  "IsoClassDescription": "Donut Shops",
+                  "NumStories": "2",
+                  "ClassTag": "SALES",
+                  "SICCd": "5812",
+                  "YearBuilt": "2015"
+                }
+              ],
+              "BcegCallResult": "SUCCESSFUL",
+              "street": "SOMEWHERE",
+              "ClassCodes": "09091",
+              "state": "MO",
+              "IsoClassGroups": "Fast Food Restaurants",
+              "zipaddon": "",
+              "predir": "",
+              "countyName": "",
+              "zip": "63101",
+              "based": "riskAddress1",
+              "ppc": "2",
+              "scrubberCalled": "N",
+              "address1": "1234 SOMEWHERE ST",
+              "recordType": "",
+              "WHDeductiblePcnt": "N/A",
+              "BcegCode": "4",
+              "confirmation": "Y",
+              "addressLine": "1234 SOMEWHERE STREET",
+              "FinalProtectionClass": "2",
+              "unit": "",
+              "scrubberResult": "",
+              "streettype": "ST",
+              "secondaryName": "#",
+              "BcegCallMessage": "",
+              "buildings": "1",
+              "ppccall": [
+                {
+                  "PredominantPpc": "2",
+                  "MatchType": "Zip Code Level Match",
+                  "Percentage": "100%",
+                  "PPCCode": "2",
+                  "MultiplePPC": "N",
+                  "PredominantPpcPercentage": "100%",
+                  "FireProtectionArea": "ST LOUIS"
+                }
+              ],
+              "PPCAddressKey": "1234 SOMEWHERE STREET:SAINT LOUIS:MO:63101:1234:SOMEWHERE:ST"
+            }
+          ],
+          "HasLien": "N"
+        }
+      ],
+      "cmau": [
+        {
+          "finalized": "N",
+          "instec": [
+            {
+              "QuoteNumber": "",
+              "StorageId": ""
+            }
+          ],
+          "UniqueStatesList": ""
+        }
+      ],
+      "effective": "20180511",
+      "common": [
+        {
+          "uw": [
+            {
+              "packageEligibleInd": "N",
+              "rulesresult": [
+                {
+                  "finalized": [
+                    {
+                      "code": "QUICK_QUOTE",
+                      "details": [
+                        {
+                          "rule": [
+                            {
+                              "name": "QuickQuotePassesRule",
+                              "decisioncode": "QUICK_QUOTE",
+                              "RuleType": "qqfinal",
+                              "message": [
+                                {
+                                  "text": ""
+                                }
+                              ],
+                              "lob": "ALL",
+                              "StatesFailingLicensing": ""
+                            }
+                          ]
+                        }
+                      ],
+                      "StatesFailingLicensing": ""
+                    }
+                  ],
+                  "LobsUsedInFinalizedDecision": "BBOP,WORK",
+                  "work": [
+                    {
+                      "code": "QUICK_QUOTE",
+                      "details": [
+                        {
+                          "rule": [
+                            {
+                              "name": "QuickQuotePassesRule",
+                              "decisioncode": "QUICK_QUOTE",
+                              "RuleType": "qqfinal",
+                              "message": [
+                                {
+                                  "text": ""
+                                }
+                              ],
+                              "lob": "ALL",
+                              "StatesFailingLicensing": ""
+                            }
+                          ]
+                        }
+                      ],
+                      "StatesFailingLicensing": ""
+                    }
+                  ],
+                  "bbop": [
+                    {
+                      "code": "QUICK_QUOTE",
+                      "details": [
+                        {
+                          "rule": [
+                            {
+                              "name": "QuickQuotePassesRule",
+                              "decisioncode": "QUICK_QUOTE",
+                              "RuleType": "qqfinal",
+                              "message": [
+                                {
+                                  "text": ""
+                                }
+                              ],
+                              "lob": "ALL",
+                              "StatesFailingLicensing": ""
+                            }
+                          ]
+                        }
+                      ],
+                      "StatesFailingLicensing": ""
+                    }
+                  ]
+                }
+              ],
+              "ineligibleInd": "N"
+            }
+          ],
+          "instecsecondaryaccount": "0-15413",
+          "instecprimaryaccount": "S-15412",
+          "quotesource": "AEX",
+          "YearBizStarted": "2015",
+          "effective": "20180511",
+          "NAICSCd": "722513",
+          "ApplicableStates": "MO",
+          "StateofDomicile": "MO",
+          "expiration": "20190511",
+          "company": "",
+          "state": "MO",
+          "quotetype": "NB",
+          "SICCd": "5812"
+        }
+      ],
+      "formgroup": "corecomm",
+      "custid": "6708029",
+      "customerid": "6708029",
+      "producer": [
+        {
+          "emailcc": "qatester@arrowheadgrp.com",
+          "comments": "",
+          "phone": "337-669-1889",
+          "name": "John Smith",
+          "email": "qatester@arrowheadgrp.com",
+          "emailconfirm": "qatester@arrowheadgrp.com"
+        }
+      ],
+      "expiration": "20190511",
+      "state": "MO",
+      "umbr": [
+        {
+          "finalized": "N",
+          "instec": [
+            {
+              "QuoteNumber": "",
+              "StorageId": ""
+            }
+          ],
+          "UniqueStatesList": "MO",
+          "location": [
+            {
+              "zip": "63101",
+              "city": "SAINT LOUIS",
+              "address1": "1234 SOMEWHERE ST",
+              "buildings": "1",
+              "state": "MO"
             }
           ]
-        }
-      ],
-      "actualemployeeamt": "2.0",
-      "xmodexpiring": "N",
-      "wholesalercompany": "",
-      "xmod": "1.00",
-      "quickquote": "Y",
-      "customerid": "5737919",
-      "expiration": "20180809",
-      "automotive": [
-        {
-          "ind": "N"
-        }
-      ],
-      "losshistoryyear": [
-        {
-          "number": "1",
-          "carrier": "EVEREST",
-          "year": "2016"
-        },
-        {
-          "number": "2",
-          "year": "2015"
-        },
-        {
-          "number": "3",
-          "year": "2014"
-        },
-        {
-          "number": "4",
-          "year": "2013"
-        }
-      ],
-      "amusement": [
-        {
-          "ind": "N"
-        }
-      ],
-      "coreuw": "WC User Help",
-      "constructanderect": [
-        {
-          "ind": "N"
-        }
-      ],
-      "execoffind": "N",
-      "deniedcomments": "",
-      "agriculture": [
-        {
-          "ind": "Y"
-        }
-      ],
-      "effective": "20170809",
-      "oil": [
-        {
-          "ind": "N"
-        }
-      ],
-      "stateclassinfo": [
-        {
-          "splitlimit": [
-            {
-              "policydisease": "1000000",
-              "employeedisease": "1000000",
-              "accident": "1000000"
-            }
-          ],
-          "bureaucode": "CA",
-          "limit": "1000000/1000000/1000000",
-          "scheduledmod": "1.00",
-          "state": "CA"
-        }
-      ],
-      "habitational": [
-        {
-          "ind": "N"
-        }
-      ],
-      "hospitality": [
-        {
-          "ind": "N"
-        }
-      ],
-      "construction": [
-        {
-          "ind": "N"
-        }
-      ],
-      "company": [
-        {
-          "entitytype": "Corporation",
-          "nccinumber": "",
-          "expiringpremium": "12345",
-          "name": "AEX-33529",
-          "feinnumber": "080317000",
-          "yrsinbiz": "5",
-          "entity": "Corporation",
-          "yrsinbusiness": "5+"
-        }
-      ],
-      "class": [
-        {
-          "zip": "91945",
-          "bureaucode": "CA",
-          "code": "0005",
-          "hazardlevel": "C",
-          "qqdeclineind": "N",
-          "classcodeid": "94128",
-          "description": "0005 - Nurseries-propagation and cultivation of nursery stock",
-          "subcode": "0005-14",
-          "actualhourlywage": "1",
-          "insuritydescriptionid": "90",
-          "dualwagetype": "",
-          "zurichdescriptionid": "90",
-          "number": "1",
-          "seasonalemployeeamt": "1",
-          "averagehourlywage": "39.57",
-          "parttimeemployeeamt": "1",
-          "dualwagecode": "",
-          "totalemployeeamt": "1.5",
-          "industrygrp": "horticulture",
-          "decisioncode": "5",
-          "locationnum": "1",
-          "payroll": "123456",
-          "state": "CA",
-          "fulltimeemployeeamt": "1"
-        }
-      ],
-      "ratingtablestatus": "",
-      "anyexcluded": "NO",
-      "unacceptable": "N",
-      "comments": [
-        {
-          "uwreason": "",
-          "declined": "",
-          "quote": "",
-          "quotecover": ""
-        }
-      ],
-      "ratingtype": "normal",
-      "aircraft": [
-        {
-          "ind": "N"
-        }
-      ],
-      "mfgpaper": [
-        {
-          "ind": "N"
-        }
-      ],
-      "stone": [
-        {
-          "ind": "N"
-        }
-      ],
-      "commissionrate": "0.10",
-      "declined": "N",
-      "location": [
-        {
-          "zip": "91945",
-          "number": "1",
-          "address2": "test",
-          "city": "test",
-          "address1": "test",
-          "county": "",
-          "state": "CA",
-          "totalnumemployees": "1.5"
-        }
-      ],
-      "losshistoryyears": "4",
-      "denied": "N",
-      "territorymodzip": "91945",
-      "underwriter": [
-        {
-          "phoneext": "321",
-          "phone": "800-333-5553",
-          "name": "Dean Whittle",
-          "id": "dwhittle",
-          "email": "dwhittle@arrowheadgrp.com"
         }
       ]
     }

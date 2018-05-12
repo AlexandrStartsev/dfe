@@ -596,7 +596,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }
         }
         runtimeToJs(obj) {
-            var cc = [], /*fields = [],*/ dp = '', cts = obj.constructor.toString(), ast;
+            var cc = [], dp = '', cts = obj.constructor.toString(), ast;
             if (!cts.match(/^class/)) cts = 'class {\n' + Object.getOwnPropertyNames(obj.__proto__).map(function(p) {
                 var s = obj[p].toString();
                 return s.replace('function ', s.match(/function \(\)/) ? 'constructor' : '').replace(/"use strict";/, '');
@@ -634,7 +634,6 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 		if (b[i].body instanceof uglify.AST_Assign && b[i].body.left.property == 'dfe') 
                 			b[i] = uglify.parse('this.dfe=' + f);
             });
-            //"' + obj.name + '", 
             var enc = uglify.parse('defineForm(["' + cc.join('", "') + '"], function (' + dp + ') { return ' + ast.print_to_string({
                 quote_style: 3,
                 beautify: true,
@@ -662,7 +661,9 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 };
                 xhr.send(data);
             }
-            ajaxPost(this.runtimeToJs($$.data), '/DfeServlet.srv?a=dfe&p=' + $$.data.name, function(d, s) {
+            let es6 = this.runtimeToJs($$.data);
+            let es5 = babel.transform(es6, { plugins: [ 'transform-es3-property-literals', 'transform-es3-member-expression-literals' ], presets: [ 'es2015' ] }).code;
+            ajaxPost(JSON.stringify({es6: es6, es5: es5}), '/DfeServlet.srv?a=dfe&p=' + $$.data.name, function(d, s) {
                 alert(s);
             }, function(xhr, s) {
                 xhr.responseText ? displayServerError(xhr.responseText) : displayServerError(JSON.stringify(xhr));
@@ -768,7 +769,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
         loadJS($$, script) {
             var tr = $$.runtime.target_runtime, formName = $$.data.name, t = window.opener || window;
             t.requirejs.undef('forms/' + formName);
-            t.eval(script);
+            t.eval(script.replace('defineForm(', 'defineForm("' + formName + '",'));
             t.require([ 'forms/' + formName ], function(dfe) {
                 tr.setDfeForm(dfe.form).restart();
                 $$.runtime.setModel(dfe.form).restart();
