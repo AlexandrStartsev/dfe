@@ -19,15 +19,66 @@ define('forms/test',[ "dfe-core",
         "components/dfe-runtime",
         "components/div-button",
         "components/multioption",
-        "components/c-editbox" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+        "components/c-editbox",
+        "components/span" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
             Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea, ChildRuntime, DivButton, Multioption,
-            LabeledEditbox ) {
+            LabeledEditbox, Span ) {
     let Form = Core.Form;
+    
+    /*return class TestForm extends Core.Form {
+        static fields() {
+            return [
+                Form.field(Container, "field-1", [
+                    Form.field(Container, "field-2", [
+                        Form.field(Editbox, "field-3", { atr: () => fields.simple('.vinnumber') }),
+                    ]),
+                    Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
+                ]),
+                Form.field(LabeledEditbox, "f", { 
+                    atr: () => fields.simple('.vinnumber', { vstrategy: 'always', text: "same but labeled: " })
+                })
+            ]
+        }
+    }
+    */
+    /*return class TestForm extends Core.Form {
+        static fields() {
+            return [
+                Form.field(TabS, { get: $$ => $$('policy.cmau.location.car'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
+                    Form.field(DivButton, 'header', { get: $$ => 'Car#' + $$.index(2), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
+                    Form.field(Editbox, "field-3", {
+                        atr: () => fields.simple('.vinnumber', { vstrategy: 'always' })
+                    })
+                ])
+            ]
+        }
+    }*/
+    
+   /* return class TestForm extends Core.Form {
+        static fields() {
+            return [
+                Form.field(TabS, { get: $$ => $$('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
+                    Form.field(DivButton, 'header', { get: $$ => 'Location#' + $$.index(), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
+                    Form.field(Span, { get: $$ => $$('.car') }, [ 
+                        Form.field(Container, "field-1", [
+                            Form.field(Container, "field-2", { get: $$ => $$('hideStuff') == 'Y' ? [] : [$$] }, [
+                                Form.field(Editbox, "field-3", {
+                                    atr: () => fields.simple('.vinnumber', { vstrategy: 'always' })
+                                }),
+                            ]),
+                            Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
+                        ])
+                    ])
+                ])
+            ]
+        }
+    }*/
+
     
     class SubForm extends Form {
         static fields() {
             return ([
-                Form.field(Container, "field-2", { get: $$ => $$('.hideStuff') == 'Y' ? [] : [$$] }, [
+                Form.field(Container, "field-2", { get: $$ => $$('hideStuff') == 'Y' ? [] : [$$] }, [
                     Form.field(Editbox, "field-3", {
                         atr: () => fields.simple('.ModelYr', { vstrategy: 'always' })
                     }),
@@ -35,7 +86,7 @@ define('forms/test',[ "dfe-core",
                         atr: () => fields.simple('.ModelYr', { vstrategy: 'always', text: "same but labeled: " })
                     }) 
                 ]),
-                Form.field(Checkbox, "field-4", { get: $$ => $$('.hideStuff'), set: ($$, value) => $$.set('.hideStuff', value) }),
+                Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) }),
                 Form.field(Text, "field-5", { get: function() { 
                     return this.$node.attributes.someProperty;
                 }})
@@ -61,7 +112,7 @@ define('forms/test',[ "dfe-core",
             name: "Antique Autos"
         }
     }
-    return class TestForm extends Core.Form {
+    /*return class TestForm extends Core.Form {
         static fields() {
             return [
                 Form.field(DivC, { get: $$ => $$('policy.cmau.location.car'), atr: () => ({style: 'display: flex'})}, [
@@ -79,34 +130,37 @@ define('forms/test',[ "dfe-core",
                     Form.field(Radiolist, 'r3', { atr: () => fields.simple('.hasvin') }),
                     Form.field(Multioption, { get: $$ => ({value: $$('.hasvin'), options: ['Y', 'N']}), set: ($$, value) => $$.set('.hasvin', value) })
                 ]),
-                Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [ 
-                    Form.field(TabD, 'tab-fld', { 
-                        get: () => [{caption: 'This is VIN', hfield: 'h1'}, {caption: 'This is type', hfield: 'h2'}], 
-                        set: ($$, px) => $$.set('.activeTab', px.get('.hfield')),
-                        atr: $$ => ({
-                            activeTab: function(px) {
-                                let at = $$('.activeTab').toString() || 'h1';
-                                return px ? px.get('.hfield') == at : at;
-                            }
-                        }) 
-                    }, [
-                        Form.field(Text, 'hRow', { get: $$ => $$('.caption') }),
-                        Form.field(Text, 'h1', { get: $$ => $$('.vinnumber'), class: 'header' }),
-                        Form.field(Dropdown, 'h2', {
-                            atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
-                                value: k,
-                                description: typeMap[k].name
-                            }))),
-                            class: 'header'
-                        })
-                    ]),
-                    Form.field(SubForm, "subform", { atr: $$ => ({someProperty: 'someValue#' + $$.index()}), pos: [{newRow: true}] }),
-                    Form.field(DivButton, { get: () => 'Click me', set: () => alert('merci') })
-                    //Form.field(ChildRuntime, "subruntime", { atr: () => ({ form: 'forms/test2'}), pos: [{newRow: true}] } )
+                Form.field(TabS, { get: $$ => $$('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
+                    Form.field(DivButton, 'header', { get: $$ => 'Location#' + $$.index(), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
+                    Form.field(Table, { get: $$ => $$('.car') }, [ 
+                        Form.field(TabD, 'tab-fld', { 
+                            get: () => [{caption: 'This is VIN', hfield: 'h1'}, {caption: 'This is type', hfield: 'h2'}], 
+                            set: ($$, px) => $$.set('.activeTab', px.get('.hfield')),
+                            atr: $$ => ({
+                                activeTab: function(px) {
+                                    let at = $$('.activeTab').toString() || 'h1';
+                                    return px ? px.get('.hfield') == at : at;
+                                }
+                            }) 
+                        }, [
+                            Form.field(Text, 'hRow', { get: $$ => $$('.caption') }),
+                            Form.field(Text, 'h1', { get: $$ => $$('.vinnumber'), class: 'header' }),
+                            Form.field(Dropdown, 'h2', {
+                                atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
+                                    value: k,
+                                    description: typeMap[k].name
+                                }))),
+                                class: 'header'
+                            })
+                        ]),
+                        Form.field(SubForm, "subform", { atr: $$ => ({someProperty: 'someValue#' + $$.index()}), pos: [{newRow: true}] }),
+                        Form.field(DivButton, { get: () => 'Click me', set: () => alert('merci') })
+                        //Form.field(ChildRuntime, "subruntime", { atr: () => ({ form: 'forms/test2'}), pos: [{newRow: true}] } )
+                    ])
                 ])
             ]
         }
-    }
+    }*/
     /*
     return class TestForm extends Core.Form {
         static fields() {
@@ -189,7 +243,7 @@ define('forms/test',[ "dfe-core",
             )
         }
     }*/
-    /*return class TestForm extends Core.Form {
+    return class TestForm extends Core.Form {
         constructor(node) {
             super(node);
             //console.log(node.unboundModel.data);
@@ -233,7 +287,7 @@ define('forms/test',[ "dfe-core",
                 ])
             ])
         }
-    } */
+    } 
 });
 
 define('forms/test2',[ "dfe-core",

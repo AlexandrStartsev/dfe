@@ -19,16 +19,16 @@
                     $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
                 })
             });*/
-            require.config({ baseUrl: '/js', paths: { /*'dfe-core': 'es5', 'components/generic': 'es5', 'forms/test': 'es5', */ forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
+            require.config({ baseUrl: '/js', paths: { 'dfe-core': 'es5', 'components/generic': 'es5', 'forms/test': 'es5',  forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
             
             require(['ui/utils'], function() {
                 require(['forms/test', 'dfe-core', 'ui/jquery'], function(form, core, $){
-                    $.get('/test/test-arf-2.json', function(arf) { 
-                        arf.policy[0].cmau[0].location.shift();
+                    $.get('/test/600-cars.json', function(arf) { 
+                        //arf.policy[0].cmau[0].location[0].car.shift();
                         core.startRuntime({ model : arf, node: document.getElementById('dfe'), form: form });
                     })
-                    
-                   /* require(['babel'], function(babel) {
+                    /*
+                    require(['babel'], function(babel) {
                         Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get("forms/test.js")]).then( // "transform-react-jsx",   , "react"
                         function(a) {
                             var s = require('babel').transform(a.join('\n\n\n'), {  plugins: [ "transform-object-rest-spread", "transform-object-assign"],  presets: ["es2015"] }).code;

@@ -33,7 +33,7 @@ define('components/span', ['dfe-core', 'components/base'], function(Core, BaseCo
             let sub = [];
             children.forEach( 
                 (map, row) => map.forEach( 
-                    child => sub.push( Core.createElement('span', {key: row ? row.key : 0}, child) ) 
+                    child => sub.push( Core.createElement('span', child) ) 
                 )
             )
             return Core.createElement('span', attributes, sub);
@@ -47,7 +47,7 @@ define('components/div', ['dfe-core', 'components/base'], function(Core, BaseCom
             let sub = [];
             children.forEach( 
                 (map, row) => map.forEach( 
-                    child => sub.push( Core.createElement('div', {key: row ? row.key : 0}, child) ) 
+                    child => sub.push( Core.createElement('div', child) ) 
                 )
             )
             return Core.createElement('div', attributes, sub);
@@ -93,7 +93,7 @@ define('components/table', ['dfe-core', 'components/base'], function(Core, BaseC
                                 if((field.class||'') === clazz) {
                                     let child = map.get(field);
                                     if( child ) {
-                                        let ii = child.immediateNodeInfo[0];
+                                        let ii = child.field.pos && child.field.pos[0];
                                         if( current === undefined || ii && ii.newRow ) {
                                             rows.push( current = Core.createElement(rowElement, { key: row ? row.key : 0, ...rowAttributes }));
                                         }
@@ -437,8 +437,10 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
             this.lastRows = new Set();
         }
         setActiveTab(key) {
-            this.activeTab = key;
-            this.update(); 
+            if(this.activeTab !== key) {
+                this.activeTab = key;
+                this.update(); 
+            }
         }
         render(data, error, attributes, children) {
             let {
@@ -459,6 +461,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                 activeTab = !activeTab || this.activeTab === key ? key : activeTab;
                 curRows.add(key);
             })
+            headField = headField || 'header';
             this.activeTab = activeTab;
             this.lastRows = curRows;
             children.forEach(
