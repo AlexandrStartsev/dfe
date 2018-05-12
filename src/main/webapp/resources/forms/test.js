@@ -87,9 +87,16 @@ define('forms/test',[ "dfe-core",
                     }) 
                 ]),
                 Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) }),
-                Form.field(Text, "field-5", { get: function() { 
-                    return this.$node.attributes.someProperty;
-                }})
+                Form.field(Text, "field-5", { 
+                    get: function() { 
+                        return this.$node.attributes.someProperty;
+                    }, atr: () => ({ 
+                        attributeMapper: attributes => ({
+                            ...attributes, 
+                            ref: element => element.setAttribute('style', 'background: yellow') 
+                        }) 
+                    })
+                })
             ])
         }
     }
@@ -112,7 +119,7 @@ define('forms/test',[ "dfe-core",
             name: "Antique Autos"
         }
     }
-    /*return class TestForm extends Core.Form {
+    return class TestForm extends Core.Form {
         static fields() {
             return [
                 Form.field(DivC, { get: $$ => $$('policy.cmau.location.car'), atr: () => ({style: 'display: flex'})}, [
@@ -132,7 +139,7 @@ define('forms/test',[ "dfe-core",
                 ]),
                 Form.field(TabS, { get: $$ => $$('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
                     Form.field(DivButton, 'header', { get: $$ => 'Location#' + $$.index(), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
-                    Form.field(Table, { get: $$ => $$('.car') }, [ 
+                    Form.field(Table, { get: $$ => $$('.car') },  
                         Form.field(TabD, 'tab-fld', { 
                             get: () => [{caption: 'This is VIN', hfield: 'h1'}, {caption: 'This is type', hfield: 'h2'}], 
                             set: ($$, px) => $$.set('.activeTab', px.get('.hfield')),
@@ -154,13 +161,13 @@ define('forms/test',[ "dfe-core",
                             })
                         ]),
                         Form.field(SubForm, "subform", { atr: $$ => ({someProperty: 'someValue#' + $$.index()}), pos: [{newRow: true}] }),
-                        Form.field(DivButton, { get: () => 'Click me', set: () => alert('merci') })
+                        Form.field(DivButton, { get: () => 'Click me', set: () => alert('merci') }),
                         //Form.field(ChildRuntime, "subruntime", { atr: () => ({ form: 'forms/test2'}), pos: [{newRow: true}] } )
-                    ])
+                    )
                 ])
             ]
         }
-    }*/
+    }
     /*
     return class TestForm extends Core.Form {
         static fields() {

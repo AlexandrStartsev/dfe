@@ -3,9 +3,6 @@ define('components/base', ['dfe-core'], function(Core) {
         render(data, error, attributes, children) {
             return data.toString();
         }
-        renderDefault() {
-            return [undefined]
-        }
     }
 })
 
@@ -157,9 +154,6 @@ define('components/labeled-component', ['dfe-core', 'components/base'], function
                 attributes.html ? Core.createElement('span', attributes) : attributes.text,
                 !!error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
             ], firstChild]
-        }
-        renderDefault() {
-            return [ undefined, undefined ]
         }
     };
 })
@@ -405,9 +399,6 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
                 ),
                 super.render(null, error, rest)
             ]]
-        }
-        renderDefault() {
-            return Core.createElement('select');
         }
     }
 })
@@ -673,9 +664,6 @@ define('components/dfe-runtime', ['dfe-core'], function(Core) {
                 }
             }})
         }
-        renderDefault() {
-            return [undefined]
-        }
         destroy() {
             this.runtime && this.runtime.shutdown();
             super.destroy();
@@ -732,9 +720,6 @@ define('components/labeled', ['dfe-core', 'components/validation-component'], fu
                 html || cclass || cstyle ? Core.createElement('span', { class: cclass, style: cstyle, text: text, html: html }) : text,
                 super.render(null, error, { hideError: hideError })
             ], ...this.renderComponent(data, null, rest, children) ]
-        }
-        renderDefault() {
-            return [undefined, undefined]
         }
     }
 })

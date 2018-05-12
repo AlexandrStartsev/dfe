@@ -404,157 +404,28 @@ define('dfe-core', function() {
                     break ;
             }
         }
-        
-        static applyInSingleNode(node, parentDOMElement, renderStructure, lastRenderStructure) {
-            if(parentDOMElement) {
-                if(renderStructure === lastRenderStructure) {
-                    let tail = parentDOMElement.firstChild;
-                    lastRenderStructure.forEach(
-                        lst => lst.dom.forEach(e => tail = tail === e ? tail.nextSibling : (parentDOMElement.insertBefore(e, tail), tail))
-                    )
-                    return ;
-                }
-                let tail = parentDOMElement.firstChild, info, keyMap;
-                if( renderStructure.length > 1 && lastRenderStructure.length > 1 && typeof lastRenderStructure[0].key !== 'undefined' ) {
-                    keyMap = new Map();
-                    lastRenderStructure.forEach(
-                        lst => {
-                            lst.used = false;
-                            if(info = keyMap.get(lst.key)) {
-                                info.nodes.push(lst)
-                            } else {
-                                keyMap.set(lst.key, {lrs: 0, nodes: [lst]})
-                            }
-                        }
-                    )
-                    keyMap = renderStructure.map(st => (info = keyMap.get(st.key)) && info.nodes[ info.lrs++ ]);
-                }
-                for(let lrs = 0, rs = 0; rs < renderStructure.length; rs++) {
-                    let st = renderStructure[rs];
-                    if( typeof st === 'string' ) {
-                        renderStructure[rs] = st = { type: '#text', attributes: [{text: st.toString()}], children: [] }
-                    }
-
-                    let lst = keyMap ? keyMap[rs] : lastRenderStructure[lrs];
-                    let use = lst && !lst.used && st.type === lst.type && st.childNode === lst.childNode; // && lst.dom ?
-                    if( use ) {
-                        // TODO: maybe we can do better. maybe we can add needed / remove excessive nodes instead of claiming all existing nodes unusable 
-                        lst.used = use = !st.childNode || st.childNode.getImmediateNodeInfo().length === lst.dom.length;
-                        lrs++;
-                    }
-                    
-                    if( st.childNode !== undefined ) {
-                        st.dom = use ? lst.dom : Array.apply(null, {length: st.childNode.getImmediateNodeInfo().length}).map(() => document.createElement(st.type));
-                        DOM.applyDOMChanges(node, st.dom, [st.childNode], use ? [lst.childNode] : []);
-                        use || st.ref && st.ref(st.dom);
-                    } else {
-                        st.dom = use ? lst.dom : [st.type === '#text' ? document.createTextNode('') : document.createElement(st.type)];
-                        if(st.children.length !== 0 || use && lst.children.length !== 0 ) {
-                            st.children = DOM.applyDOMChanges(node, st.dom, [st.children], use ? [lst.children] : [])[0];
-                        }
-                        use || st.ref && st.ref(st.dom[0]);
-                    }
-                    st.dom.forEach(
-                        (e, i) => {
-                            DOM.reconcileAttributes(st.type, e, st.attributes[i]||{}, use && lst.attributes[i]||{});
-                            (tail ? tail !== e : e.parentElement !== parentDOMElement) && parentDOMElement.insertBefore(e, tail);
-                            tail = e.nextSibling;
-                        }
-                    )
-                }
-            }
-            lastRenderStructure.forEach( lst => lst.used || lst.dom.forEach(e => e.parentElement && e.parentElement.removeChild(e)) );
-        }
-
-        static applyDOMChanges(node, parentDOMElements, renderStructure, lastRenderStructure) {
-            let lrs = 0;
-            for(let rs = 0, ps = 0; rs < renderStructure.length; rs++) {
-                let st = renderStructure[rs]; 
-                let lst = lastRenderStructure[lrs];
-                let use = st === lst || lst !== undefined && st !== undefined && !(st instanceof Node || lst instanceof Node);
-                if(st !== undefined) {
-                    if( st instanceof Node ) {
-                        st.attached = true;
-                        st.parentDOMElements = parentDOMElements.slice( ps, ps += st.getImmediateNodeInfo().length );
-                       // console.log('parent dom elements for node ',st,' set to ',st.parentDOMElements);
-                    } else {
-                        if(st !== lst) {
-                            st = (st.forEach ? st : [st]).filter(e => typeof e === 'object' || typeof e === 'string');
-                            renderStructure[rs] = st;
-                        }
-                        DOM.applyInSingleNode(node, parentDOMElements[ps++], st, use ? lst : []);
-                    }
-                } else {
-                    ps++;
-                }         
-                use && lrs++;
-            }
-            while(lrs < lastRenderStructure.length) {
-                let lst = lastRenderStructure[lrs++];
-                lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst);
-            }
-            return renderStructure;
-        }
-        
+                
         static batchRender(nodes) {
             nodes.forEach(node => node.render());
         }
         
-        static calcRenderStructure(node) {
-            if(node.control.constructor.name === 'Container') {
-                node = node;
-            }
-            let renderStructure = node.control.render(node.lastData, node.lastError, node.attributes, node.children);
-            let pos = node.field.pos || [];
-            node.renderStructure = Array.isArray(renderStructure) ? renderStructure : [renderStructure];
-            node.immediateNodeInfo = DOM.calcImmediateNodeInfo(node.renderStructure, pos);
-            if(node.control instanceof Form) {
-                pos.forEach(
-                    (pos, i) => {
-                        let info = node.immediateNodeInfo[i]; 
-                        if( info ) {
-                            Object.assign(info, pos);
-                        }
-                    }
-                );
-            }
-            
-            if( node.lastParentDOMElements.length === node.immediateNodeInfo.length  && node.control.constructor.name === 'Container' ) {
-                node=node;
-            }
-            
-            if( node.parent && node.attached && node.lastParentDOMElements.length !== node.immediateNodeInfo.length ) {
-                node.parent.shouldRecalculateRenderStructure = true;
-            }
-            
-            /*if( node.parent && !node.parent.shouldRecalculateRenderStructure && node.attached ) { // && node.parent.attachedChildNodes.has(node) ) {
-                // TODO: what if immediateNodeInfo attributes changed but length didn't? - probably just apply changes right here...
-                if(node.lastParentDOMElements.length !== node.immediateNodeInfo.length) {
-                    if( !node.attached  ) {
-                        node=node;
-                    }
-                    node.parent.shouldRecalculateRenderStructure = true;
-                    //this.shouldRecalculateRenderStructure = false;
-                    //DOM.render(node.parent);
-                }
-            }*/
-        }
-        
         static nodeFromElement(runtime, domElement) {
-            function isChild(parentElement) {
-                for(let e = domElement; e; e = e.parentElement) {
-                    if(e === parentElement) {
-                        return true;
+            function isChildOf(parentElement) {
+                if( parentElement ) {
+                    for(let e = domElement; e; e = e.parentElement) {
+                        if(e === parentElement) {
+                            return true;
+                        }
                     }
                 }
                 return false;
             }
             let node = runtime.nodes[0];
-            if( node && node.parentDOMElements.some(isChild) ) {
+            if( node && isChildOf(node.$parentDom) ) {
                 for(let step = node; step; node = step) {
                     step.children.forEach(
                         map => map.forEach(
-                            child => child.parentDOMElements.some(isChild) && (step = child)
+                            child => isChildOf(child.$parentDom) && (step = child)
                         )
                     )
                     if(step === node) {
@@ -564,6 +435,15 @@ define('dfe-core', function() {
                 return node;
             }
             return null;
+        }
+        static makeKeyMap(renderStructure, lastRenderStructure) {
+            if( renderStructure.length > 1 && lastRenderStructure.length > 1 && typeof lastRenderStructure[0].key !== 'undefined' ) {
+                let keyMap = new Map(), info;
+                lastRenderStructure.forEach(
+                    lst => (info = keyMap.get(lst.key)) ? info.nodes.push(lst) : keyMap.set( lst.key, {lrs: 0, nodes: [lst]} )
+                )
+                return renderStructure.map(st => (info = keyMap.get(st.key)) && info.nodes[ info.lrs++ ]);
+            }
         }
     }
     
@@ -591,27 +471,30 @@ define('dfe-core', function() {
             )
             return sub;
         }
-        renderDefault() {
-            return []
-        }
     }
     
     let fieldIndex = 0;
     
     class Field {
         constructor(clazz, ...args) {
-            let [name, parameters, children] = args;
-            if(typeof name !== 'string') {
-                children = parameters;
-                parameters = name;
+            let index = 1, parameters = {}, children = [];
+            if( ! (clazz.prototype instanceof Component) ) {
+                throw 'Must specify Component class';
+            }
+            if(typeof arguments[1] === 'string') {
+                name = arguments[1];
+                index++;
+            } else {
                 name = clazz.prototype.constructor.name + '#' + (++fieldIndex);
             }
-            if(Array.isArray(parameters) || parameters instanceof Field) {
-                children = parameters;
-                parameters = {}
+            let next = arguments[index];
+            if( typeof next === 'object' && !Array.isArray(next) && !(next instanceof Field) ) {
+                parameters = next;
+                index++;
             }
-            if(!Array.isArray(children)) {
-                children = children instanceof Field ? [children] : []
+            for(let i = index; i < arguments.length; i++) {
+                next = arguments[i];
+                (Array.isArray(next) ? next : [next]).forEach(arg => (arg instanceof Field) && children.push(arg));
             }
             Object.assign( this, parameters, { name: name, children: children, component: clazz } )
         }
@@ -669,29 +552,39 @@ define('dfe-core', function() {
                 shouldRender: false,
                 lastRenderStructure: []
             })            
-            this.key = (field.name + '-' + unboundModel.data.key);
             let control = new (field.component)(this);
-            let renderStructure = control.renderDefault();
+            this.key = (field.name + '-' + unboundModel.data.key);
             this.form = control instanceof Form ? control : parent.form;
             this.control = control;
         }
         render() {
             if( this.shouldRender && this.isAttached() ) {
                 this.shouldRender = false;
-                let renderStructure = this.control.render(this.lastData, this.lastError, this.attributes, this.children);
-                let attributes = this.field.pos||[], posIndex = 0, mapper = this.elementInfo.attributeMapper;
+                let { attributeMapper: mapper, ...rest} = this.attributes;
+                let renderStructure = this.control.render(this.lastData, this.lastError, rest, this.children);
+                let attributes = this.field.pos||[], posIndex = 0;
+                if( this.elementInfo.attributeMapper ) {
+                    let f = mapper;
+                    mapper = a => this.elementInfo.attributeMapper(f ? f(a) : a);
+                }
                 renderStructure = (Array.isArray(renderStructure) ? renderStructure : [renderStructure]).map(
                     st => st instanceof Node ? st : {
+                        key: st && st.type || '0',
                         attributes: (mapper ? mapper(attributes[posIndex++]||{}) : attributes[posIndex++])||{},
                         dom: null, 
                         content: st
                     }
                 )
-                let lrs = 0, tail = this.$prevDom, prevNode = null;
+                let lrs = 0, tail = this.$prevDom, prevNode = null, keyMap = DOM.makeKeyMap(renderStructure, this.lastRenderStructure);
+                this.lastRenderStructure.forEach( lst => lst.used = false );
                 for(let rs = 0; rs < renderStructure.length; rs++) {
                     let st = renderStructure[rs]; 
-                    let lst = this.lastRenderStructure[lrs];
+                    let lst = keyMap ? keyMap[rs] : this.lastRenderStructure[lrs];
                     let use = st === lst || lst && !(st instanceof Node || lst instanceof Node);
+                    if( use ) {
+                        lst.used = true ;
+                        lrs++;
+                    }
                     if( st instanceof Node ) {
                         tail = st.setDom(this.elementInfo, this.$parentDom, tail, true);
                         prevNode && (prevNode.$nextNode = st), st.$prevNode = prevNode, prevNode = st;
@@ -701,15 +594,19 @@ define('dfe-core', function() {
                         );
                         st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : []);
                         DOM.reconcileAttributes(this.elementInfo.type, st.dom, st.attributes, use ? lst.attributes : {});
+                        use || st.attributes.ref && st.attributes.ref(st.dom);
                     }
-                    use ? lrs++ : st.ref && st.ref(st.dom);
                 }
                 prevNode && (prevNode.$nextNode = null);
                 tail === this.$lastDom || this.adjustLastDom(tail);
-                while(lrs < this.lastRenderStructure.length) {
-                    let lst = this.lastRenderStructure[lrs++];
-                    lst instanceof Node ? lst.setDom(null, null, null, false) : this.$parentDom.removeChild(lst.dom);
-                }
+                this.lastRenderStructure.forEach( lst => {
+                    if( lst instanceof Node ) {
+                        lst.used || lst.setDom(null, null, null, false);
+                        delete lst.used;
+                    } else {
+                        lst.used || this.$parentDom.removeChild(lst.dom);
+                    }
+                });
                 this.lastRenderStructure = renderStructure;
             }
         }
@@ -733,19 +630,12 @@ define('dfe-core', function() {
                 st => typeof st === 'string' ? { type: '#text', attributes: {text: st}, children: [] } : st
             ).filter( st => st && st.type );
             
-            let prev = null, prevNode = null, info, keyMap;
+            let prev = null, prevNode = null, keyMap = DOM.makeKeyMap(renderStructure, lastRenderStructure);
             lastRenderStructure.forEach( lst => lst.used = false );
-            if( renderStructure.length > 1 && lastRenderStructure.length > 1 && typeof lastRenderStructure[0].key !== 'undefined' ) {
-                keyMap = new Map();
-                lastRenderStructure.forEach(
-                    lst => (info = keyMap.get(lst.key)) ? info.nodes.push(lst) : keyMap.set( lst.key, {lrs: 0, nodes: [lst]} )
-                )
-                keyMap = renderStructure.map(st => (info = keyMap.get(st.key)) && info.nodes[ info.lrs++ ]);
-            }
             for(let lrs = 0, rs = 0; rs < renderStructure.length; rs++) {
                 let st = renderStructure[rs]; 
                 if( st instanceof Node ) {
-                    throw 'Not supported (yet?)'
+                    throw "Component can't be mounted in a fixed-width node"
                 }
                 if( typeof st === 'string' ) {
                     renderStructure[rs] = st = { type: '#text', attributes: {text: st.toString()}, children: [] }
@@ -768,6 +658,7 @@ define('dfe-core', function() {
                     }
                     DOM.reconcileAttributes( st.type, st.dom, st.attributes, use ? lst.attributes : {} );
                     st.children = this.applyInPlace(st.dom, st.children, use ? lst.children : []);
+                    use || st.attributes.ref && st.attributes.ref(st.dom);
                 }
             }
             prevNode && (prevNode.$nextNode = null);
@@ -843,10 +734,9 @@ define('dfe-core', function() {
     }
     
 	class Runtime {
-        constructor(rootElement, listener) {
+        constructor(listener) {
             window._runtime = this;
             this.schedule = [];
-            this.rootElement = rootElement;
             this.listener = (listener || new DfeListener()).For(); 
             this.nodes = [];
             this.shouldAnythingRender = false;
@@ -870,27 +760,21 @@ define('dfe-core', function() {
                 this.removeEvicted();
             }
         }
-        restart(initAction) {
+        restart(parentElement, initAction) {
 	        this.shutdown();
 	        this.initAction = {action: initAction||'init'};
             if( this.rootProxy && this.formClass ) {
                 let node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
-                node.setDom({ type: 'div', childNode: node }, this.rootElement, null, false);
+                node.setDom({ type: 'div', childNode: node }, parentElement, null, false);
 	            this.processor = setInterval(() => this.processInterceptors(), 50);
                 this.processInterceptors();
             }
             return this;
 	    }
-        /*setRoot(rootElement) {
-            if(this.rootElement !== rootElement) {
-                this.rootElement = rootElement;
-                let node = this.nodes[0];
-                if( node ) {
-                    node.parentDOMElements = this.rootElement ? [this.rootElement] : [];
-                    node.update();
-                }
-            }
-        }*/
+        setRoot(parentElement, afterNode) {
+            let node = this.nodes[0];
+            node && node.setDom(node.elementInfo, parentElement, afterNode||null, false);
+        }
         processInterceptors() {
             if(this.shouldAnythingRender) {
                 this.shouldAnythingRender = false;
@@ -985,9 +869,6 @@ define('dfe-core', function() {
                             }
                         }
                     })
-                    /*node.lastRenderStructure.forEach(
-                        lst => lst !== undefined && !(lst instanceof Node) && DOM.applyInSingleNode(null, null, [], lst)
-                    )*/
                     node.control.destroy();
                 } else {
                     this.nodes[cur++] = this.nodes[index];
@@ -1078,10 +959,10 @@ define('dfe-core', function() {
             return ret;
         }	
         static startRuntime(arg) {
-            var m = arg.model, j = m instanceof JsonProxy || typeof m.shadow == 'function', listener = j && m.listener || arg.listener ||new DfeListener(), runtime = new Runtime(arg.node, listener);
+            var m = arg.model, j = m instanceof JsonProxy || typeof m.shadow == 'function', listener = j && m.listener || arg.listener ||new DfeListener(), runtime = new Runtime(listener);
             for(var v in arg.params) runtime[v] = arg.params[v];
             j ? runtime.rootProxy = m.withListener(runtime.listener.For()) : runtime.setModel(m);
-            runtime.setDfeForm(arg.form).restart(arg.initAction);
+            runtime.setDfeForm(arg.form).restart(arg.node, arg.initAction);
             arg.ready && arg.ready(runtime, dfe, arg.model);
             return runtime;
         } 

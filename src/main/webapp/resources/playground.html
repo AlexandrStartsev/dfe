@@ -19,12 +19,12 @@
                     $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
                 })
             });*/
-            require.config({ baseUrl: '/js', paths: { 'dfe-core': 'es5', 'components/generic': 'es5', 'forms/test': 'es5',  forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
+            require.config({ baseUrl: '/js', paths: { /*'dfe-core': 'es5', 'components/generic': 'es5', 'forms/test': 'es5',*/  forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
             
             require(['ui/utils'], function() {
                 require(['forms/test', 'dfe-core', 'ui/jquery'], function(form, core, $){
-                    $.get('/test/600-cars.json', function(arf) { 
-                        //arf.policy[0].cmau[0].location[0].car.shift();
+                    $.get('/test/test-arf-2.json', function(arf) { 
+                       // arf.policy[0].cmau[0].location.shift();
                         core.startRuntime({ model : arf, node: document.getElementById('dfe'), form: form });
                     })
                     /*
