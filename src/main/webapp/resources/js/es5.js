@@ -23,8 +23,10 @@ define('dfe-core', function () {
     //deep
     function deepCopy(to, from) {
         Object.getOwnPropertyNames(from).forEach(function (key) {
-            var v = from[key];
-            to[key] = (typeof v === 'undefined' ? 'undefined' : _typeof(v)) === 'object' ? deepCopy(Array.isArray(v) ? [] : {}, v) : v;
+            if (key !== 'key') {
+                var v = from[key];
+                to[key] = (typeof v === 'undefined' ? 'undefined' : _typeof(v)) === 'object' ? deepCopy(Array.isArray(v) ? [] : {}, v) : v;
+            }
         });
         return to;
     }
@@ -113,12 +115,16 @@ define('dfe-core', function () {
     };
 
     JsonProxy.prototype.shadow = function (path, defaults) {
-        if (path.length == 0) return [];
-        if (path.charAt(0) == '.') path = this.elements.join('.') + path;
+        if (path.length == 0) {
+            return [];
+        }
+        if (path.charAt(0) == '.') {
+            path = this.elements.join('.') + path;
+        }
         var p = path.split('.'),
             me = this,
             pa = this.parents.concat(this),
-            ret;
+            ret = void 0;
         for (var i = 0; i < p.length; i++) {
             if (!(pa.length > i + 1 && this.elements[i] == p[i])) {
                 pa = pa.slice(0, i + 1);
@@ -127,7 +133,9 @@ define('dfe-core', function () {
                 }ret = pa.pop();
                 break;
             }
-        }deepCopy((ret = ret || new JsonProxy(undefined, this.parents, p, this.listener)).data, defaults);
+        }
+        ret = ret || new JsonProxy(undefined, this.parents, p, this.listener);
+        (typeof defaults === 'undefined' ? 'undefined' : _typeof(defaults)) === 'object' && deepCopy(ret.data, defaults);
         return [ret];
     };
 
@@ -468,6 +476,7 @@ define('dfe-core', function () {
                         newAttributes.text == oldAttributes.text || (domElement.text = newAttributes.text);
                         newAttributes.value == oldAttributes.value || (domElement.value = newAttributes.value);
                         break;
+                    case 'th':
                     case 'td':
                         (newAttributes.colSpan || 1) == domElement.colSpan || (domElement.colSpan = newAttributes.colSpan || 1);
                         (newAttributes.rowSpan || 1) == domElement.rowSpan || (domElement.rowSpan = newAttributes.rowSpan || 1);
@@ -581,6 +590,9 @@ define('dfe-core', function () {
                 });
                 return sub;
             }
+        }, {
+            key: 'onUpdate',
+            value: function onUpdate(data, error, attributes) {}
         }]);
 
         return Component;
@@ -639,13 +651,14 @@ define('dfe-core', function () {
 
                 var field = new (Function.prototype.bind.apply(Field, [null].concat([clazz], args)))();
                 if (clazz.prototype instanceof Form) {
-                    field.children = clazz.fields(field.children);
+                    field.children = clazz.fields(field.children, field) || [];
+                    Array.isArray(field.children) || (field.children = [field.children]);
                 }
                 return field;
             }
         }, {
             key: 'fields',
-            value: function fields(children) {
+            value: function fields(children, field) {
                 return children || [];
             }
         }]);
@@ -690,6 +703,7 @@ define('dfe-core', function () {
                 $lastDom: null,
                 $nextNode: null,
                 $prevNode: null,
+                $followingChildNode: null,
                 $boundariesPropagationUp: false,
                 shouldRender: false,
                 lastRenderStructure: []
@@ -732,7 +746,9 @@ define('dfe-core', function () {
                     var lrs = 0,
                         tail = this.$prevDom,
                         prevNode = null,
+                        followingChildNode = null,
                         keyMap = DOM.makeKeyMap(renderStructure, this.lastRenderStructure);
+                    var usedChildren = new Set();
                     this.lastRenderStructure.forEach(function (lst) {
                         return lst.used = false;
                     });
@@ -745,11 +761,13 @@ define('dfe-core', function () {
                             lrs++;
                         }
                         if (st instanceof Node) {
+                            followingChildNode || (followingChildNode = st);
                             tail = st.setDom(this.elementInfo, this.$parentDom, tail, true);
+                            usedChildren.add(st);
                             prevNode && (prevNode.$nextNode = st), st.$prevNode = prevNode, prevNode = st;
                         } else {
                             st.dom = tail = use ? lst.dom : this.$parentDom.insertBefore(document.createElement(this.elementInfo.type), tail ? tail.nextSibling : this.$parentDom.firstChild);
-                            st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : []);
+                            st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : [], usedChildren);
                             DOM.reconcileAttributes(this.elementInfo.type, st.dom, st.attributes, use ? lst.attributes : {});
                             use || st.attributes.ref && st.attributes.ref(st.dom);
                         }
@@ -758,19 +776,21 @@ define('dfe-core', function () {
                     tail === this.$lastDom || this.adjustLastDom(tail);
                     this.lastRenderStructure.forEach(function (lst) {
                         if (lst instanceof Node) {
-                            lst.used || lst.setDom(null, null, null, false);
+                            lst.used || usedChildren.has(lst) || lst.setDom(null, null, null, false);
                             delete lst.used;
                         } else {
                             lst.used || _this2.$parentDom.removeChild(lst.dom);
                         }
                     });
+                    this.$followingChildNode = followingChildNode;
                     this.lastRenderStructure = renderStructure;
                 }
             }
         }, {
             key: 'adjustLastDom',
             value: function adjustLastDom(tail) {
-                if (this.$boundariesPropagationUp && this.parent.$lastDom === this.$lastDom) {
+                // can we assume this? 
+                if (this.$boundariesPropagationUp /* this.parent && this.parent.$parentDom === this.$parentDom */ && this.parent.$lastDom === this.$lastDom) {
                     this.parent.adjustLastDom(tail);
                 }
                 if (this.$nextNode && this.$nextNode.$prevDom === this.$lastDom) {
@@ -781,14 +801,17 @@ define('dfe-core', function () {
         }, {
             key: 'adjustPrevDom',
             value: function adjustPrevDom(head) {
-                if (this.$lastDom === this.$prevDom) {
+                // is it necessary? is it not ?
+                /*if(this.$followingChildNode !== null && this.$followingChildNode.$prevDom === this.$prevDom) {
+                    this.$followingChildNode.adjustPrevDom(head)
+                } else */if (this.$lastDom === this.$prevDom) {
                     this.adjustLastDom(head);
                 }
                 this.$prevDom = head;
             }
         }, {
             key: 'applyInPlace',
-            value: function applyInPlace(domElement, renderStructure, lastRenderStructure) {
+            value: function applyInPlace(domElement, renderStructure, lastRenderStructure, usedChildren) {
                 renderStructure = (Array.isArray(renderStructure) ? renderStructure : [renderStructure]).map(function (st) {
                     return typeof st === 'string' ? { type: '#text', attributes: { text: st }, children: [] } : st;
                 }).filter(function (st) {
@@ -812,13 +835,14 @@ define('dfe-core', function () {
 
                     var lst = keyMap ? keyMap[rs] : lastRenderStructure[lrs],
                         child = st.childNode;
-                    var use = lst && !lst.used && st.type === lst.type && child === lst.childNode;
+                    var use = lst && !lst.used && st.type === lst.type && child === lst.childNode && !usedChildren.has(child);
                     if (use) {
                         lst.used = true;
                         lrs++;
                     }
                     if (child !== undefined) {
                         prev = child.setDom(st, domElement, prev, false);
+                        usedChildren.add(child);
                         prevNode && (prevNode.$nextNode = child), child.$prevNode = prevNode, prevNode = child;
                     } else {
                         st.dom = use ? lst.dom : st.type === '#text' ? document.createTextNode('') : document.createElement(st.type);
@@ -826,14 +850,14 @@ define('dfe-core', function () {
                         if (prev !== st.dom) {
                             prev = domElement.insertBefore(st.dom, prev);
                         }
-                        st.children = this.applyInPlace(st.dom, st.children, use ? lst.children : []);
+                        st.children = this.applyInPlace(st.dom, st.children, use ? lst.children : [], usedChildren);
                         DOM.reconcileAttributes(st.type, st.dom, st.attributes, use ? lst.attributes : {});
                         use || st.attributes.ref && st.attributes.ref(st.dom);
                     }
                 }
                 prevNode && (prevNode.$nextNode = null);
                 lastRenderStructure.forEach(function (lst) {
-                    lst.used || (lst.childNode ? lst.childNode.setDom(null, null, null, false) : lst.dom.parentElement.removeChild(lst.dom));
+                    lst.used || (lst.childNode ? usedChildren.has(lst.childNode) || lst.childNode.setDom(null, null, null, false) : lst.dom.parentElement.removeChild(lst.dom));
                 });
                 return renderStructure;
             }
@@ -915,6 +939,8 @@ define('dfe-core', function () {
                     this.lastData = data;
                     this.lastError = error;
                     this.shouldRender = true;
+                    this.runtime.shouldAnythingRender = true;
+                    this.control.onUpdate(data, error, this.attributes);
                 }
             }
         }]);
@@ -926,7 +952,6 @@ define('dfe-core', function () {
         function Runtime(listener) {
             _classCallCheck(this, Runtime);
 
-            window._runtime = this;
             this.schedule = [];
             this.listener = (listener || new DfeListener()).For();
             this.nodes = [];
@@ -968,7 +993,7 @@ define('dfe-core', function () {
                 this.shutdown();
                 this.initAction = { action: initAction || 'init' };
                 if (this.rootProxy && this.formClass) {
-                    var node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields()));
+                    var node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields([], null)));
                     node.setDom({ type: 'div', childNode: node }, parentElement, null, false);
                     this.processor = setInterval(function () {
                         return _this4.processInterceptors();
@@ -1175,7 +1200,7 @@ define('dfe-core', function () {
                             fg,
                             fv;
                         //m.events = events;
-                        var attrs = node.attributes = typeof d.atr != 'function' ? {} : d.atr.call(node.form, m);
+                        var attrs = node.attributes = typeof d.atr === 'function' && d.atr.call(node.form, m) || {};
                         node.doValidation = attrs.errorwatch || node.control.doValidation(events, attrs);
                         this.removeErroring(node);
                         typeof (v = typeof (fg = d.get || attrs.get) != 'function' ? [m] : fg.call(node.form, m, events)) == 'undefined' || m.result(v);
@@ -1469,15 +1494,15 @@ define('components/span', ['dfe-core', 'components/base'], function (Core, BaseC
 
 define('components/div', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
     return function (_BaseComponent3) {
-        _inherits(Span, _BaseComponent3);
+        _inherits(Div, _BaseComponent3);
 
-        function Span() {
-            _classCallCheck(this, Span);
+        function Div() {
+            _classCallCheck(this, Div);
 
-            return _possibleConstructorReturn(this, (Span.__proto__ || Object.getPrototypeOf(Span)).apply(this, arguments));
+            return _possibleConstructorReturn(this, (Div.__proto__ || Object.getPrototypeOf(Div)).apply(this, arguments));
         }
 
-        _createClass(Span, [{
+        _createClass(Div, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
                 var sub = [];
@@ -1490,7 +1515,7 @@ define('components/div', ['dfe-core', 'components/base'], function (Core, BaseCo
             }
         }]);
 
-        return Span;
+        return Div;
     }(BaseComponent);
 });
 
@@ -1517,11 +1542,16 @@ define('components/inline-rows', ['dfe-core', 'components/base'], function (Core
                 }
                 children.forEach(function (map, row) {
                     return map.forEach(function (child) {
-                        var ii = child.field.pos && child.field.pos[0];
-                        if (current === undefined || singles || ii && ii.newRow) {
-                            rows.push(current = []);
+                        if (child.control instanceof InlineRows) {
+                            rows.push(child);
+                            current = undefined;
+                        } else {
+                            var ii = child.field.pos && child.field.pos[0];
+                            if (current === undefined || !singles || ii && ii.newRow) {
+                                rows.push(current = []);
+                            }
+                            current.push(Core.createElement(cellElement, child));
                         }
-                        current.push(Core.createElement(cellElement, child));
                     });
                 });
                 return rows;
@@ -1666,36 +1696,9 @@ define('components/div-r', ['dfe-core', 'components/table'], function (Core, Tab
     }(Table);
 });
 
-define('components/labeled-component', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent6) {
-        _inherits(Labeled, _BaseComponent6);
-
-        function Labeled() {
-            _classCallCheck(this, Labeled);
-
-            return _possibleConstructorReturn(this, (Labeled.__proto__ || Object.getPrototypeOf(Labeled)).apply(this, arguments));
-        }
-
-        _createClass(Labeled, [{
-            key: 'render',
-            value: function render(data, error, attributes, children) {
-                var firstChild = void 0;
-                children.forEach(function (map) {
-                    return map.forEach(function (child) {
-                        return firstChild || (firstChild = child);
-                    });
-                });
-                return [[attributes.html ? Core.createElement('span', attributes) : attributes.text, !!error && !attributes.hideError && Core.createElement('label', { class: 'dfe-error', text: error.toString() })], firstChild];
-            }
-        }]);
-
-        return Labeled;
-    }(BaseComponent);
-});
-
 define('components/validation-component', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent7) {
-        _inherits(ValidationComponent, _BaseComponent7);
+    return function (_BaseComponent6) {
+        _inherits(ValidationComponent, _BaseComponent6);
 
         function ValidationComponent() {
             _classCallCheck(this, ValidationComponent);
@@ -1753,6 +1756,60 @@ define('components/validation-component', ['dfe-core', 'components/base'], funct
     }(BaseComponent);
 });
 
+define('components/label', ['dfe-core', 'components/validation-component'], function (Core, ValidationComponent) {
+    return function (_ValidationComponent) {
+        _inherits(Label, _ValidationComponent);
+
+        function Label() {
+            _classCallCheck(this, Label);
+
+            return _possibleConstructorReturn(this, (Label.__proto__ || Object.getPrototypeOf(Label)).apply(this, arguments));
+        }
+
+        _createClass(Label, [{
+            key: 'render',
+            value: function render(data, error, attributes, children) {
+                var html = attributes.html,
+                    text = attributes.text,
+                    label = attributes.label,
+                    hideError = attributes.hideError,
+                    rest = _objectWithoutProperties(attributes, ['html', 'text', 'label', 'hideError']);
+
+                return [[html || label ? Core.createElement('label', _extends({ text: label, html: html }, rest)) : text || data.toString(), _get(Label.prototype.__proto__ || Object.getPrototypeOf(Label.prototype), 'render', this).call(this, null, error, { hideError: hideError }, children)]];
+            }
+        }]);
+
+        return Label;
+    }(ValidationComponent);
+});
+
+define('components/labeled-component', ['dfe-core', 'components/label'], function (Core, Label) {
+    return function (_Label) {
+        _inherits(Labeled, _Label);
+
+        function Labeled() {
+            _classCallCheck(this, Labeled);
+
+            return _possibleConstructorReturn(this, (Labeled.__proto__ || Object.getPrototypeOf(Labeled)).apply(this, arguments));
+        }
+
+        _createClass(Labeled, [{
+            key: 'render',
+            value: function render(data, error, attributes, children) {
+                var firstChild = void 0;
+                children.forEach(function (map) {
+                    return map.forEach(function (child) {
+                        return firstChild || (firstChild = child);
+                    });
+                });
+                return [].concat(_toConsumableArray(_get(Labeled.prototype.__proto__ || Object.getPrototypeOf(Labeled.prototype), 'render', this).call(this, "not specified", error, attributes, children)), [firstChild]);
+            }
+        }]);
+
+        return Labeled;
+    }(Label);
+});
+
 define('components/editbox', ['dfe-core', 'components/validation-component', 'components/date-picker-polyfill'], function (Core, ValidationComponent) {
     function Patterning(v, p) {
         while (p && v != 0 && !(v.match(p) && v.match(p)[0] == v)) {
@@ -1781,27 +1838,27 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
         }
         return value || '';
     }
-    return function (_ValidationComponent) {
-        _inherits(Editbox, _ValidationComponent);
+    return function (_ValidationComponent2) {
+        _inherits(Editbox, _ValidationComponent2);
 
         function Editbox(node) {
             _classCallCheck(this, Editbox);
 
-            var _this20 = _possibleConstructorReturn(this, (Editbox.__proto__ || Object.getPrototypeOf(Editbox)).call(this, node));
+            var _this21 = _possibleConstructorReturn(this, (Editbox.__proto__ || Object.getPrototypeOf(Editbox)).call(this, node));
 
-            _this20.ca = 0;
-            _this20.events = {
+            _this21.ca = 0;
+            _this21.events = {
                 onKeyDown: function onKeyDown(e) {
-                    return _this20.onKeyDown(e);
+                    return _this21.onKeyDown(e);
                 },
                 onKeyUp: function onKeyUp(e) {
-                    return _this20.onKeyUp(e);
+                    return _this21.onKeyUp(e);
                 },
                 onChange: function onChange(e) {
-                    return _this20.onKeyUp(e, true);
+                    return _this21.onKeyUp(e, true);
                 }
             };
-            return _this20;
+            return _this21;
         }
 
         _createClass(Editbox, [{
@@ -1852,8 +1909,10 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
                     }
                 }
                 if (this.pattern) {
-                    m = (v = ui.value.substr(0, s) + e.key + ui.value.substr(ui.selectionEnd)).match(this.pattern);
-                    (!m || m[0] != v) && (this.ca--, e.preventDefault());
+                    var m = void 0,
+                        _v = void 0;
+                    m = (_v = ui.value.substr(0, s) + e.key + ui.value.substr(ui.selectionEnd)).match(this.pattern);
+                    (!m || m[0] != _v) && (this.ca--, e.preventDefault());
                 }
             }
         }, {
@@ -1964,8 +2023,8 @@ define('components/editbox-$', ['components/editbox'], function (Editbox) {
 });
 
 define('components/button', ['dfe-core', 'components/validation-component'], function (Core, ValidationComponent) {
-    return function (_ValidationComponent2) {
-        _inherits(Button, _ValidationComponent2);
+    return function (_ValidationComponent3) {
+        _inherits(Button, _ValidationComponent3);
 
         function Button() {
             _classCallCheck(this, Button);
@@ -1976,12 +2035,12 @@ define('components/button', ['dfe-core', 'components/validation-component'], fun
         _createClass(Button, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this23 = this;
+                var _this24 = this;
 
                 var value = data.toString(),
                     rest = _objectWithoutProperties(attributes, []);
                 return [[Core.createElement('input', _extends({}, this.splitAttributes(rest, error), { value: value, type: 'button', onClick: function onClick() {
-                        return _this23.store(value, 'click');
+                        return _this24.store(value, 'click');
                     } })), _get(Button.prototype.__proto__ || Object.getPrototypeOf(Button.prototype), 'render', this).call(this, null, error, rest)]];
             }
         }]);
@@ -1991,8 +2050,8 @@ define('components/button', ['dfe-core', 'components/validation-component'], fun
 });
 
 define('components/checkbox', ['dfe-core', 'components/validation-component'], function (Core, ValidationComponent) {
-    return function (_ValidationComponent3) {
-        _inherits(Checkbox, _ValidationComponent3);
+    return function (_ValidationComponent4) {
+        _inherits(Checkbox, _ValidationComponent4);
 
         function Checkbox() {
             _classCallCheck(this, Checkbox);
@@ -2003,7 +2062,7 @@ define('components/checkbox', ['dfe-core', 'components/validation-component'], f
         _createClass(Checkbox, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this25 = this;
+                var _this26 = this;
 
                 if (Array.isArray(data)) {
                     data = data[0];
@@ -2014,7 +2073,7 @@ define('components/checkbox', ['dfe-core', 'components/validation-component'], f
                 var checked = data && ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' ? data.checked && data.checked.toString().match(/Y|y/) : data.toString().match(/Y|y/));
                 var text = (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' && data.text;
                 return [[Core.createElement('input', _extends({}, this.splitAttributes(rest, error), { checked: !!checked, type: 'checkbox', onChange: function onChange(e) {
-                        return _this25.store(e.target.checked ? 'Y' : 'N');
+                        return _this26.store(e.target.checked ? 'Y' : 'N');
                     } })), text, _get(Checkbox.prototype.__proto__ || Object.getPrototypeOf(Checkbox.prototype), 'render', this).call(this, null, error, rest)]];
             }
         }]);
@@ -2029,8 +2088,8 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
             return a[i] == b[i];
         });
     }
-    return function (_ValidationComponent4) {
-        _inherits(Dropdown, _ValidationComponent4);
+    return function (_ValidationComponent5) {
+        _inherits(Dropdown, _ValidationComponent5);
 
         function Dropdown() {
             _classCallCheck(this, Dropdown);
@@ -2041,7 +2100,7 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
         _createClass(Dropdown, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this27 = this;
+                var _this28 = this;
 
                 var def = attributes['default'],
                     rest = _objectWithoutProperties(attributes, ['default']);
@@ -2057,7 +2116,7 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
                     return testChoice(data.value, item.value) && (selectedIndex = i);
                 });
                 return [[Core.createElement('select', _extends({}, this.splitAttributes(rest, error), { selectedIndex: selectedIndex, onChange: function onChange(e) {
-                        return _this27.store(options[e.target.selectedIndex].value);
+                        return _this28.store(options[e.target.selectedIndex].value);
                     } }), options.map(function (opt) {
                     return Core.createElement('option', { text: opt.text });
                 })), _get(Dropdown.prototype.__proto__ || Object.getPrototypeOf(Dropdown.prototype), 'render', this).call(this, null, error, rest)]];
@@ -2069,8 +2128,8 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
 });
 
 define('components/html', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent8) {
-        _inherits(Html, _BaseComponent8);
+    return function (_BaseComponent7) {
+        _inherits(Html, _BaseComponent7);
 
         function Html() {
             _classCallCheck(this, Html);
@@ -2118,17 +2177,17 @@ define('components/form', ['dfe-core', 'components/div'], function (Core, Div) {
 });
 
 define('components/tab-s', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent9) {
-        _inherits(TabS, _BaseComponent9);
+    return function (_BaseComponent8) {
+        _inherits(TabS, _BaseComponent8);
 
         function TabS(node) {
             _classCallCheck(this, TabS);
 
-            var _this30 = _possibleConstructorReturn(this, (TabS.__proto__ || Object.getPrototypeOf(TabS)).call(this, node));
+            var _this31 = _possibleConstructorReturn(this, (TabS.__proto__ || Object.getPrototypeOf(TabS)).call(this, node));
 
-            _this30.activeTab = -1;
-            _this30.lastRows = new Set();
-            return _this30;
+            _this31.activeTab = -1;
+            _this31.lastRows = new Set();
+            return _this31;
         }
 
         _createClass(TabS, [{
@@ -2142,7 +2201,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function (Core, Base
         }, {
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this31 = this;
+                var _this32 = this;
 
                 var headerClass = attributes.rowclass$header,
                     headerStyle = attributes.rowstyle$header,
@@ -2152,33 +2211,33 @@ define('components/tab-s', ['dfe-core', 'components/base'], function (Core, Base
                     focusnew = attributes.focusnew,
                     haclass = attributes.haclass,
                     rest = _objectWithoutProperties(attributes, ['rowclass$header', 'rowstyle$header', 'rowclass', 'rowstyle', 'headField', 'focusnew', 'haclass']),
-                    curRows = new Set(),
-                    activeTab = void 0;
+                    nextRows = new Set();
 
                 var head = Core.createElement('div', { class: headerClass, style: headerStyle });
                 var body = Core.createElement('div', { class: rowClass, style: rowStyle });
+                this.activeTab = data.some(function (proxy) {
+                    return _this32.activeTab === proxy.data.key;
+                }) ? this.activeTab : data[0] && data[0].data.key;
                 data.forEach(function (proxy) {
                     var key = proxy.data.key;
-                    _this31.lastRows.has(key) || focusnew && (_this31.activeTab = key);
-                    activeTab = !activeTab || _this31.activeTab === key ? key : activeTab;
-                    curRows.add(key);
+                    nextRows.add(key);
+                    _this32.lastRows.has(key) || _this32.lastRows.size && focusnew && (_this32.activeTab = key);
                 });
                 headField = headField || 'header';
-                this.activeTab = activeTab;
-                this.lastRows = curRows;
+                this.lastRows = nextRows;
                 children.forEach(function (map, row) {
                     if (row) {
                         map.forEach(function (child, field) {
                             if (field.name === headField) {
                                 head.children.push(Core.createElement('div', child, function (pos) {
-                                    return _extends({}, pos, row.key === activeTab ? { class: (pos.class ? pos.class + ' ' : '') + haclass } : {}, {
+                                    return _extends({}, pos, row.key === _this32.activeTab ? { class: (pos.class ? pos.class + ' ' : '') + haclass } : {}, {
                                         onClick: function onClick() {
-                                            return _this31.setActiveTab(row.key);
+                                            return _this32.setActiveTab(row.key);
                                         }
                                     });
                                 }));
                             } else {
-                                row.key === activeTab && body.children.push(Core.createElement('div', child));
+                                row.key === _this32.activeTab && body.children.push(Core.createElement('div', child));
                             }
                         });
                     }
@@ -2215,23 +2274,23 @@ define('components/tab-d', ['dfe-core', 'components/base'], function (Core, Base
         return ActiveTabHandler;
     }();
 
-    return function (_BaseComponent10) {
-        _inherits(TabD, _BaseComponent10);
+    return function (_BaseComponent9) {
+        _inherits(TabD, _BaseComponent9);
 
         function TabD(node) {
             _classCallCheck(this, TabD);
 
-            var _this32 = _possibleConstructorReturn(this, (TabD.__proto__ || Object.getPrototypeOf(TabD)).call(this, node));
+            var _this33 = _possibleConstructorReturn(this, (TabD.__proto__ || Object.getPrototypeOf(TabD)).call(this, node));
 
-            _this32.handler = new ActiveTabHandler(_this32);
-            _this32.allColumns = node.field.children;
-            return _this32;
+            _this33.handler = new ActiveTabHandler(_this33);
+            _this33.allColumns = node.field.children;
+            return _this33;
         }
 
         _createClass(TabD, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this33 = this;
+                var _this34 = this;
 
                 var headerClass = attributes.rowclass$header,
                     headerStyle = attributes.rowstyle$header,
@@ -2253,19 +2312,19 @@ define('components/tab-d', ['dfe-core', 'components/base'], function (Core, Base
                 }).pop();
                 data.forEach(function (model) {
                     var child = children.get(model.data).get(headField),
-                        isActive = (useHandler ? _this33.handler.activeTab : activeTab)(model);
+                        isActive = (useHandler ? _this34.handler.activeTab : activeTab)(model);
                     if (child) {
                         head.children.push(Core.createElement('div', child, function (pos) {
                             return _extends({}, pos, isActive ? { class: (pos.class ? pos.class + ' ' : '') + haclass } : {}, {
                                 onClick: function onClick() {
-                                    return _this33.handler.store(model), _this33.store(model);
+                                    return _this34.handler.store(model), _this34.store(model);
                                 }
                             });
                         }));
                     }
                 });
                 children.get(null).forEach(function (child, field) {
-                    return field.name === (useHandler ? _this33.handler.activeTab : activeTab)() && body.children.push(Core.createElement('div', child));
+                    return field.name === (useHandler ? _this34.handler.activeTab : activeTab)() && body.children.push(Core.createElement('div', child));
                 });
                 return Core.createElement('div', rest, [head, body]);
             }
@@ -2288,7 +2347,7 @@ define('components/div-c', ['dfe-core', 'components/table'], function (Core, Tab
         _createClass(DivC, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this35 = this;
+                var _this36 = this;
 
                 var rowClass = attributes.rowclass,
                     rowStyle = attributes.rowstyle,
@@ -2312,7 +2371,7 @@ define('components/div-c', ['dfe-core', 'components/table'], function (Core, Tab
                 });
                 this.toColumns(children.get(null), fields.header, columns);
                 rows.forEach(function (model) {
-                    return _this35.toColumns(children.get(model.data), fields[""], columns);
+                    return _this36.toColumns(children.get(model.data), fields[""], columns);
                 });
                 this.toColumns(children.get(null), fields.footer, columns);
                 return Core.createElement('div', rest, columns);
@@ -2342,22 +2401,22 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
         });
     }
     var radioNameCounter = 0;
-    return function (_ValidationComponent5) {
-        _inherits(Radiolist, _ValidationComponent5);
+    return function (_ValidationComponent6) {
+        _inherits(Radiolist, _ValidationComponent6);
 
         function Radiolist(node) {
             _classCallCheck(this, Radiolist);
 
-            var _this36 = _possibleConstructorReturn(this, (Radiolist.__proto__ || Object.getPrototypeOf(Radiolist)).call(this, node));
+            var _this37 = _possibleConstructorReturn(this, (Radiolist.__proto__ || Object.getPrototypeOf(Radiolist)).call(this, node));
 
-            _this36.defaultName = 'Radiolist#' + ++radioNameCounter;
-            return _this36;
+            _this37.defaultName = 'Radiolist#' + ++radioNameCounter;
+            return _this37;
         }
 
         _createClass(Radiolist, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this37 = this;
+                var _this38 = this;
 
                 var orientation = attributes.orientation,
                     rest = _objectWithoutProperties(attributes, ['orientation']);
@@ -2368,12 +2427,12 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
                 }
                 return [[].concat(_toConsumableArray(Array.prototype.concat.apply([], normalized.items.map(function (item) {
                     return [Core.createElement('input', _extends({
-                        name: _this37.defaultName
-                    }, _this37.splitAttributes(rest, error), {
+                        name: _this38.defaultName
+                    }, _this38.splitAttributes(rest, error), {
                         type: 'radio',
                         checked: testChoice(normalized.value, item.value),
                         onChange: function onChange() {
-                            return _this37.store(item.value);
+                            return _this38.store(item.value);
                         }
                     })), item.description || item.value.toString(), orientation === 'vertical' && Core.createElement('br')];
                 }))), [_get(Radiolist.prototype.__proto__ || Object.getPrototypeOf(Radiolist.prototype), 'render', this).call(this, null, error, rest)])];
@@ -2385,8 +2444,8 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
 });
 
 define('components/iframe', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent11) {
-        _inherits(Iframe, _BaseComponent11);
+    return function (_BaseComponent10) {
+        _inherits(Iframe, _BaseComponent10);
 
         function Iframe() {
             _classCallCheck(this, Iframe);
@@ -2446,7 +2505,7 @@ define('components/dfe-runtime', ['dfe-core'], function (Core) {
         _createClass(ChildRuntime, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this41 = this;
+                var _this42 = this;
 
                 // TODO ... 
                 var formName = attributes.form,
@@ -2457,11 +2516,11 @@ define('components/dfe-runtime', ['dfe-core'], function (Core) {
                 if (this.formName !== formName) {
                     this.runtime && this.runtime.shutdown();
                     require([formName], function (formClass) {
-                        return _this41.runtime = Core.startRuntime({
+                        return _this42.runtime = Core.startRuntime({
                             params: { parentControl: null },
                             form: formClass,
                             model: model,
-                            node: _this41.domElement
+                            node: _this42.domElement
                         });
                     });
                 }
@@ -2470,13 +2529,13 @@ define('components/dfe-runtime', ['dfe-core'], function (Core) {
                     editTarget ? element.setAttribute('dfe-edit-target', '') : element.removeAttribute('dfe-edit-target');
                 }
                 return Core.createElement('div', _extends({}, rest, { ref: function ref(element) {
-                        _this41.domElement = element;
+                        _this42.domElement = element;
                         element.setAttribute('dfe-form', formName);
                         if (editTarget) {
                             element.setAttribute('dfe-edit-target', '');
                         }
-                        if (_this41.runtime) {
-                            _this41.runtime.setRoot(element);
+                        if (_this42.runtime) {
+                            _this42.runtime.setRoot(element);
                         }
                     } }));
             }
@@ -2493,8 +2552,8 @@ define('components/dfe-runtime', ['dfe-core'], function (Core) {
 });
 
 define('components/div-button', ['dfe-core', 'components/validation-component'], function (Core, ValidationComponent) {
-    return function (_ValidationComponent6) {
-        _inherits(DivButton, _ValidationComponent6);
+    return function (_ValidationComponent7) {
+        _inherits(DivButton, _ValidationComponent7);
 
         function DivButton() {
             _classCallCheck(this, DivButton);
@@ -2505,13 +2564,13 @@ define('components/div-button', ['dfe-core', 'components/validation-component'],
         _createClass(DivButton, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this43 = this;
+                var _this44 = this;
 
                 var value = data.toString(),
                     rest = _objectWithoutProperties(attributes, []);
                 return Core.createElement('div', _extends({}, this.splitAttributes(rest, error), { onClick: function onClick() {
-                        return _this43.store(value, 'click');
-                    } }), [Core.createElement('label', { class: 'div-button-text', text: value }), _get(DivButton.prototype.__proto__ || Object.getPrototypeOf(DivButton.prototype), 'render', this).call(this, null, error, rest)]);
+                        return _this44.store(value, 'click');
+                    } }), [Core.createElement('label', { class: 'div-button-text', html: value }), _get(DivButton.prototype.__proto__ || Object.getPrototypeOf(DivButton.prototype), 'render', this).call(this, null, error, rest)]);
             }
         }]);
 
@@ -2520,8 +2579,8 @@ define('components/div-button', ['dfe-core', 'components/validation-component'],
 });
 
 define('components/multioption', ['dfe-core', 'components/validation-component'], function (Core, ValidationComponent) {
-    return function (_ValidationComponent7) {
-        _inherits(Multioption, _ValidationComponent7);
+    return function (_ValidationComponent8) {
+        _inherits(Multioption, _ValidationComponent8);
 
         function Multioption() {
             _classCallCheck(this, Multioption);
@@ -2532,7 +2591,7 @@ define('components/multioption', ['dfe-core', 'components/validation-component']
         _createClass(Multioption, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this45 = this;
+                var _this46 = this;
 
                 var value = data.value.toString(),
                     rest = _objectWithoutProperties(attributes, []);
@@ -2541,7 +2600,7 @@ define('components/multioption', ['dfe-core', 'components/validation-component']
                         type: 'checkbox',
                         checked: option === value,
                         onChange: function onChange(e) {
-                            return _this45.store(e.target.checked ? option : []);
+                            return _this46.store(e.target.checked ? option : []);
                         }
                     }), option];
                 }))), [_get(Multioption.prototype.__proto__ || Object.getPrototypeOf(Multioption.prototype), 'render', this).call(this, null, error, rest)]));
@@ -2553,16 +2612,16 @@ define('components/multioption', ['dfe-core', 'components/validation-component']
 });
 
 define('components/labeled', ['dfe-core', 'components/validation-component'], function (Core, ValidationComponent) {
-    return function (_ValidationComponent8) {
-        _inherits(Labeled, _ValidationComponent8);
+    return function (_ValidationComponent9) {
+        _inherits(Labeled, _ValidationComponent9);
 
         function Labeled(node) {
             _classCallCheck(this, Labeled);
 
-            var _this46 = _possibleConstructorReturn(this, (Labeled.__proto__ || Object.getPrototypeOf(Labeled)).call(this, node));
+            var _this47 = _possibleConstructorReturn(this, (Labeled.__proto__ || Object.getPrototypeOf(Labeled)).call(this, node));
 
-            _this46.renderComponent = _this46.getComponent().prototype.render.bind(new (_this46.getComponent())(node));
-            return _this46;
+            _this47.renderComponent = _this47.getComponent().prototype.render.bind(new (_this47.getComponent())(node));
+            return _this47;
         }
 
         _createClass(Labeled, [{
@@ -2571,11 +2630,12 @@ define('components/labeled', ['dfe-core', 'components/validation-component'], fu
                 var cclass = attributes.cclass,
                     cstyle = attributes.cstyle,
                     text = attributes.text,
+                    label = attributes.label,
                     html = attributes.html,
                     hideError = attributes.hideError,
-                    rest = _objectWithoutProperties(attributes, ['cclass', 'cstyle', 'text', 'html', 'hideError']);
+                    rest = _objectWithoutProperties(attributes, ['cclass', 'cstyle', 'text', 'label', 'html', 'hideError']);
 
-                return [[html || cclass || cstyle ? Core.createElement('span', { class: cclass, style: cstyle, text: text, html: html }) : text, _get(Labeled.prototype.__proto__ || Object.getPrototypeOf(Labeled.prototype), 'render', this).call(this, null, error, { hideError: hideError })]].concat(_toConsumableArray(this.renderComponent(data, null, rest, children)));
+                return [[html || label || cclass || cstyle ? Core.createElement('label', { class: cclass, style: cstyle, text: label || text, html: html }) : text, _get(Labeled.prototype.__proto__ || Object.getPrototypeOf(Labeled.prototype), 'render', this).call(this, null, error, { hideError: hideError })]].concat(_toConsumableArray(this.renderComponent(data, null, rest, children)));
             }
         }]);
 
@@ -2811,59 +2871,35 @@ define('components/editbox-P', ['components/editbox', 'ui/utils'], function(CEdi
 })
 */
 
-define('forms/test', ["dfe-core", "ui/shapes", 'dfe-field-helper', "components/labeled-component", "components/editbox", "components/container", "components/table", "components/button", "components/checkbox", "components/text", "components/dropdown", "components/html", "components/div-r", "components/tab-s", "components/tab-d", "components/div-c", "components/radiolist", "components/textarea", "components/dfe-runtime", "components/div-button", "components/multioption", "components/c-editbox", "components/span", "components/inline-rows"], function (Core, shapes, _fields, Labeled, Editbox, Container, Table, Button, Checkbox, Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea, ChildRuntime, DivButton, Multioption, LabeledEditbox, Span, InlineRows) {
+define('forms/corecomm/quote.cmau.car', ["require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/c-editbox-$", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/c-checkbox"], function (require, Core, cmn, _fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
     var Form = Core.Form;
 
-    /*return class TestForm extends Core.Form {
-        static fields() {
-            return [
-                Form.field(Container, "field-1", [
-                    Form.field(Container, "field-2", [
-                        Form.field(Editbox, "field-3", { atr: () => fields.simple('.vinnumber') }),
-                    ]),
-                    Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
-                ]),
-                Form.field(LabeledEditbox, "f", { 
-                    atr: () => fields.simple('.vinnumber', { vstrategy: 'always', text: "same but labeled: " })
-                })
-            ]
-        }
-    }
-    */
-    /*return class TestForm extends Core.Form {
-        static fields() {
-            return [
-                Form.field(TabS, { get: $$ => $$('policy.cmau.location.car'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
-                    Form.field(DivButton, 'header', { get: $$ => 'Car#' + $$.index(2), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
-                    Form.field(Editbox, "field-3", {
-                        atr: () => fields.simple('.vinnumber', { vstrategy: 'always' })
-                    })
-                ])
-            ]
-        }
-    }*/
-
-    /* return class TestForm extends Core.Form {
-         static fields() {
-             return [
-                 Form.field(TabS, { get: $$ => $$('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
-                     Form.field(DivButton, 'header', { get: $$ => 'Location#' + $$.index(), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
-                     Form.field(Span, { get: $$ => $$('.car') }, [ 
-                         Form.field(Container, "field-1", [
-                             Form.field(Container, "field-2", { get: $$ => $$('hideStuff') == 'Y' ? [] : [$$] }, [
-                                 Form.field(Editbox, "field-3", {
-                                     atr: () => fields.simple('.vinnumber', { vstrategy: 'always' })
-                                 }),
-                             ]),
-                             Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
-                         ])
-                     ])
-                 ])
-             ]
-         }
-         
-         
-     }*/
+    var carDefaults = {
+        losspayee: [{
+            losspayeeInd: "N",
+            ailessorInd: "N",
+            haownInd: "N"
+        }],
+        emplessor: "N",
+        PhysDmgInd: "N",
+        DumpingOpInd: "N",
+        vinoverride: "N",
+        hasvin: "Y",
+        custom: "N",
+        UseClassInd1: "N",
+        UseClassInd2: "N",
+        coverages: [{
+            pip: [{
+                IncludeInd: "N"
+            }],
+            liab: [{
+                IncludeInd: "Y"
+            }],
+            towlabor: [{
+                towlabor: "No Coverage"
+            }]
+        }]
+    };
 
     var typeMap = {
         car: {
@@ -2884,418 +2920,775 @@ define('forms/test', ["dfe-core", "ui/shapes", 'dfe-field-helper', "components/l
         }
     };
 
-    return function (_Core$Form) {
-        _inherits(TestForm, _Core$Form);
+    var AutoFocus = function (_LabeledEditbox) {
+        _inherits(AutoFocus, _LabeledEditbox);
 
-        function TestForm() {
-            _classCallCheck(this, TestForm);
+        function AutoFocus() {
+            _classCallCheck(this, AutoFocus);
 
-            return _possibleConstructorReturn(this, (TestForm.__proto__ || Object.getPrototypeOf(TestForm)).apply(this, arguments));
+            return _possibleConstructorReturn(this, (AutoFocus.__proto__ || Object.getPrototypeOf(AutoFocus)).apply(this, arguments));
         }
 
-        _createClass(TestForm, null, [{
-            key: 'fields',
-            value: function fields() {
-                return [Form.field(TabS, { get: function get($$) {
-                        return $$('policy.cmau.location');
-                    }, atr: function atr() {
-                        return { rowstyle$header: 'display: flex', style: 'width: 900px' };
-                    } }, [Form.field(DivButton, 'header', { get: function get($$) {
-                        return 'Location#' + ($$.index() + 1);
-                    }, atr: function atr() {
-                        return { style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px' };
-                    } }), Form.field(TabS, { get: function get($$) {
-                        return $$('.car');
-                    }, atr: function atr() {
-                        return { rowstyle$header: 'display: flex; width: 900px; flex-flow: wrap;' };
-                    } }, [Form.field(DivButton, 'header', { get: function get($$) {
-                        return 'Car#' + ($$.index() + 1);
-                    }, atr: function atr() {
-                        return { style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px' };
-                    } }), Form.field(Table, [Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.vinnumber', { text: 'Vin' });
-                    }, pos: [{ newRow: true }] }), Form.field(Labeled, { atr: function atr() {
-                        return { text: 'Vehicle type: ' };
-                    }, pos: [{ newRow: true }] }, Form.field(Dropdown, {
-                    atr: function atr($$) {
-                        return _fields.choice('.vehicletype', Object.keys(typeMap).map(function (k) {
-                            return { value: k, description: typeMap[k].name };
-                        }));
-                    }
-                })), Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.ModelYr', { text: 'Model Year' });
-                    }, pos: [{ newRow: true }] }), Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.make', { text: 'Make' });
-                    }, pos: [{ newRow: true }] }), Form.field(InlineRows, { get: function get($$) {
-                        return $$('.vehicletype') === 'car' ? [$$] : [];
-                    }, atr: function atr() {
-                        return { singles: true };
-                    } }, [Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.StatedAmt', { text: 'Price' });
-                    } }), Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.Horsepower', { text: 'HP' });
-                    } }), Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.vehicleocostnew', { text: 'Cost new' });
-                    } }), Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.VehUseCd', { text: 'Vehicle use' });
-                    } })]), Form.field(InlineRows, { get: function get($$) {
-                        return $$('.vehicletype') === 'truck' ? [$$] : [];
-                    }, atr: function atr() {
-                        return { singles: true };
-                    } }, [Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.VehicleClass', { text: 'Class' });
-                    } }), Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.TrailerType', { text: 'Trailer type' });
-                    } }), Form.field(LabeledEditbox, { atr: function atr() {
-                        return _fields.simple('.DumpingOpInd', { text: 'Dumping opt' });
-                    } })])])])])];
+        _createClass(AutoFocus, [{
+            key: 'render',
+            value: function render(data, error, attributes) {
+                return _get(AutoFocus.prototype.__proto__ || Object.getPrototypeOf(AutoFocus.prototype), 'render', this).call(this, data, error, _extends({}, attributes, { ref: function ref(dom) {
+                        return dom.focus(), dom.select();
+                    } }));
             }
         }]);
 
-        return TestForm;
-    }(Core.Form);
+        return AutoFocus;
+    }(LabeledEditbox);
 
-    var SubForm = function (_Form) {
-        _inherits(SubForm, _Form);
+    function vehDetailsDisabled($$) {
+        return $$('.hasvin') == 'Y' && ($$('.vinnumber') == 0 || $$('.vinoverride') != 'Y');
+    }
 
-        function SubForm() {
-            _classCallCheck(this, SubForm);
+    var VehDetailsChoice = function (_Form) {
+        _inherits(VehDetailsChoice, _Form);
 
-            return _possibleConstructorReturn(this, (SubForm.__proto__ || Object.getPrototypeOf(SubForm)).apply(this, arguments));
+        function VehDetailsChoice() {
+            _classCallCheck(this, VehDetailsChoice);
+
+            return _possibleConstructorReturn(this, (VehDetailsChoice.__proto__ || Object.getPrototypeOf(VehDetailsChoice)).apply(this, arguments));
         }
 
-        _createClass(SubForm, null, [{
+        _createClass(VehDetailsChoice, null, [{
             key: 'fields',
-            value: function fields() {
-                return [Form.field(Container, "field-2", { get: function get($$) {
-                        return $$('hideStuff') == 'Y' ? [] : [$$];
-                    } }, [Form.field(Editbox, "field-3", {
+            value: function fields(children, field) {
+                var config = field.config || {};
+                return Form.field(Labeled, {
                     atr: function atr() {
-                        return _fields.simple('.ModelYr', { vstrategy: 'always' });
-                    }
-                }), Form.field(LabeledEditbox, "f", {
-                    atr: function atr() {
-                        return _fields.simple('.ModelYr', { vstrategy: 'always', text: "same but labeled: " });
-                    }
-                })]), Form.field(Checkbox, "field-4", { get: function get($$) {
-                        return $$('hideStuff');
-                    }, set: function set($$, value) {
-                        return $$.set('hideStuff', value);
-                    } }), Form.field(Text, "field-5", {
-                    get: function get() {
-                        return this.$node.attributes.someProperty;
-                    }, atr: function atr() {
                         return {
-                            attributeMapper: function attributeMapper(attributes) {
-                                return _extends({}, attributes, {
-                                    ref: function ref(element) {
-                                        return element.setAttribute('style', 'background: yellow');
-                                    }
-                                });
-                            }
+                            style: 'padding-left: 10px',
+                            html: '<a href="javascript:showHelp(\'/cmau_help.html#' + config.helpId + '\')" class="css-qmark"></a>' + config.label,
+                            errorwatch: true
                         };
                     }
-                })];
+                }, Form.field(Either, {
+                    val: config.validation,
+                    atr: function atr($$) {
+                        return {
+                            first: vehDetailsDisabled($$) || $$('.custom') == 'Y'
+                        };
+                    }
+                }, Form.field(Editbox, {
+                    atr: function atr($$) {
+                        return _fields.simple(config.field, {
+                            pattern: config.pattern,
+                            disabled: vehDetailsDisabled($$),
+                            style: 'width: 150px; text-transform:uppercase;',
+                            hideError: true
+                        });
+                    }
+                }), Form.field(Dropdown, {
+                    atr: function atr($$) {
+                        return _fields.ajaxChoice(config.field, {
+                            query: _extends({}, config.ajaxOptions($$), {
+                                method: 'CMAUVehicleScriptHelper',
+                                action: config.action
+                            })
+                        }, {
+                            disabled: vehDetailsDisabled($$) || $$('.custom') == 'Y',
+                            hideError: true
+                        });
+                    }
+                })));
             }
         }]);
 
-        return SubForm;
+        return VehDetailsChoice;
     }(Form);
 
-    return function (_Core$Form2) {
-        _inherits(TestForm, _Core$Form2);
+    var ApplyToAllField = function (_Form2) {
+        _inherits(ApplyToAllField, _Form2);
 
-        function TestForm() {
-            _classCallCheck(this, TestForm);
+        function ApplyToAllField() {
+            _classCallCheck(this, ApplyToAllField);
 
-            return _possibleConstructorReturn(this, (TestForm.__proto__ || Object.getPrototypeOf(TestForm)).apply(this, arguments));
+            return _possibleConstructorReturn(this, (ApplyToAllField.__proto__ || Object.getPrototypeOf(ApplyToAllField)).apply(this, arguments));
         }
 
-        _createClass(TestForm, null, [{
+        _createClass(ApplyToAllField, null, [{
+            key: 'fields',
+            value: function fields(children, field) {
+                var config = field.config || {};
+                return [].concat(_toConsumableArray(children), [Form.field(Button, {
+                    get: function get() {
+                        return 'Apply to all ' + (config.type ? typeMap[config.type].btn || typeMap[config.type].name : 'Vehicles');
+                    },
+                    set: function set($$, value) {
+                        return $$('...location.car').forEach(function (car) {
+                            return config.type && car.data.vehicletype != config.type || car.set(config.field, $$(config.field));
+                        });
+                    },
+                    atr: function atr() {
+                        return { class: 'link-button' };
+                    }
+                })]);
+            }
+        }]);
+
+        return ApplyToAllField;
+    }(Form);
+
+    var QuoteCmauCarForm = function (_Form3) {
+        _inherits(QuoteCmauCarForm, _Form3);
+
+        function QuoteCmauCarForm(node) {
+            _classCallCheck(this, QuoteCmauCarForm);
+
+            var _this56 = _possibleConstructorReturn(this, (QuoteCmauCarForm.__proto__ || Object.getPrototypeOf(QuoteCmauCarForm)).call(this, node));
+
+            node.unboundModel.get('policy.cmau.location').forEach(function (loc) {
+                return loc.defaultSubset('.car', carDefaults).forEach(function (car) {
+                    return car.get('.hasvin') == 'Y' && QuoteCmauCarForm.vehProcessVin(car);
+                });
+            });
+            return _this56;
+        }
+
+        _createClass(QuoteCmauCarForm, null, [{
             key: 'fields',
             value: function fields() {
-                return [Form.field(DivC, { get: function get($$) {
-                        return $$('policy.cmau.location.car');
-                    }, atr: function atr() {
-                        return { style: 'display: flex' };
-                    } }, [Form.field(Text, 'h1', { get: function get() {
-                        return 'Vin number';
-                    }, class: 'header' }), Form.field(Text, 'h2', { get: function get() {
-                        return 'Type';
-                    }, class: 'header' }), Form.field(Text, 'h3', { get: function get() {
-                        return 'Has vin';
-                    }, class: 'header' }), Form.field(Text, 'h4', { get: function get() {
-                        return 'Has vin';
-                    }, class: 'header' }), Form.field(Text, 'r1', { get: function get($$) {
-                        return ($$('.hasvin') == 'Y' ? '' : '*') + $$('.vinnumber');
-                    } }), Form.field(Dropdown, 'r2', {
-                    atr: function atr($$) {
-                        return _fields.choice('.vehicletype', Object.keys(typeMap).map(function (k) {
-                            return {
-                                value: k,
-                                description: typeMap[k].name
-                            };
-                        }));
+                return Form.field(Container, "root", {
+                    get: function get($$) {
+                        return $$('policy.cmau');
                     }
-                }), Form.field(Radiolist, 'r3', { atr: function atr() {
-                        return _fields.simple('.hasvin');
-                    } }), Form.field(Multioption, { get: function get($$) {
-                        return { value: $$('.hasvin'), options: ['Y', 'N'] };
-                    }, set: function set($$, value) {
-                        return $$.set('.hasvin', value);
-                    } })]), Form.field(TabS, { get: function get($$) {
-                        return $$('policy.cmau.location');
-                    }, atr: function atr() {
-                        return { rowstyle$header: 'display: flex' };
-                    } }, [Form.field(DivButton, 'header', { get: function get($$) {
-                        return 'Location#' + $$.index();
-                    }, atr: function atr() {
-                        return { style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px' };
-                    } }), Form.field(Table, { get: function get($$) {
-                        return $$('.car');
-                    } }, Form.field(TabD, 'tab-fld', {
-                    get: function get() {
-                        return [{ caption: 'This is VIN', hfield: 'h1' }, { caption: 'This is type', hfield: 'h2' }];
+                }, [Form.field(TabS, "locs", {
+                    get: function get($$) {
+                        return $$('.location');
                     },
-                    set: function set($$, px) {
-                        return $$.set('.activeTab', px.get('.hfield'));
+                    val: function val($$) {
+                        return $$.required('.location');
                     },
-                    atr: function atr($$) {
+                    atr: function atr() {
                         return {
-                            activeTab: function activeTab(px) {
-                                var at = $$('.activeTab').toString() || 'h1';
-                                return px ? px.get('.hfield') == at : at;
-                            }
+                            haclass: 'tab-item-active',
+                            focusnew: 1,
+                            headField: 'loc-hdr',
+                            rowclass$header: 'tab-header',
+                            rowclass: 'tab-body',
+                            rowstyle: 'display: block; width: 900px;'
                         };
                     }
-                }, [Form.field(Text, 'hRow', { get: function get($$) {
-                        return $$('.caption');
-                    } }), Form.field(Text, 'h1', { get: function get($$) {
+                }, [Form.field(DivButton, "loc-hdr", {
+                    get: function get($$) {
+                        return ('<a style="color: #444">Location #' + ($$.index(2) + 1) + '</a><br/>' + $$('.city') + ' ' + $$('.state') + ' ' + $$('.zip') + '-' + $$('.zipaddon')).replace(/-$/, '');
+                    },
+                    //val: $$ => $$.errorwatch($$.control.parentControl),
+                    atr: function atr($$) {
+                        return {
+                            class: 'div-button',
+                            eclass: 'dfe-error',
+                            vstrategy: 'always',
+                            errorwatch: true
+                        };
+                    },
+                    pos: [{
+                        class: "tab-item"
+                    }]
+                }), Form.field(Div, "loc-title1", {
+                    pos: [{
+                        class: "inline-section-header"
+                    }]
+                }, [Form.field(Label, "field-159", {
+                    get: function get($$) {
+                        return 'Location #' + ($$.index() + 1);
+                    }
+                }), Form.field(Button, "add-car", {
+                    get: function get() {
+                        return 'Add Vehicle';
+                    },
+                    set: function set($$) {
+                        return $$.append('.car', carDefaults);
+                    },
+                    atr: function atr() {
+                        return {
+                            style: 'padding: 1px 10px'
+                        };
+                    },
+                    pos: [{
+                        style: "position: absolute; right: 5px; top: 5px"
+                    }]
+                })]), Form.field(TabS, "cars", {
+                    get: function get($$) {
+                        return $$('.car');
+                    },
+                    val: function val($$) {
+                        return $$.required('.car');
+                    },
+                    atr: function atr() {
+                        return {
+                            haclass: 'tab-item-active',
+                            focusnew: 1,
+                            headField: 'car-hdr',
+                            style: 'width: 100%;',
+                            rowclass$header: 'tab-header',
+                            rowclass: 'tab-body',
+                            rowstyle: 'padding: 0px; overflow: hidden;'
+                        };
+                    },
+                    pos: [{
+                        style: "width: 100%; "
+                    }]
+                }, [Form.field(DivButton, "car-hdr", {
+                    get: function get($$) {
+                        return $$('..state') + ' - Vehicle #' + ($$.index() + 1) + '<br/>' + $$('.ModelYr') + ' ' + $$('.make');
+                    },
+                    //val: $$ => $$.errorwatch($$.control.parentControl),
+                    atr: function atr($$) {
+                        return {
+                            class: 'div-button',
+                            eclass: 'dfe-error',
+                            vstrategy: 'always',
+                            errorwatch: true
+                        };
+                    },
+                    pos: [{
+                        class: "tab-item"
+                    }]
+                }), Form.field(Table, "info", {
+                    atr: function atr($$) {
+                        var skip = $$('.hasvin') == 'Y' ? $$('.vinvalid') != 'Y' && $$('.vinnumber') != 0 ? [] : ['override'] : ['vin', 'override'];
+                        vehDetailsDisabled($$) && skip.push('custom');
+                        return {
+                            singles: true,
+                            class: 'dfe-table tab-cols-5-5',
+                            skip: skip
+                        };
+                    },
+                    pos: [{
+                        class: "dfe-inline-section"
+                    }]
+                }, [Form.field(Label, "field-154", {
+                    get: function get($$) {
+                        return 'Vehicle #' + ($$.index() + 1);
+                    },
+                    pos: [{
+                        colSpan: "2",
+                        class: "inline-section-header"
+                    }]
+                }), Form.field(LabeledRadiolist, "field-9", {
+                    set: function set($$, value) {
+                        $$.set('.hasvin', value), 'Y' == value && QuoteCmauCarForm.vehProcessVin($$);
+                    },
+                    get: function get($$) {
+                        return $$('.hasvin');
+                    },
+                    atr: function atr() {
+                        return {
+                            orientation: 'horizontal',
+                            text: 'Do you have the VIN?'
+                        };
+                    }
+                }), Form.field(AutoFocus, "vin", {
+                    get: function get($$) {
                         return $$('.vinnumber');
-                    }, class: 'header' }), Form.field(Dropdown, 'h2', {
+                    },
+                    set: function set($$, value) {
+                        $$.set('.vinnumber', value);
+                        QuoteCmauCarForm.vehProcessVin($$);
+                    },
+                    val: function val($$, events) {
+                        var vin = $$('.vinnumber');
+                        if (vin != 0) {
+                            $$('.vinoverride') == 'Y' || (vin.length != 17 ? $$.error('Invalid VIN format') : ajaxCache.get({
+                                method: 'CMAUVehicleScriptHelper',
+                                action: 'getVinLookupResults',
+                                vinNumber: vin
+                            }).then(function (data) {
+                                return data.result.isMatch || $$.error('Vin not found');
+                            }, function () {
+                                return $$.error('Error fetching VIN data');
+                            }));
+                        } else events.filter(function (e) {
+                            return 'validate' == e.action;
+                        }).length && $$.error('Required');
+                    },
+                    atr: function atr($$) {
+                        return {
+                            spellcheck: 'false',
+                            disabled: $$('.hasvin') != 'Y',
+                            style: 'width: 150px; text-transform:uppercase;',
+                            pattern: '[a-zA-Z0-9]{1,17}',
+                            text: 'Vihicle Identification Number (VIN)',
+                            vstrategy: 'notified',
+                            trigger: 'change'
+                        };
+                    }
+                }), Form.field(LabeledRadiolist, "override", {
+                    atr: function atr() {
+                        return _fields.simple('.vinoverride', [], {
+                            cstyle: 'padding-left: 10px;',
+                            orientation: 'horizontal',
+                            text: 'Override VIN?'
+                        });
+                    }
+                }), Form.field(LabeledRadiolist, "custom", {
+                    atr: function atr() {
+                        return _fields.simple('.custom', [], {
+                            cstyle: 'padding-left: 10px;',
+                            orientation: 'horizontal',
+                            text: 'Vehicle Year, Make and/or Model is not available in dropdown'
+                        });
+                    }
+                }), Form.field(LabeledDropdown, "type-choice", {
                     atr: function atr($$) {
                         return _fields.choice('.vehicletype', Object.keys(typeMap).map(function (k) {
                             return {
                                 value: k,
                                 description: typeMap[k].name
                             };
-                        }));
-                    },
-                    class: 'header'
-                })]), Form.field(SubForm, "subform", { atr: function atr($$) {
-                        return { someProperty: 'someValue#' + $$.index() };
-                    }, pos: [{ newRow: true }] }), Form.field(DivButton, { get: function get() {
-                        return 'Click me';
-                    }, set: function set() {
-                        return alert('merci');
-                    } })
-                //Form.field(ChildRuntime, "subruntime", { atr: () => ({ form: 'forms/test2'}), pos: [{newRow: true}] } )
-                )])];
-            }
-        }]);
-
-        return TestForm;
-    }(Core.Form);
-    /*
-    return class TestForm extends Core.Form {
-        static fields() {
-            return (
-                Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [
-                    Form.field(TabD, 'tab-fld', { 
-                        get: () => [{caption: 'This is VIN', hfield: 'h1'}, {caption: 'This is type', hfield: 'h2'}], 
-                        set: ($$, px) => $$.set('.activeTab', px.get('.hfield')),
-                        atr: $$ => ({
-                            activeTab: function(px) {
-                                let at = $$('.activeTab').toString() || 'h1';
-                                return px ? px.get('.hfield') == at : at;
-                            }
-                        }) 
-                    }, [
-                        Form.field(Text, 'hRow', { get: $$ => $$('.caption') }),
-                        Form.field(Text, 'h1', { get: $$ => $$('.vinnumber'), class: 'header' }),
-                        Form.field(Dropdown, 'h2', {
-                            atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
-                                value: k,
-                                description: typeMap[k].name
-                            }))),
-                            class: 'header'
-                        })
-                    ])
-                ])
-            )
-        }
-    }*/
-
-    /* return class TestForm extends Core.Form {
-         static fields() {
-             return (
-                 Form.field(TabS, 'tab-fld', { get: $$ => $$('policy.cmau.location.car'), atr: () => ({headField: 'hd-fld', haclass: "me-active"}) }, [
-                     Form.field(Text, 'hd-fld', { get: $$ => $$('.vinnumber') }),
-                     Form.field(Dropdown, 'bd-fld', {
-                         atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
-                             value: k,
-                             description: typeMap[k].name
-                         })))
-                     })
-                 ])
-             )
-         }
-     }*/
-    /*return class TestForm extends Core.Form {
-        static fields() {
-            return (
-                Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [
-                    Form.field(Html, "field-49", {
-                        get: $$ => shapes.cssShape($$, $$('.hasvin') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
-                        atr: $$ => ({
-                            events: {
-                                onClick: () => $$.set('.hasvin', $$('.hasvin') == 'Y' ? 'N' : 'Y')
-                            }
-                        }),
-                        pos: [ {
-                            style: "padding: 1px; background: white; border-radius: 3px;"
-                        } ]
-                    }),
-                    Form.field(Dropdown, "field-1", { 
-                        atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
-                            value: k,
-                            description: typeMap[k].name
-                        })))
-                    }),
-                    Form.field(Labeled, { atr: () => ({text: 'Some label', errorwatch: true}) }, 
-                        Form.field(Dropdown, "field-2", { 
-                            val: $$ => $$.required('.ModelYr', '(18|19|20)\\d{2}'),
-                            atr: $$ => fields.ajaxChoice('.ModelYr', {
-                                query: {
-                                    vehicleType: $$('.vehicletype'),
-                                    method: 'CMAUVehicleScriptHelper',
-                                    action: 'getYearOptions'
-                                }
-                            }, { vstrategy: 'always', hideError: true})
-                        })
-                    )
-                ])
-            )
-        }
-    }*/
-    return function (_Core$Form3) {
-        _inherits(TestForm, _Core$Form3);
-
-        function TestForm(node) {
-            _classCallCheck(this, TestForm);
-
-            return _possibleConstructorReturn(this, (TestForm.__proto__ || Object.getPrototypeOf(TestForm)).call(this, node));
-            //console.log(node.unboundModel.data);
-        }
-
-        _createClass(TestForm, null, [{
-            key: 'fields',
-            value: function fields() {
-                return Form.field(Table, [Form.field(Button, { get: function get() {
-                        return 'flip';
-                    }, set: function set($$) {
-                        return $$.set('flip', $$('flip') == 'Y' ? 'N' : 'Y');
-                    } }), Form.field(Button, { get: function get() {
-                        return 'skip';
-                    }, set: function set($$) {
-                        return $$.set('skip', $$('skip') == 'Y' ? 'N' : 'Y');
-                    } }), Form.field(Button, { get: function get() {
-                        return 'append';
-                    }, set: function set($$) {
-                        return $$('policy.cmau.location').pop().append('.car', { vinnumber: 'New' });
-                    } }), Form.field(Table, {
-                    get: function get($$) {
-                        return $$('policy.cmau.location.car');
-                    },
+                        }), {
+                            disabled: vehDetailsDisabled($$),
+                            text: 'Vehicle Type',
+                            style: 'width: fit-content;'
+                        });
+                    }
+                }), Form.field(VehDetailsChoice, "year-option", {
+                    config: {
+                        validation: function validation($$) {
+                            return $$.required('.ModelYr', /(18|19|20)\d{2}/);
+                        },
+                        field: '.ModelYr',
+                        pattern: /\d{1,4}/,
+                        helpId: 'year',
+                        label: 'Vehicle Year',
+                        action: 'getYearOptions',
+                        ajaxOptions: function ajaxOptions($$) {
+                            return {
+                                vehicleType: $$('.vehicletype')
+                            };
+                        }
+                    }
+                }), Form.field(VehDetailsChoice, "make-option", {
+                    config: {
+                        validation: function validation($$) {
+                            return $$.required('.make', /[-\w ]{1,50}/);
+                        },
+                        field: '.make',
+                        helpId: 'make',
+                        label: 'Vehicle Make',
+                        action: 'getMakeOptions',
+                        ajaxOptions: function ajaxOptions($$) {
+                            return {
+                                vehicleType: $$('.vehicletype'),
+                                vehicleYear: $$('.ModelYr')
+                            };
+                        }
+                    }
+                }), Form.field(VehDetailsChoice, "model-option", {
+                    config: {
+                        validation: function validation($$) {
+                            return $$.required('.make', /[-\w ]{1,50}/);
+                        },
+                        field: '.modelinfo',
+                        helpId: 'model',
+                        label: 'Vehicle Model',
+                        action: 'getModelOptions',
+                        ajaxOptions: function ajaxOptions($$) {
+                            return {
+                                vehicleType: $$('.vehicletype'),
+                                vehicleYear: $$('.ModelYr'),
+                                vehicleMake: $$('.make')
+                            };
+                        }
+                    }
+                }), Form.field(LabeledEditboxMoney, "costnew-free", {
                     atr: function atr($$) {
-                        var flip = $$('flip') == 'Y' ? -1 : 1;
-                        var skip = $$('skip') == 'Y';
+                        return _fields.simple('.vehicleocostnew', {
+                            disabled: vehDetailsDisabled($$),
+                            style: 'width: 150px;',
+                            formatting: '$9,999,999',
+                            text: 'Original Cost New'
+                        });
+                    }
+                })]), Form.field(Table, "private", {
+                    get: function get($$) {
+                        return $$('.vehicletype') == 'car' ? [$$] : [];
+                    },
+                    atr: function atr() {
                         return {
-                            filter: function filter(row) {
-                                return !skip || !(row.data.key % 4);
-                            },
-                            order: function order(row1, row2) {
-                                return flip * (row1.data.key - row2.data.key);
-                            }
+                            class: 'dfe-table col-3-centred tab-cols-2-5-3',
+                            singles: true
                         };
                     },
-                    pos: [{ newRow: true, colSpan: 3 }]
-                }, [Form.field(Text, { get: function get($$) {
-                        return $$(".key");
-                    } }), Form.field(Dropdown, "field-1", {
-                    atr: function atr($$) {
-                        return _fields.choice('.vehicletype', Object.keys(typeMap).map(function (k) {
-                            return {
-                                value: k,
-                                description: typeMap[k].name
-                            };
-                        }));
-                    }
-                }), Form.field(Text, { get: function get($$) {
-                        return $$(".vinnumber");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".TrailerType");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".make");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".VehicleClass");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".StatedAmt");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".DumpingOpInd");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".Horsepower");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".vehicleocostnew");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".ModelYr");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".VehUseCd");
-                    } }), Form.field(Text, { get: function get($$) {
-                        return $$(".vinvalid");
-                    } }), Form.field(Button, { get: function get() {
-                        return 'Delete';
-                    }, set: function set($$) {
-                        return $$.detach();
-                    } })])]);
-            }
-        }]);
-
-        return TestForm;
-    }(Core.Form);
-});
-
-define('forms/test2', ["dfe-core", "ui/shapes", 'dfe-field-helper', "components/labeled-component", "components/editbox", "components/container", "components/checkbox", "components/table"], function (Core, shapes, _fields2, Labeled, Editbox, Container, Checkbox, Table) {
-    var Form = Core.Form;
-
-    return function (_Form2) {
-        _inherits(SubForm2, _Form2);
-
-        function SubForm2() {
-            _classCallCheck(this, SubForm2);
-
-            return _possibleConstructorReturn(this, (SubForm2.__proto__ || Object.getPrototypeOf(SubForm2)).apply(this, arguments));
-        }
-
-        _createClass(SubForm2, null, [{
-            key: 'fields',
-            value: function fields() {
-                return [Form.field(Table, [Form.field(Container, "field-2", {
-                    get: function get($$) {
-                        return $$('.hideStuff') == 'Y' ? [] : [$$];
-                    }
-                }, [Form.field(Editbox, "field-3", {
+                    pos: [{
+                        class: "dfe-inline-section"
+                    }]
+                }, [Form.field(Label, "field-36", {
+                    get: function get() {
+                        return 'Private Passenger Auto';
+                    },
+                    pos: [{
+                        colSpan: "3",
+                        class: "inline-section-header"
+                    }]
+                }), Form.field(ApplyToAllField, "field-34", { config: { type: 'car', field: '.VehUseCd' } }, [Form.field(LabeledDropdown, {
                     atr: function atr() {
-                        return _fields2.simple('.ModelYr', { vstrategy: 'always' });
+                        return _fields.choice('.VehUseCd', ['Furnished for Non-Business Use', 'All Other'], { text: 'Usage' });
                     }
-                })]), Form.field(Checkbox, "field-4", { get: function get($$) {
-                        return $$('.hideStuff');
-                    }, set: function set($$, value) {
-                        return $$.set('.hideStuff', value);
-                    } })])];
+                })]), Form.field(InlineRows, "nonbus", { get: function get($$) {
+                        return $$('.VehUseCd') == 'Furnished for Non-Business Use' ? [$$] : [];
+                    } }, [Form.field(ApplyToAllField, "field-38", { config: { type: 'car', field: '.OperExp' } }, [Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.OperExp', ['No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs'], { text: 'Operator Experience', cstyle: 'padding-left: 10px' });
+                    }
+                })]), Form.field(ApplyToAllField, "field-42", { config: { type: 'car', field: '.OperUse' } }, [Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.OperUse', ['Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles'], { text: 'Operator Use', cstyle: 'padding-left: 10px' });
+                    }
+                })])])]), Form.field(Table, "truck", {
+                    get: function get($$) {
+                        return $$('.vehicletype') == 'truck' ? [$$] : [];
+                    },
+                    atr: function atr($$) {
+                        return {
+                            class: 'dfe-table col-va-middle col-3-centred tab-cols-3-4-3',
+                            singles: true
+                        };
+                    },
+                    pos: [{
+                        class: "dfe-inline-section"
+                    }]
+                }, [Form.field(Label, "field-49", {
+                    get: function get() {
+                        return 'Trucks, Tractors and Trailers';
+                    },
+                    pos: [{
+                        colSpan: "3",
+                        class: "inline-section-header"
+                    }]
+                }), Form.field(ApplyToAllField, "field-51", { config: { type: 'truck', field: '.VehicleClass' } }, [Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.VehicleClass', ['Light Truck 10,000 lbs GVW or less', 'Medium Truck 10,001 to 20,000 lbs GVW', 'Heavy Truck 20,001 to 45,000 lbs GVW', 'Extra-Heavy Truck over 45,000 lbs GVW', 'Heavy Truck-Tractor 45,000 lbs GCW or less', 'Extra-Heavy Truck-Tractor over 45,000 lbs GCW', 'Trailer Types'], { text: 'Vehicle Class' });
+                    }
+                })]), Form.field(InlineRows, "tt-switch", { get: function get($$) {
+                        return $$('.VehicleClass') == 'Trailer Types' ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-55", { config: { type: 'truck', field: '.TrailerType' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.TrailerType', ['Semitrailers', 'Trailers', 'Service or Utility Trailer (0-200 lbs. Load Capacity)'], { text: 'Trailer Type' });
+                    }
+                }))), Form.field(ApplyToAllField, "field-58", { config: { type: 'truck', field: '.UseClassInd1' } }, Form.field(LabeledRadiolist, {
+                    atr: function atr() {
+                        return _fields.simple('.UseClassInd1', { text: 'Is this auto used for transporting personnel, tools and equipment to and from a job location where it is parked for the majority of the day?' });
+                    }
+                })), Form.field(ApplyToAllField, "field-59", { config: { type: 'truck', field: '.UseClassInd2' } }, Form.field(LabeledRadiolist, {
+                    atr: function atr() {
+                        return _fields.simple('.UseClassInd2', { text: 'Is this auto used for pick-up and/or delivery of property to residential households?' });
+                    }
+                })), Form.field(ApplyToAllField, "field-65", { config: { type: 'truck', field: '.RadiusClass' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.RadiusClass', ['Local up to 50 miles', 'Intermediate 51 to 200 miles', 'Long distance over 200 miles'], { text: 'Radius' });
+                    }
+                })), Form.field(ApplyToAllField, "field-68", { config: { type: 'truck', field: '.DumpingOpInd' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.DumpingOpInd', [], { text: 'Used in dumping' });
+                    }
+                })), Form.field(ApplyToAllField, "field-71", { config: { type: 'truck', field: '.SecondaryClass' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.SecondaryClass', ['Truckers', 'Food Delivery', 'Waste Disposal', 'Farmers', 'Dump & Transit Mix', 'Contractors', 'Not Otherwise Specified'], { style: 'width: fit-content', text: 'Secondary Class' });
+                    }
+                })), Form.field(ApplyToAllField, "field-74", { config: { type: 'truck', field: '.SecondaryClassType' } }, Form.field(LabeledDropdown, {
+                    atr: function atr($$) {
+                        return _fields.ajaxChoice('.SecondaryClassType', {
+                            method: 'CMAUVehicleScriptHelper',
+                            action: 'getSecondaryClassTypeOptions',
+                            secondaryClass: $$('.SecondaryClass')
+                        }, {
+                            style: 'width: fit-content', text: 'Secondary Class Type'
+                        });
+                    }
+                }))]), Form.field(Table, "golf", {
+                    get: function get($$) {
+                        return $$('.vehicletype') == 'golf' ? [$$] : [];
+                    },
+                    atr: function atr() {
+                        return {
+                            class: 'dfe-table col-3-centred tab-cols-4-3-3',
+                            singles: true
+                        };
+                    },
+                    pos: [{
+                        class: "dfe-inline-section"
+                    }]
+                }, [Form.field(Label, "field-122", {
+                    get: function get() {
+                        return 'Golf Carts and Low Speed Vehicles';
+                    },
+                    pos: [{
+                        colSpan: "3",
+                        class: "inline-section-header"
+                    }]
+                }), Form.field(ApplyToAllField, "field-125", { config: { type: 'golf', field: '.GolfType' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.GolfType', ['Golf Cart', 'Low Speed Vehicles'], { style: 'width: fit-content', text: 'Type' });
+                    }
+                })), Form.field(ApplyToAllField, "field-128", { config: { type: 'golf', field: '.GolfUse' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.GolfUse', ['Used On Golf Course', 'Other Commercial Purposes'], { style: 'width: fit-content', text: 'Use' });
+                    }
+                })), Form.field(ApplyToAllField, "field-131", { config: { type: 'golf', field: '.GolfVhsub' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.GolfVhsub', [], { text: 'Vehicle subject to compulsory, financial or other law' });
+                    }
+                }))]), Form.field(Table, "mobile", {
+                    get: function get($$) {
+                        return $$('.vehicletype') == 'mobile' ? [$$] : [];
+                    },
+                    atr: function atr($$) {
+                        return {
+                            class: 'dfe-table col-3-centred tab-cols-2-5-3',
+                            singles: true
+                        };
+                    },
+                    pos: [{
+                        class: "dfe-inline-section"
+                    }]
+                }, [Form.field(Label, "field-123", {
+                    get: function get() {
+                        return 'Mobile Homes';
+                    },
+                    pos: [{
+                        colSpan: "3",
+                        class: "inline-section-header"
+                    }]
+                }), Form.field(ApplyToAllField, "field-134", { config: { type: 'mobile', field: '.MobileHomeType' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.MobileHomeType', ['Trailer Equipped As Living Quarters', 'Pickup Trucks Used Solely To Transport Camper Bodies', 'Motor Homes Self-Propelled Equipped As Living Quarters'], { style: 'width: fit-content', text: 'Type' });
+                    }
+                })), Form.field(InlineRows, "size-switch", { get: function get($$) {
+                        return $$('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-138", { config: { type: 'mobile', field: '.MotorHomeSize' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.MotorHomeSize', ['Up To 22 feet', 'More Than 22 feet'], { style: 'width: fit-content', text: 'Length' });
+                    }
+                })))]), Form.field(Table, "covs", {
+                    atr: function atr($$) {
+                        return {
+                            class: 'dfe-table col-3-centred tab-cols-4-3-3',
+                            singles: true
+                        };
+                    },
+                    pos: [{
+                        class: "dfe-inline-section"
+                    }]
+                }, [Form.field(Label, "field-77", {
+                    get: function get() {
+                        return 'Coverages';
+                    },
+                    pos: [{
+                        colSpan: "3",
+                        class: "inline-section-header"
+                    }]
+                }), Form.field(ApplyToAllField, "field-81", { config: { field: '.PhysDmgInd' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.PhysDmgInd', [], { text: 'Physical Damage Only?' });
+                    }
+                })), Form.field(ApplyToAllField, "field-82", { config: { field: '.coverages.otc.ded' } }, Form.field(LabeledDropdown, {
+                    atr: function atr($$) {
+                        return _fields.ajaxChoice('.coverages.otc.ded', {
+                            query: {
+                                method: 'CMAUVehicleScriptHelper',
+                                action: 'getCompDedOptions',
+                                vehicleType: $$('.vehicletype')
+                            },
+                            mapper: function mapper(o) {
+                                return { value: o.value, description: o.text };
+                            }
+                        }, { text: 'Comp. Ded' });
+                    }
+                })), Form.field(ApplyToAllField, "field-85", { config: { field: '.coverages.col.ded' } }, Form.field(LabeledDropdown, {
+                    atr: function atr($$) {
+                        return _fields.ajaxChoice('.coverages.col.ded', {
+                            query: {
+                                method: 'CMAUVehicleScriptHelper',
+                                action: 'getCollDedOptions',
+                                vehicleType: $$('.vehicletype')
+                            },
+                            mapper: function mapper(o) {
+                                return { value: o.value, description: o.text };
+                            }
+                        }, { text: 'Coll. Ded' });
+                    }
+                })), Form.field(InlineRows, "val-switch", { get: function get($$) {
+                        return ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-88", { config: { field: '.ValuationMethod' } }, Form.field(LabeledDropdown, {
+                    atr: function atr($$) {
+                        return _fields.ajaxChoice('.ValuationMethod', {
+                            method: 'CMAUVehicleScriptHelper',
+                            action: 'getValuationMethodOptions',
+                            vehicleType: $$('.vehicletype')
+                        }, { text: 'Valuation' });
+                    }
+                }))), Form.field(InlineRows, "amt-switch", { get: function get($$) {
+                        return ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) && $$('.ValuationMethod') == 'Stated Amount' ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-92", { config: { field: '.StatedAmt' } }, Form.field(LabeledEditboxMoney, {
+                    atr: function atr() {
+                        return _fields.simple('.StatedAmt', { formatting: '$9,999,999', text: 'Stated Amount', cstyle: 'padding-left: 10px;', style: 'width: 100px' });
+                    }
+                }))), Form.field(InlineRows, "pdonly-switch", { get: function get($$) {
+                        return $$('.PhysDmgInd') == 'Y' || $$('..state') != 'KS' ? [] : [$$];
+                    } }, Form.field(ApplyToAllField, "field-96", { config: { field: '.coverages.pip.IncludeInd' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.coverages.pip.IncludeInd', [], { text: 'Personal Injury Protection Coverage' });
+                    }
+                })), Form.field(InlineRows, "pip-switch", { get: function get($$) {
+                        return $$('.coverages.pip.IncludeInd') == 'Y' ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-100", { config: { field: '.coverages.pip.addedpipoption' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.coverages.pip.addedpipoption', ['Option 1', 'Option 2'], { cstyle: 'padding-left: 10px', style: 'width: fit-content', text: 'Additional Personal Injury Protection' });
+                    }
+                })), Form.field(ApplyToAllField, "field-103", { config: { field: '.coverages.pip.broadpipnum' } }, Form.field(LabeledEditbox, {
+                    atr: function atr() {
+                        return _fields.simple('.coverages.pip.broadpipnum', { pattern: '[0-9]{1,5}', cstyle: 'padding-left: 10px', style: 'width: 80px', text: 'Number of Individuals for Broadened PIP' });
+                    }
+                })), Form.field(InlineRows, "added-pip", { get: function get($$) {
+                        return +$$('.coverages.pip.broadpipnum') > 0 ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-145", { config: { field: '.coverages.pip.addedbroadpipnum' } }, Form.field(LabeledEditbox, {
+                    atr: function atr() {
+                        return _fields.simple('.coverages.pip.addedbroadpipnum', { pattern: '[0-9]{1,5}', cstyle: 'padding-left: 10px', style: 'width: 80px', text: 'Number of Named Individuals for Additional Broadened PIP' });
+                    }
+                })), Form.field(InlineRows, "added-pip-s", { get: function get($$) {
+                        return +$$('.coverages.pip.addedbroadpipnum') ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-149", { config: { field: '.coverages.pip.addedbpipoptioncd' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.coverages.pip.addedbpipoptioncd', ['Option 1', 'Option 2'], { cstyle: 'padding-left: 10px', style: 'width: fit-content', text: 'Additional Broadened Personal Injury Protection' });
+                    }
+                }))))))]), Form.field(Table, "opt-covs", {
+                    atr: function atr($$) {
+                        return {
+                            class: 'dfe-table col-3-centred tab-cols-4-3-3',
+                            skip: $$('..state') == 'KS' ? ['field-111', 'field-114'] : ['field-113'],
+                            singles: true
+                        };
+                    },
+                    pos: [{
+                        class: "dfe-inline-section"
+                    }]
+                }, [Form.field(Label, "field-106", {
+                    get: function get() {
+                        return 'Optional Coverages';
+                    },
+                    pos: [{
+                        colSpan: "3",
+                        class: "inline-section-header"
+                    }]
+                }), Form.field(InlineRows, "towing-switch", { get: function get($$) {
+                        return $$('.vehicletype') == 'car' && $$('.coverages.otc.ded').toString().match(/\d|Full/) ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-118", { config: { field: '.coverages.towlabor.towlabor' } }, Form.field(LabeledDropdown, {
+                    atr: function atr() {
+                        return _fields.choice('.coverages.towlabor.towlabor', _fields.choiceItems({
+                            'No Coverage': 'No Coverage',
+                            $50: '50',
+                            $100: '100',
+                            $200: '200'
+                        }), { style: 'width: fit-content', text: 'Towing and Labor' });
+                    }
+                }))), Form.field(ApplyToAllField, "field-108", { config: { field: '.losspayee.losspayeeInd' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.losspayee.losspayeeInd', [], { text: 'Loss Payee' });
+                    }
+                })), Form.field(ApplyToAllField, "field-111", { config: { field: '.losspayee.ailessorInd' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.losspayee.ailessorInd', [], { text: 'Additional Insured - Lessor' });
+                    }
+                })), Form.field(ApplyToAllField, "field-114", { config: { field: '.losspayee.haownInd' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.losspayee.haownInd', [], { text: 'Hired Auto - Specified As Covered Auto You Own' });
+                    }
+                })), Form.field(ApplyToAllField, "field-157", { config: { field: '.emplessor' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.emplessor', [], { text: 'Employee as Lessor' });
+                    }
+                })), Form.field(InlineRows, "field-113", Form.field(ApplyToAllField, "field-116", { config: { field: '.losspayee.namedinsuredInd' } }, Form.field(LabeledCheckbox, {
+                    atr: function atr() {
+                        return _fields.simple('.losspayee.namedinsuredInd', [], { text: 'Additional Named Insured' });
+                    }
+                })), Form.field(InlineRows, "field-120", { get: function get($$) {
+                        return $$('.losspayee.namedinsuredInd') == 'Y' ? [$$] : [];
+                    } }, Form.field(ApplyToAllField, "field-121", { config: { field: '.losspayee.namedInsured.Name' } }, Form.field(LabeledEditbox, {
+                    atr: function atr() {
+                        return _fields.simple('.losspayee.namedInsured.Name', [], { cstyle: 'padding-left: 10px;', html: '<b style="color: red">*</b>Name' });
+                    }
+                }))))]), Form.field(Div, "car-ctrl", {
+                    atr: function atr($$) {
+                        return {
+                            skip: $$('..car').length > 1 ? [] : ['remove-car'],
+                            style: 'padding: 5px; text-align: right; background: lightgray;'
+                        };
+                    },
+                    pos: [{
+                        style: "padding: 2px 0px"
+                    }]
+                }, [Form.field(Button, "clone-car", {
+                    get: function get() {
+                        return 'Clone Vehicle';
+                    },
+                    set: function set($$) {
+                        return $$.clone();
+                    },
+                    atr: function atr() {
+                        return {
+                            style: 'padding: 1px 10px; margin: 0px 5px'
+                        };
+                    },
+                    pos: [{
+                        style: "display: inline-block"
+                    }]
+                }), Form.field(Button, "remove-car", {
+                    get: function get() {
+                        return 'Remove Vehicle';
+                    },
+                    set: function set($$) {
+                        return $$.detach();
+                    },
+                    atr: function atr() {
+                        return {
+                            style: 'padding: 1px 10px; margin: 0px 5px'
+                        };
+                    },
+                    pos: [{
+                        style: "display: inline-block"
+                    }]
+                })])])])]);
+            }
+        }, {
+            key: 'vehProcessVin',
+            value: function vehProcessVin($$) {
+                $$.get('.vinnumber').length == 17 ? ajaxCache.get({
+                    method: 'CMAUVehicleScriptHelper',
+                    action: 'getVinLookupResults',
+                    vinNumber: $$.get('.vinnumber')
+                }).then(function (data) {
+                    var r = data.result,
+                        isTrailer = r.vehicleType == 'x';
+                    $$.set(r.isMatch ? {
+                        vinvalid: 'Y',
+                        vehicletype: isTrailer ? 'truck' : r.vehicleType,
+                        ModelYr: r.vehicleYear,
+                        make: r.vehicleMake,
+                        modelinfo: r.vehicleModel,
+                        vehicleocostnew: r.vehicleCost,
+                        vinoverride: 'N',
+                        VehicleClass: isTrailer ? 'Trailer Types' : $$.get('.VehicleClass')
+                    } : {
+                        vinvalid: 'N'
+                    });
+                }, function () {
+                    return $$.set('.vinvalid', 'N');
+                }) : $$.set('.vinvalid', 'N');
             }
         }]);
 
-        return SubForm2;
+        return QuoteCmauCarForm;
     }(Form);
+    if (typeof window !== 'undefined') {
+        window.showHelp = function (url) {
+            window.open(url, 'DetailWin', 'scrollbars=yes,resizable=yes,toolbar=no,height=250,width=250').focus();
+        };
+    }
+    return QuoteCmauCarForm;
 });

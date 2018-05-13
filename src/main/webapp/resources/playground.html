@@ -12,24 +12,32 @@
         <script src="/js/require.js"></script>
         
         <script> 
-           /* var model = new Promise(function(resolve, reject) {
+            var model = new Promise(function(resolve, reject) {
                 require(['babel', 'uglify', 'ui/jquery'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
-                    $.get('/test/test-arf-2.json', function(arf) { resolve(arf) })
+                    $.get('/test/test-arf-2.json', function(arf) { 
+                        //arf.policy[0].cmau[0].location.shift();
+                        resolve(arf);
+                        /*setTimeout(function() {
+                            document.querySelector('[dfe-form]')._dfe_runtime.enforceValidation();
+                        }, 1000);*/
+                    })
                 })
-            });*/
-            require.config({ baseUrl: '/js', paths: { /*'dfe-core': 'es5', 'components/generic': 'es5', 'forms/test': 'es5',*/  forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
+            });
+            require.config({ baseUrl: '/js', paths: { /* 'dfe-core': 'es5', 'components/generic': 'es5', 'forms/corecomm/quote.cmau.car': 'es5',*/  forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
+            require(['ui/utils']);
             
-            require(['ui/utils'], function() {
-                require(['forms/test', 'dfe-core', 'ui/jquery'], function(form, core, $){
+            /*require(['ui/utils'], function() {
+                require(['forms/corecomm/quote.cmau.car', 'dfe-core', 'ui/jquery'], function(form, core, $){
+                    window.DfeCore = core;
                     $.get('/test/test-arf-2.json', function(arf) { 
                        // arf.policy[0].cmau[0].location[0].car.shift();
                         core.startRuntime({ model : arf, node: document.getElementById('dfe'), form: form });
                     })
-                    /*
+                    
                     require(['babel'], function(babel) {
-                        Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get("forms/test.js")]).then( // "transform-react-jsx",   , "react"
+                        Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get("forms/corecomm/quote.cmau.car.js")]).then( // "transform-react-jsx",   , "react"
                         function(a) {
                             var s = require('babel').transform(a.join('\n\n\n'), {  plugins: [ "transform-object-rest-spread", "transform-object-assign"],  presets: ["es2015"] }).code;
                             window.es5source = s;
@@ -37,18 +45,17 @@
                             //window.es5uglified = s;
                             //console.log(s);
                         });
-                    })*/
+                    })
                 })
                 
-            });
+            });*/
         </script>     
         
 
     </head>
             
     <body> 
-        <span id='dfe' dfe-form='test' dfe-model='window.model' dfe-edit-target ></span>
-        <span id='dfe2' ></span>
+        <span id='dfe' dfe-form='corecomm/quote.cmau.car' dfe-model='window.model' dfe-edit-target ></span>
         <br>
         <br>
         <br>

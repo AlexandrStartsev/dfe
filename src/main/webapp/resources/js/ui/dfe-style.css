@@ -15,7 +15,7 @@ input[type='button'] {
     padding-left: 5px;
     padding-right: 5px; 
 }
-label {
+label, td {
     font-family: 'SourceCodePro-Medium', sans-serif;
     text-decoration: none;
     font-size: 12px
@@ -23,25 +23,18 @@ label {
 *[filter-out] { visibility: hidden; display: none; }
 *[hidden] { visibility: hidden; display: none; }
 /* ============================ DFE css framework ============================ */
-table.tab-alt-color, table.tab-alt-color-1, table.dfe-table { 
+table.dfe-table { 
     width: 100%; 
     overflow: hidden;
     background: white;
     border-collapse: collapse;
 }
 
-[dfe-color], table.tab-alt-color > :nth-child(2n), table.tab-alt-color-1 > :nth-child(2n+1) {
+table.dfe-table > tbody > tr:nth-child(odd) {
     background: rgb(238, 238, 238);
 }
 
-/*td, th {
-    padding: 4px 6px;
-    margin: 0px;
-    border: 0px;
-    box-sizing: border-box;
-}*/
-
-table.dfe-table > tr > th, table.dfe-table > tr > td, table.tab-alt-color > tr > td, table.tab-alt-color > tr > th, table.tab-alt-color-1 > tr > td, table.tab-alt-color-1 > tr > th {
+table.dfe-table > thead > tr > th, table.dfe-table > tbody > tr > td {
     padding: 4px 6px;
     margin: 0px;
     border: 0px;
@@ -56,24 +49,25 @@ th {
     vertical-align: center
 }
 
-.tab-cols-4-3-3 > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 40%; border-right: 2px solid white; }
-.tab-cols-4-3-3 > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 30%; border-right: 2px solid white; }
-.tab-cols-4-3-3 > tr > td:nth-child(3n+3) { width: 30%; }
+.tab-cols-4-3-3 > tbody > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 40%; border-right: 2px solid white; vertical-align: middle; }
+.tab-cols-4-3-3 > tbody > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 30%; border-right: 2px solid white; }
+.tab-cols-4-3-3 > tbody > tr > td:nth-child(3n+3) { width: 30%; }
 
-.tab-cols-3-4-3 > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 30%; border-right: 2px solid white; }
-.tab-cols-3-4-3 > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 40%; border-right: 2px solid white; }
-.tab-cols-3-4-3 > tr > td:nth-child(3n+3) { width: 30%; }
+.tab-cols-3-4-3 > tbody > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 30%; border-right: 2px solid white; vertical-align: middle; }
+.tab-cols-3-4-3 > tbody > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 40%; border-right: 2px solid white; }
+.tab-cols-3-4-3 > tbody > tr > td:nth-child(3n+3) { width: 30%; }
 
-.tab-cols-2-5-3 > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 20%; border-right: 2px solid white; }
-.tab-cols-2-5-3 > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 50%; border-right: 2px solid white; }
-.tab-cols-2-5-3 > tr > td:nth-child(3n+3) { width: 30%; }
+.tab-cols-2-5-3 > tbody > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 20%; border-right: 2px solid white; vertical-align: middle; }
+.tab-cols-2-5-3 > tbody > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 50%; border-right: 2px solid white; }
+.tab-cols-2-5-3 > tbody > tr > td:nth-child(3n+3) { width: 30%; }
 
-.tab-cols-5-5 > tr > td:not([colspan="2"]):nth-child(2n+1) { width: 50%; border-right: 2px solid white; }
-.tab-cols-5-5 > tr > td:nth-child(2n+2) { width: 50%; }
+.tab-cols-5-5 > tbody > tr > td:not([colspan="2"]):nth-child(2n+1) { width: 50%; border-right: 2px solid white; vertical-align: middle; }
+.tab-cols-5-5 > tbody > tr > td:nth-child(2n+2) { width: 50%; }
 
-.col-va-middle > tr > td { vertical-align: middle }
 
-.col-1-centred > tr > td:nth-child(3n+1), .col-2-centred > tr > td:nth-child(3n+2), .col-3-centred > tr > td:nth-child(3n) { text-align: center; }
+.col-va-middle > tbody > tr > td { vertical-align: middle }
+
+.col-1-centred > tbody > tr > td:nth-child(3n+1), .col-2-centred > tbody > tr > td:nth-child(3n+2), .col-3-centred > tbody > tr > td:nth-child(3n) { text-align: center; }
 
 
 .dfe-field-std-p1, .dfe-field-std-p2, .dfe-field-std-p3, .dfe-field-std-p4, .dfe-field-std-p5, .dfe-field-std-p6, .dfe-field-std-p7, 
@@ -148,7 +142,7 @@ th {
     border-radius: 5px 5px 0px 0px; 
 }
 
-.dfe-inline-section-1 {
+.dfe-inline-section {
     width: 100%;
     box-sizing: border-box;
     margin: 0px 2px;  /* none for tab */
@@ -156,7 +150,7 @@ th {
     padding: 0px!important;
 }
 
-.tab-section-header, .dfe-inline-section-1 > table > thead th, .dfe-inline-section-1 > table > tr:first-child > td, .inline-section-header {
+.tab-section-header, table.dfe-inline-section > thead th, .inline-section-header {
     border-bottom: 2px solid white;
     border-top: 2px solid white;
     background: lightgray;
@@ -167,7 +161,9 @@ th {
     color: #333333;
 }
 
-.tab-section-header label, .dfe-inline-section-1 > table > thead label, .dfe-inline-section-1 > table > tr:first-child label, .inline-section-header label { font-weight: bold; }
+.tab-section-header, table.dfe-inline-section > thead {
+    font-weight: bold; 
+}
 
 .dfe-error {
     color: #DB1260!Important;

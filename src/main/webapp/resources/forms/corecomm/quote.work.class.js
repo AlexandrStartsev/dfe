@@ -1,101 +1,126 @@
-defineForm([ "require", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-$", "components/radiolist", "components/container", "components/checkbox", "ui/jquery-ui" ], function(require, cmn, uiUtils, fields, __c_label, __c_editbox, __c_dropdown, __c_button, __c_div, __c_editbox_$, __c_radiolist, __c_container, __c_checkbox, jQuery) {
-    return new class {
-        constructor() {
-            this.dfe = __c_div("root", {
+define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-$", "components/radiolist", "components/table", "components/checkbox", "ui/jquery-ui" ], function(require, Core, cmn, uiUtils, fields, Label, Editbox, Dropdown, Button, Div, EditboxMoney, Radiolist, Table, Checkbox, jQuery) {
+    let Form = Core.Form;
+    let clazz = class QuoteWorkClassForm extends Form {
+        constructor(node) {
+            super(node);
+            let $$ = node.unboundModel, ref = $$.first('insured.location');
+            this.locationDefaults = ref && {
+                address1: ref.get('.address'),
+                city: ref.get('.city'),
+                state: ref.get('.state'),
+                zip: ref.get('.zip')
+            };
+            this.locationDefaults2 = $$.get('policy.bbop.location').map(ref => ({
+                address1: ref.get('.address1'),
+                city: ref.get('.city'),
+                state: ref.get('.state'),
+                zip: ref.get('.zip')
+            }));
+            $$.first('policy.work').defaultSubset('.location', this.locationDefaults).forEach(loc => loc.defaultSubset('.class'));
+        }
+        static fields() {   
+            return Form.field(Div, "root", {
                 get: $$ => $$('policy.work'),
                 atr: () => ({
                     vstrategy: 'always',
                     style: 'width: 550px'
                 })
-            }, [ __c_container("locs", {
+            }, [ Form.field(Table,"locs", {
                 get: $$ => $$('.location'),
                 val: $$ => $$.required('.location'),
                 atr: $$ => ({
                     style: 'width: 100%',
                     skip: $$('.location').length > 1 ? [] : [ 'field-14' ]
                 })
-            }, [ __c_label("field-2", {
+            }, [ Form.field(Label,"field-2", {
                 class: "header",
                 get: () => 'Location Informaton',
                 atr: () => ({
                     style: 'background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; line-height: 2em; display: block; '
                 }),
                 pos: [ {
-                    w: "7"
+                    colSpan: "7"
                 } ]
-            }), __c_label("field-3", {
+            }), Form.field(Label,"field-3", {
                 class: "header",
                 get: () => '#',
                 pos: [ {
-                    n: "Y"
+                    newRow: true
                 } ]
-            }), __c_label("field-4", {
+            }), Form.field(Label,"field-4", {
                 class: "header",
                 get: () => 'Street',
                 pos: [ {
-                    s: "width:45%"
+                   style: "width:45%"
                 } ]
-            }), __c_label("field-5", {
+            }), Form.field(Label,"field-5", {
                 class: "header",
                 get: () => 'City',
                 pos: [ {
-                    s: "width:30%"
+                   style: "width:30%"
                 } ]
-            }), __c_label("field-6", {
+            }), Form.field(Label,"field-6", {
                 class: "header",
                 get: () => 'State'
-            }), __c_label("field-7", {
+            }), Form.field(Label,"field-7", {
                 class: "header",
                 get: () => 'Zip Code',
                 pos: [ {
-                    s: "width:70px; min-width:70px"
+                   style: "width:70px; min-width:70px"
                 } ]
-            }), __c_label("field-1", {
+            }), Form.field(Label,"field-1", {
                 class: "header",
                 get: $$ => '',
                 pos: [ {
-                    w: "2"
+                    colSpan: "2"
                 } ]
-            }), __c_label("field-9", {
+            }), Form.field(Label,"field-9", {
                 get: $$ => $$.index() + 1
-            }), __c_editbox("field-10", {
+            }), Form.field(Editbox, "field-10", {
                 set: ($$, value) => ($$.set('.address1', value), $$.set('.addressLine', (value || '').toUpperCase())),
                 atr: $$ => fields.simple('.address1', {
                     style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px',
                     maxlength: 50,
                     disabled: $$('.NoSpecificLocation') == 'Y'
                 })
-            }), __c_editbox("field-11", {
+            }), Form.field(Editbox, "field-11", {
                 atr: $$ => fields.simple('.city', {
                     style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px',
                     pattern: /[a-zA-Z ]{1,45}/,
                     disabled: $$('.NoSpecificLocation') == 'Y'
                 })
-            }), __c_dropdown("field-12", {
-                set: ($$, value) => this.processNoSpecificLocationChange($$, value, $$('.NoSpecificLocation')),
+            }), Form.field(Dropdown, "field-12", {
+                set: function($$, value) {
+                    this.processNoSpecificLocationChange($$, value, $$('.NoSpecificLocation'))
+                },
                 atr: () => fields.choice('.state', cmn.statesPattern.split('|'), {
                     style: 'width: 45px; border-radius: 1px; height: 20px'
                 })
-            }), __c_editbox("field-13", {
+            }), Form.field(Editbox, "field-13", {
                 atr: $$ => fields.simple('.zip', [ ($$, value) => value.match(/^\d{5}$/) || $$.error('Zip code is < 5 digits') ], {
                     style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px',
                     pattern: /\d{1,5}/,
                     disabled: $$('.NoSpecificLocation') == 'Y'
                 })
-            }), __c_checkbox("nospecific", {
+            }), Form.field(Checkbox, "nospecific", {
                 get: $$ => ({
                     checked: $$('.NoSpecificLocation'),
                     text: 'No Specific'
                 }),
-                set: ($$, value) => this.processNoSpecificLocationChange($$, $$('.state'), value),
+                set: function($$, value) {
+                    this.processNoSpecificLocationChange($$, $$('.state'), value)
+                },
                 atr: $$ => ({
                     class: 'no-specific-field',
-                    style: $$('.state').match(/MO|AZ|IN|IA|KY|MT|TX/) && 'display: none'
-                })
-            }), __c_button("field-14", {
+                    attributeMapper: pos => $$('.state').match(/MO|AZ|IN|IA|KY|MT|TX/) ? {...pos, style: 'visibility: hidden;'} : pos
+                }),
+                pos: [{ 
+                    class: 'no-specific-field' 
+                }]
+            }), Form.field(Button, "field-14", {
                 get: () => 'Delete',
                 set: $$ => $$.detach()
-            }), __c_container("classes", {
+            }), Form.field(Table,"classes", {
                 get: $$ => $$('.class'),
                 val: $$ => $$.required('.class'),
                 atr: $$ => ({
@@ -103,83 +128,83 @@ defineForm([ "require", "dfe-common", "ui/utils", "dfe-field-helper", "component
                     skip: $$('.class').length > 1 ? [] : [ 'field-23', 'field-31' ]
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "7"
+                    newRow: true,
+                    colSpan: "7"
                 } ]
-            }, [ __c_div("field-38", {
+            }, [ Form.field(Div, "field-38", {
                 class: "header",
                 get: $$ => [ $$ ],
                 pos: [ {
-                    w: "8"
+                    colSpan: "8"
                 } ]
-            }, [ __c_label("field-39", {
+            }, [ Form.field(Label,"field-39", {
                 get: () => 'Class Informaton',
                 atr: () => ({
                     style: 'background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; display: block; line-height: 2em;'
                 })
-            }) ]), __c_label("field-17", {
+            }) ]), Form.field(Label,"field-17", {
                 class: "header",
                 get: () => '#',
                 pos: [ {
-                    n: "Y"
+                    newRow: true
                 } ]
-            }), __c_label("field-18", {
+            }), Form.field(Label,"field-18", {
                 class: "header",
                 get: () => 'Class Code'
-            }), __c_label("field-19", {
+            }), Form.field(Label,"field-19", {
                 class: "header",
                 get: () => '# F.T. Employees'
-            }), __c_label("field-20", {
+            }), Form.field(Label,"field-20", {
                 class: "header",
                 get: () => '# P.T. Employees'
-            }), __c_label("field-21", {
+            }), Form.field(Label,"field-21", {
                 class: "header",
                 get: () => '# Seasonal Employees'
-            }), __c_label("field-22", {
+            }), Form.field(Label,"field-22", {
                 class: "header",
                 get: () => 'Est. Annual Remuneration'
-            }), __c_label("field-16", {
+            }), Form.field(Label,"field-16", {
                 class: "header",
                 get: $$ => 'If any',
                 atr: $$ => ({
                     style: 'white-space: nowrap'
                 })
-            }), __c_label("field-23", {
+            }), Form.field(Label,"field-23", {
                 class: "header",
                 get: () => ''
-            }), __c_label("field-25", {
+            }), Form.field(Label,"field-25", {
                 get: $$ => $$.index() + 1
-            }), __c_editbox("field-26", {
+            }), Form.field(Editbox, "field-26", {
                 atr: () => fields.simple('.code', [ ($$, value) => value ? value.match(/^\d{4}$/) || $$.error('Invalid format') : $$.error('Please enter class code') ], {
                     style: 'width: 50px; border-radius: 1px; height: 18px',
                     pattern: /\d{1,4}/
                 })
-            }), __c_editbox("field-27", {
-                atr: $$ => fields.simple('.fulltimeemployeeamt', [ this.nbOnlyRequired ], {
+            }), Form.field(Editbox, "field-27", {
+                atr: $$ => fields.simple('.fulltimeemployeeamt', [ QuoteWorkClassForm.nbOnlyRequired ], {
                     style: 'width: 40px; border-radius: 1px; height: 18px',
                     pattern: /\d{1,3}/,
                     disabled: $$('.ifAny') == 'Y'
                 })
-            }), __c_editbox("field-28", {
-                atr: $$ => fields.simple('.parttimeemployeeamt', [ this.nbOnlyRequired ], {
+            }), Form.field(Editbox, "field-28", {
+                atr: $$ => fields.simple('.parttimeemployeeamt', [ QuoteWorkClassForm.nbOnlyRequired ], {
                     style: 'width: 40px; border-radius: 1px; height: 18px',
                     pattern: /\d{1,3}/,
                     disabled: $$('.ifAny') == 'Y'
                 })
-            }), __c_editbox("field-29", {
+            }), Form.field(Editbox, "field-29", {
                 atr: $$ => fields.simple('.seasonalemployeeamt', [], {
                     style: 'width: 40px; border-radius: 1px; height: 18px',
                     pattern: /\d{1,3}/,
                     disabled: $$('.ifAny') == 'Y'
                 })
-            }), __c_editbox_$("field-30", {
+            }), Form.field(EditboxMoney, "field-30", {
                 atr: $$ => fields.simple('.payroll', {
                     style: 'width: 80px; border-radius: 1px; height: 18px',
                     formatting: '99,999,999',
                     disabled: $$('.ifAny') == 'Y'
                 })
-            }), __c_checkbox("field-8", {
-                set: ($$, value) => $$.set((value == 'Y' ? this.ifAnyEmptyFields() : []).reduce((clazz, field) => {
+            }), Form.field(Checkbox, "field-8", {
+                set: ($$, value) => $$.set((value == 'Y' ? QuoteWorkClassForm.ifAnyEmptyFields() : []).reduce((clazz, field) => {
                     clazz[field] = '';
                     return clazz;
                 }, {
@@ -190,21 +215,21 @@ defineForm([ "require", "dfe-common", "ui/utils", "dfe-field-helper", "component
                     val: () => 0
                 }),
                 pos: [ {
-                    s: "text-align: center"
+                   style: "text-align: center"
                 } ]
-            }), __c_button("field-31", {
+            }), Form.field(Button, "field-31", {
                 get: () => 'Delete',
                 set: $$ => $$.detach(),
                 pos: [ {
-                    s: "max-width: 50px"
+                   style: "max-width: 50px"
                 } ]
-            }), __c_div("field-37", {
+            }), Form.field(Div, "field-37", {
                 get: $$ => $$('.code').length == 4 ? [ $$ ] : [],
                 pos: [ {
-                    n: "Y",
-                    w: "8"
+                    newRow: true,
+                    colSpan: "8"
                 } ]
-            }, [ __c_radiolist("field-32", {
+            }, [ Form.field(Radiolist, "field-32", {
                 get: $$ => cmn.ajaxFeed($$, {
                     query: {
                         action: 'getSubcodes',
@@ -222,48 +247,49 @@ defineForm([ "require", "dfe-common", "ui/utils", "dfe-field-helper", "component
                 }),
                 set: ($$, value) => $$.set('.subcode', value),
                 atr: () => ({
-                    style: 'padding: 2px 0px 0px 2px;'
+                    style: 'padding: 2px 0px 0px 2px;',
+                    orientation: 'vertical'
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "7"
+                    newRow: true,
+                    colSpan: "7"
                 } ]
-            }) ]), __c_label("field-33", {
+            }) ]), Form.field(Label,"field-33", {
                 get: () => '',
-                val: $$ => $$('.ifAny') == 'Y' && this.ifAnyEmptyFields().filter(field => $$('.' + field).toString() !== '').length && $$.error('If Any is selected, you may not enter Employees or Payroll'),
+                val: $$ => $$('.ifAny') == 'Y' && QuoteWorkClassForm.ifAnyEmptyFields().filter(field => $$('.' + field).toString() !== '').length && $$.error('If Any is selected, you may not enter Employees or Payroll'),
                 pos: [ {
-                    n: "Y",
-                    w: "8"
+                    newRow: true,
+                    colSpan: "8"
                 } ]
-            }) ]), __c_div("field-35", {
+            }) ]), Form.field(Div, "field-35", {
                 get: $$ => [ $$ ],
                 atr: () => ({
                     style: 'background: #dcdcdc; padding: 2px'
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "7"
+                    newRow: true,
+                    colSpan: "7"
                 } ]
-            }, [ __c_button("field-24", {
+            }, [ Form.field(Button, "field-24", {
                 get: () => 'Add additional class',
                 set: $$ => $$.append('.class'),
                 pos: [ {
-                    colstyle: "display: inline;"
+                    style: "display: inline;"
                 } ]
-            }), __c_button("field-36", {
+            }), Form.field(Button, "field-36", {
                 get: () => 'Available class code list',
-                set: $$ => this.showAvailable($$('..effective'), $$('.state')),
+                set: $$ => QuoteWorkClassForm.showAvailable($$('..effective'), $$('.state')),
                 pos: [ {
-                    colstyle: "display: none;"
+                    style: "display: none;"
                 } ]
-            }) ]) ]), __c_button("field-15", {
+            }) ]) ]), Form.field(Button, "field-15", {
                 get: () => 'Add additional location',
-                set: $$ => {
+                set: function($$){
                     var index = $$.get('.location').length;
-                    var defaults = this.locationDefaults2[index] || {state:this.locationDefaults.state};
+                    var defaults = this.locationDefaults2[index] || {state: this.locationDefaults.state};
                     $$.append('.location', defaults)[0].append('.class')
                 }
-            }), __c_label("field-34", {
+            }), Form.field(Label,"field-34", {
                 get: () => '',
                 val: $$ => $$('.location.class').filter(c => c.get('.ifAny') != 'Y').length || $$.error('There must be payroll present on the submission')
             }) ]);
@@ -315,30 +341,13 @@ defineForm([ "require", "dfe-common", "ui/utils", "dfe-field-helper", "component
                 }, newNoSpecificLocation == 'N' && $$('.NoSpecificLocation') == 'Y' && newState == this.locationDefaults.state ? this.locationDefaults : {}));
             }
         }
-        ifAnyEmptyFields() {
+        static ifAnyEmptyFields() {
             return [ 'fulltimeemployeeamt', 'parttimeemployeeamt', 'seasonalemployeeamt', 'payroll' ];
         }
-        nbOnlyRequired($$, _, field) {
+        static nbOnlyRequired($$, _, field) {
             $$('policy.common.quotetype') == 'NB' && $$.required(field);
         }
-        onstart($$) {
-            var ref = $$.first('insured.location');
-            this.locationDefaults = ref && {
-                address1: ref.get('.address'),
-                city: ref.get('.city'),
-                state: ref.get('.state'),
-                zip: ref.get('.zip')
-            };
-            this.locationDefaults2 = $$.get('policy.bbop.location').map(ref => ({
-                address1: ref.get('.address1'),
-                city: ref.get('.city'),
-                state: ref.get('.state'),
-                zip: ref.get('.zip')
-            }));
-            $$.first('policy.work').defaultSubset('.location', this.locationDefaults).forEach(loc => loc.defaultSubset('.class'));
-        }
-        onpost($$) {}
-        showAvailable(effDt, state) {
+        static showAvailable(effDt, state) {
             ajaxCache.get({
                 method: 'WORKClassCodeScriptHelper',
                 action: 'getList',
@@ -358,21 +367,18 @@ defineForm([ "require", "dfe-common", "ui/utils", "dfe-field-helper", "component
                 });
             });
         }
-        setup() {
-            uiUtils.setDfeCustomStyle(`
-                .no-specific-field {
-                    display: flex;
-                }
-                .no-specific-field > input {
-                    margin: 3px;
-                }
-                .no-specific-field > label {
-                    white-space: nowrap;
-                }
-                .ui-widget-overlay {
-            		opacity: .3;
-                }
-            `, this.name);
+    }
+    uiUtils.setDfeCustomStyle(`
+        .no-specific-field {
+            display: flex;
+            white-space: nowrap;
         }
-    }();
-});
+        .no-specific-field > input {
+            margin: 3px;
+        }
+        .ui-widget-overlay {
+            opacity: .3;
+        }
+    `, clazz.prototype.constructor.name);
+    return clazz;
+})

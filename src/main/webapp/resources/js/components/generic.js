@@ -22,7 +22,7 @@ define('components/either', ['dfe-core'], function(Core) {
 
 define('components/text', ['components/base'], function(BaseComponent) {
     return class Text extends BaseComponent {}
-}) 
+})
 
 define('components/span', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
     return class Span extends BaseComponent {         
@@ -39,7 +39,7 @@ define('components/span', ['dfe-core', 'components/base'], function(Core, BaseCo
 })
 
 define('components/div', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
-    return class Span extends BaseComponent {         
+    return class Div extends BaseComponent {         
         render(data, error, attributes, children) {
             let sub = [];
             children.forEach( 
@@ -63,11 +63,16 @@ define('components/inline-rows', ['dfe-core', 'components/base'], function(Core,
             children.forEach( 
                 (map, row) => map.forEach( 
                     child => {
-                        let ii = child.field.pos && child.field.pos[0];
-                        if( current === undefined || singles || ii && ii.newRow ) {
-                            rows.push( current = [] );
+                        if( child.control instanceof InlineRows ) {
+                            rows.push( child );
+                            current = undefined;
+                        } else {
+                            let ii = child.field.pos && child.field.pos[0];
+                            if( current === undefined || !singles || ii && ii.newRow ) {
+                                rows.push( current = [] );
+                            }
+                            current.push( Core.createElement( cellElement, child ) );
                         }
-                        current.push( Core.createElement( cellElement, child ) );
                     }
                 )
             )
@@ -180,19 +185,6 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
     }
 })
 
-define('components/labeled-component', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
-    return class Labeled extends BaseComponent {
-        render(data, error, attributes, children) {
-            let firstChild;
-            children.forEach(map => map.forEach(child => firstChild || (firstChild = child) ));
-            return [[ 
-                attributes.html ? Core.createElement('span', attributes) : attributes.text,
-                !!error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
-            ], firstChild]
-        }
-    };
-})
-
 define('components/validation-component', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
     return class ValidationComponent extends BaseComponent {
         doValidation(events, attrs) {
@@ -231,6 +223,31 @@ define('components/validation-component', ['dfe-core', 'components/base'], funct
                 attributes.hideError = true ;
             }
             return ret;
+        }
+    }
+})
+
+define('components/label', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
+    return class Label extends ValidationComponent {
+        render(data, error, attributes, children) {
+            let { html: html, text: text, label: label, hideError: hideError, ...rest } = attributes;
+            return [[ 
+                html || label ? Core.createElement('label', {text: label, html: html, ...rest}) : text || data.toString(),
+                super.render(null, error, {hideError: hideError}, children)
+            ]]
+        }
+    }
+}) 
+
+define('components/labeled-component', ['dfe-core', 'components/label'], function(Core, Label) {
+    return class Labeled extends Label {
+        render(data, error, attributes, children) {
+            let firstChild;
+            children.forEach(map => map.forEach(child => firstChild || (firstChild = child) ));
+            return [ 
+                ...super.render("not specified", error, attributes, children), 
+                firstChild
+            ]
         }
     }
 })
@@ -303,6 +320,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
                 }
             }
             if(this.pattern) {
+                let m, v;
                 m = (v = ui.value.substr(0, s) + e.key + ui.value.substr(ui.selectionEnd)).match(this.pattern);
                 (!m || m[0] != v) && (this.ca--, e.preventDefault());
             }
@@ -478,18 +496,17 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                 focusnew: focusnew,
                 haclass: haclass,
                 ...rest
-            } = attributes, curRows = new Set(), activeTab;
+            } = attributes, nextRows = new Set();
             let head = Core.createElement('div', { class: headerClass, style : headerStyle });
             let body = Core.createElement('div', { class: rowClass, style : rowStyle });
+            this.activeTab = data.some(proxy => this.activeTab === proxy.data.key) ? this.activeTab : data[0] && data[0].data.key;
             data.forEach(proxy => {
                 let key = proxy.data.key;
-                this.lastRows.has(key) || focusnew && (this.activeTab = key);
-                activeTab = !activeTab || this.activeTab === key ? key : activeTab;
-                curRows.add(key);
+                nextRows.add(key);
+                this.lastRows.has(key) || this.lastRows.size && focusnew && (this.activeTab = key);
             })
             headField = headField || 'header';
-            this.activeTab = activeTab;
-            this.lastRows = curRows;
+            this.lastRows = nextRows;
             children.forEach(
                 (map, row) => {
                     if(row) {
@@ -498,11 +515,11 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                                 if( field.name === headField ) {
                                     head.children.push( Core.createElement('div', child, pos => ({
                                         ...pos, 
-                                        ...(row.key === activeTab ? {class: (pos.class ? pos.class + ' ' : '') + haclass} : {}),
+                                        ...(row.key === this.activeTab ? {class: (pos.class ? pos.class + ' ' : '') + haclass} : {}),
                                         onClick: () => this.setActiveTab(row.key)
                                     })))
                                 } else {
-                                    row.key === activeTab && body.children.push( Core.createElement('div', child) );
+                                    row.key === this.activeTab && body.children.push( Core.createElement('div', child) );
                                 }
                             }
                         )
@@ -713,7 +730,7 @@ define('components/div-button', ['dfe-core', 'components/validation-component'],
             let value = data.toString(), {...rest} = attributes;
             return (
                 Core.createElement('div', { ...this.splitAttributes(rest, error), onClick: () => this.store(value, 'click') }, [
-                    Core.createElement('label', { class: 'div-button-text', text: value }),
+                    Core.createElement('label', { class: 'div-button-text', html: value }),
                     super.render(null, error, rest)
                 ])
             )
@@ -751,9 +768,9 @@ define('components/labeled', ['dfe-core', 'components/validation-component'], fu
             this.renderComponent = this.getComponent().prototype.render.bind(new (this.getComponent())(node));
         }
         render(data, error, attributes, children) {
-            let { cclass: cclass, cstyle: cstyle, text: text, html: html, hideError: hideError, ...rest } = attributes;
+            let { cclass: cclass, cstyle: cstyle, text: text, label: label, html: html, hideError: hideError, ...rest } = attributes;
             return [[
-                html || cclass || cstyle ? Core.createElement('span', { class: cclass, style: cstyle, text: text, html: html }) : text,
+                html || label || cclass || cstyle ? Core.createElement('label', { class: cclass, style: cstyle, text: label || text, html: html }) : text,
                 super.render(null, error, { hideError: hideError })
             ], ...this.renderComponent(data, null, rest, children) ]
         }

@@ -1,118 +1,216 @@
-defineForm([ "require", "dfe-common", "dfe-field-helper", "forms/corecomm/cmau/applytoall", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/c-editbox-$", "components/dfe-table", "components/container", "components/tab-s", "components/editbox", "components/dropdown", "components/c-switch" ], function(require, cmn, fields, __f_applytoall, __c_div_button, __c_label, __c_button, __c_div, __c_c_radiolist, __c_c_editbox, __c_c_dropdown, __c_c_editbox_$, __c_dfe_table, __c_container, __c_tab_s, __c_editbox, __c_dropdown, __c_c_switch) {
-    return new class {
-        constructor() {
-            this.dfe = __c_div("root", {
+define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", 
+        "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/c-editbox-$", 
+        "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component",
+       "components/container", "components/inline-rows", "components/c-checkbox"], 
+       function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, 
+                 LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
+    let Form = Core.Form;
+    
+    let carDefaults = {
+        losspayee: [ {
+            losspayeeInd: "N",
+            ailessorInd: "N",
+            haownInd: "N"
+        } ],
+        emplessor: "N",
+        PhysDmgInd: "N",
+        DumpingOpInd: "N",
+        vinoverride: "N",
+        hasvin: "Y",
+        custom: "N",
+        UseClassInd1: "N",
+        UseClassInd2: "N",
+        coverages: [ {
+            pip: [ {
+                IncludeInd: "N"
+            } ],
+            liab: [ {
+                IncludeInd: "Y"
+            } ],
+            towlabor: [ {
+                towlabor: "No Coverage"
+            } ]
+        } ]
+    };
+    
+    let typeMap = {
+        car: {
+            name: "Private Passenger Type",
+            btn: "Passenger Vehicles"
+        },
+        truck: {
+            name: "Trucks, Tractors and Trailers"
+        },
+        golf: {
+            name: "Golf Carts and Low Speed Vehicles"
+        },
+        mobile: {
+            name: "Mobile Homes"
+        },
+        antique: {
+            name: "Antique Autos"
+        }
+    };
+    
+    class AutoFocus extends LabeledEditbox {
+        render(data, error, attributes) {
+            return super.render(data, error, {...attributes, ref: dom => (dom.focus(), dom.select())});
+        }
+    }
+    
+    function vehDetailsDisabled($$) {
+        return $$('.hasvin') == 'Y' && ($$('.vinnumber') == 0 || $$('.vinoverride') != 'Y');
+    }
+    
+    class VehDetailsChoice extends Form {
+        static fields(children, field) {
+            let config = field.config || {};
+            return Form.field(Labeled, {
+                atr: () => ({
+                    style: 'padding-left: 10px', 
+                    html: `<a href="javascript:showHelp('/cmau_help.html#${config.helpId}')" class="css-qmark"></a>${config.label}`, 
+                    errorwatch: true
+                })
+            }, Form.field(Either, {
+                val: config.validation,
+                atr: $$ => ({ 
+                    first: vehDetailsDisabled($$) || $$('.custom') == 'Y' 
+                })
+            }, Form.field(Editbox, { 
+                atr: $$ => fields.simple(config.field, {
+                    pattern: config.pattern, 
+                    disabled: vehDetailsDisabled($$),
+                    style: 'width: 150px; text-transform:uppercase;',
+                    hideError: true
+                })
+            }), Form.field(Dropdown, {
+                atr: $$ => fields.ajaxChoice(config.field, {
+                    query: { 
+                        ...config.ajaxOptions($$), 
+                        method: 'CMAUVehicleScriptHelper', 
+                        action: config.action
+                    }
+                }, {
+                    disabled: vehDetailsDisabled($$) || $$('.custom') == 'Y',
+                    hideError: true
+                }) 
+            })))
+        }
+    }
+    
+    class ApplyToAllField extends Form {
+        static fields(children, field) {
+            let config = field.config || {};
+            return [ ...children, Form.field(Button, { 
+                get: () => 'Apply to all ' + (config.type ? typeMap[config.type].btn || typeMap[config.type].name : 'Vehicles'), 
+                set: ($$, value) => $$('...location.car').forEach(car => config.type && car.data.vehicletype != config.type || car.set(config.field, $$(config.field))),
+                atr: () => ({ class: 'link-button'})
+            })]
+        }
+    }
+    
+    let QuoteCmauCarForm = class extends Form {
+        constructor(node) {
+            super(node);
+            node.unboundModel.get('policy.cmau.location').forEach(loc => loc.defaultSubset('.car', carDefaults).forEach(car => car.get('.hasvin') == 'Y' && QuoteCmauCarForm.vehProcessVin(car)));
+        }            
+        static fields() {
+            return Form.field(Container, "root", {
                 get: $$ => $$('policy.cmau')
-            }, [ __c_tab_s("locs", {
+            }, [ Form.field(TabS, "locs", 
+                            {
                 get: $$ => $$('.location'),
                 val: $$ => $$.required('.location'),
                 atr: () => ({
                     haclass: 'tab-item-active',
                     focusnew: 1,
-                    hfield: 'loc-hdr',
+                    headField: 'loc-hdr',
                     rowclass$header: 'tab-header',
                     rowclass: 'tab-body',
                     rowstyle: 'display: block; width: 900px;'
                 })
-            }, [ __c_div_button("loc-hdr", {
+            }, [ Form.field(DivButton, "loc-hdr", {
                 get: $$ => `<a style="color: #444">Location #${$$.index(2) + 1}</a><br/>${$$('.city')} ${$$('.state')} ${$$('.zip')}-${$$('.zipaddon')}`.replace(/-$/, ''),
-                val: $$ => $$.errorwatch($$.control.parentControl),
-                atr: () => ({
+                atr: $$ => ({
                     class: 'div-button',
-                    eclass: 'dfe-error',
-                    vstrategy: 'always'
+                    errorwatch: { target: 'peers', accept: () => 'error' }
                 }),
                 pos: [ {
-                    colclass: "tab-item"
+                    class: "tab-item"
                 } ]
-            }), __c_div("loc-title1", {
-                get: $$ => [ $$ ],
+            }), Form.field(Div, "loc-title1", {
                 pos: [ {
-                    colclass: "tab-section-header"
+                    class: "inline-section-header"
                 } ]
-            }, [ __c_label("field-159", {
+            }, [ Form.field(Label, "field-159", {
                 get: $$ => 'Location #' + ($$.index() + 1)
-            }), __c_button("add-car", {
+            }), Form.field(Button, "add-car", {
                 get: () => 'Add Vehicle',
-                set: function($$, value) {
-                    let p = $$.append('.car', this.carDefaults)[0], r = $$.runtime;
-                    setTimeout(function() {
-                        let t = r.findChildren(r.findControls('cars', $$), 1, 0, 'vin', p).pop().ui;
-                        t && t.focus();
-                    }, 100);
-                },
+                set: $$ => $$.append('.car', carDefaults),
                 atr: () => ({
                     style: 'padding: 1px 10px'
                 }),
                 pos: [ {
-                    colstyle: "position: absolute; right: 5px; top: 5px"
+                    style: "position: absolute; right: 5px; top: 5px"
                 } ]
-            }) ]), __c_tab_s("cars", {
+            }) ]), Form.field(TabS, "cars", {
                 get: $$ => $$('.car'),
                 val: $$ => $$.required('.car'),
                 atr: () => ({
                     haclass: 'tab-item-active',
                     focusnew: 1,
-                    hfield: 'car-hdr',
+                    headField: 'car-hdr',
                     style: 'width: 100%;',
                     rowclass$header: 'tab-header',
                     rowclass: 'tab-body',
                     rowstyle: 'padding: 0px; overflow: hidden;'
                 }),
                 pos: [ {
-                    colstyle: "width: 100%; "
+                    style: "width: 100%; "
                 } ]
-            }, [ __c_div_button("car-hdr", {
+            }, [ Form.field(DivButton, "car-hdr", {
                 get: $$ => `${$$('..state')} - Vehicle #${$$.index() + 1}<br/>${$$('.ModelYr')} ${$$('.make')}`,
-                val: $$ => $$.errorwatch($$.control.parentControl),
                 atr: $$ => ({
                     class: 'div-button',
-                    eclass: 'dfe-error',
-                    vstrategy: 'always',
-                    ta: {
-                        visible: $$('..car').length - 1
-                    }
+                    errorwatch: { target: 'peers', accept: () => 'error' }
                 }),
                 pos: [ {
-                    colclass: "tab-item"
+                    class: "tab-item"
                 } ]
-            }), __c_div("body", {
-                get: $$ => [ $$ ]
-            }, [ __c_dfe_table("info", {
-                get: $$ => [ $$ ],
+            }),  
+                Form.field(Table, "info", {
                 atr: function($$) {
                     let skip = $$('.hasvin') == 'Y' ? $$('.vinvalid') != 'Y' && $$('.vinnumber') != 0 ? [] : [ 'override' ] : [ 'vin', 'override' ];
-                    this.vehDetailsDisabled($$) && skip.push('custom');
+                    vehDetailsDisabled($$) && skip.push('custom');
                     return {
-                        class: 'tab-cols-5-5',
+                        singles: true,
+                        class: 'dfe-table tab-cols-5-5',
                         skip: skip
                     };
                 },
                 pos: [ {
-                    colclass: "dfe-inline-section-1"
+                    class: "dfe-inline-section"
                 } ]
-            }, [ __c_label("field-154", {
+            }, [ Form.field(Label, "field-154", {
                 get: $$ => 'Vehicle #' + ($$.index() + 1),
                 pos: [ {
-                    w: "2"
+                    colSpan: "2",
+                    class: "inline-section-header"
                 } ]
-            }), __c_c_radiolist("field-9", {
-            	set: ($$, value) => { $$.set('.hasvin', value), 'Y' == value && this.vehProcessVin($$) },
+            }), Form.field(LabeledRadiolist, "field-9", {
+            	set: ($$, value) => { $$.set('.hasvin', value), 'Y' == value && QuoteCmauCarForm.vehProcessVin($$) },
             	get: $$ => $$('.hasvin'),
                 atr: () => ({
                     orientation: 'horizontal',
                     text: 'Do you have the VIN?'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_c_editbox("vin", {
+                })
+            }), Form.field(AutoFocus, "vin", {
                 get: $$ => $$('.vinnumber'),
                 set: function($$, value) {
                     $$.set('.vinnumber', value);
-                    this.vehProcessVin($$);
+                    QuoteCmauCarForm.vehProcessVin($$);
                 },
-                val: function($$) {
+                val: function($$, events) {
                     let vin = $$('.vinnumber');
                     if (vin != 0) {
                         $$('.vinoverride') == 'Y' || (vin.length != 17 ? $$.error('Invalid VIN format') : ajaxCache.get({
@@ -120,7 +218,7 @@ defineForm([ "require", "dfe-common", "dfe-field-helper", "forms/corecomm/cmau/a
                             action: 'getVinLookupResults',
                             vinNumber: vin
                         }).then(data => data.result.isMatch || $$.error('Vin not found'), () => $$.error('Error fetching VIN data')));
-                    } else $$.events.filter(e => 'validate' == e.action).length && $$.error('Required');
+                    } else events.filter(e => 'validate' == e.action).length && $$.error('Required');
                 },
                 atr: $$ => ({
                     spellcheck: 'false',
@@ -130,687 +228,411 @@ defineForm([ "require", "dfe-common", "dfe-field-helper", "forms/corecomm/cmau/a
                     text: 'Vihicle Identification Number (VIN)',
                     vstrategy: 'notified',
                     trigger: 'change'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_c_radiolist("override", {
+                })
+            }), Form.field(LabeledRadiolist, "override", {
                 atr: () => fields.simple('.vinoverride', [], {
                     cstyle: 'padding-left: 10px;',
                     orientation: 'horizontal',
                     text: 'Override VIN?'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_c_radiolist("custom", {
+                })
+            }), Form.field(LabeledRadiolist, "custom", {
                 atr: () => fields.simple('.custom', [], {
                     cstyle: 'padding-left: 10px;',
                     orientation: 'horizontal',
                     text: 'Vehicle Year, Make and/or Model is not available in dropdown'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_c_dropdown("type-choice", {
-                atr: $$ => fields.choice('.vehicletype', Object.keys(this.typeMap).map(k => ({
+                })
+            }), Form.field(LabeledDropdown, "type-choice", {
+                atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
                     value: k,
-                    description: this.typeMap[k].name
+                    description: typeMap[k].name
                 })), {
-                    disabled: this.vehDetailsDisabled($$),
+                    disabled: vehDetailsDisabled($$),
                     text: 'Vehicle Type',
                     style: 'width: fit-content;'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_c_switch("year-switch", {
-                val: $$ => $$.required('.ModelYr', '(18|19|20)\\d{2}'),
-                atr: $$ => this.vehDetailsChoice($$, '.ModelYr', '\\d{1,4}', 'year', 'Vehicle Year', 'getYearOptions', {
-                    vehicleType: $$('.vehicletype')
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_c_switch("make-switch", {
-                atr: $$ => this.vehDetailsChoice($$, '.make', '[-\\w ]{1,50}', 'make', 'Vehicle Make', 'getMakeOptions', {
-                    vehicleType: $$('.vehicletype'),
-                    vehicleYear: $$('.ModelYr')
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_c_switch("model-switch", {
-                atr: $$ => this.vehDetailsChoice($$, '.modelinfo', '[-\\w ]{1,50}', 'model', 'Vehicle Model', 'getModelOptions', {
-                    vehicleType: $$('.vehicletype'),
-                    vehicleYear: $$('.ModelYr'),
-                    vehicleMake: $$('.make')
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }), __c_c_editbox_$("costnew-free", {
+                })
+            }), Form.field(VehDetailsChoice, "year-option", {
+                config: {
+                    validation: $$ => $$.required('.ModelYr', /(18|19|20)\d{2}/),
+                    field: '.ModelYr',
+                    pattern: /\d{1,4}/,
+                    helpId: 'year',
+                    label: 'Vehicle Year',
+                    action: 'getYearOptions',
+                    ajaxOptions: $$ => ({
+                        vehicleType: $$('.vehicletype')
+                    })
+                }
+            }), Form.field(VehDetailsChoice, "make-option", {
+                config: {
+                    validation: $$ => $$.required('.make', /[-\w ]{1,50}/),
+                    field: '.make',
+                    helpId: 'make',
+                    label: 'Vehicle Make',
+                    action: 'getMakeOptions',
+                    ajaxOptions: $$ => ({
+                        vehicleType: $$('.vehicletype'),
+                        vehicleYear: $$('.ModelYr')
+                    })
+                }
+            }), Form.field(VehDetailsChoice, "model-option", {
+                config: {
+                    validation: $$ => $$.required('.make', /[-\w ]{1,50}/),
+                    field: '.modelinfo',
+                    helpId: 'model',
+                    label: 'Vehicle Model',
+                    action: 'getModelOptions',
+                    ajaxOptions: $$ => ({
+                        vehicleType: $$('.vehicletype'),
+                        vehicleYear: $$('.ModelYr'),
+                        vehicleMake: $$('.make')
+                    })
+                }
+            }),
+            Form.field(LabeledEditboxMoney, "costnew-free", {
                 atr: $$ => fields.simple('.vehicleocostnew', {
-                    disabled: this.vehDetailsDisabled($$),
+                    disabled: vehDetailsDisabled($$),
                     style: 'width: 150px;',
                     formatting: '$9,999,999',
                     text: 'Original Cost New'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {} ]
-            }) ]), __c_dfe_table("private", {
+                })
+            }) ]), Form.field(Table, "private", {
                 get: $$ => $$('.vehicletype') == 'car' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-cols-2-5-3'
+                    class: 'dfe-table col-3-centred tab-cols-2-5-3',
+                    singles: true
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "2",
-                    s: ".dfe-inline-section-1",
-                    colclass: "dfe-inline-section-1"
+                    class: "dfe-inline-section"
                 } ]
-            }, [ __c_label("field-36", {
+            }, [ Form.field(Label, "field-36", {
                 get: () => 'Private Passenger Auto',
                 pos: [ {
-                    w: "3"
+                    colSpan: "3",
+                    class: "inline-section-header"
                 } ]
-            }), __f_applytoall("field-34", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.VehUseCd', 'Usage', {
-                    items: [ 'Furnished for Non-Business Use', 'All Other' ],
-                    type: 'car'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __c_container("nonbus", {
-                get: $$ => $$('.VehUseCd') == 'Furnished for Non-Business Use' ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-2-5-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-38", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.OperExp', 'Operator Experience', {
-                    cstyle: 'padding-left: 10px',
-                    items: [ 'No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs' ],
-                    type: 'car'
+            }), Form.field(ApplyToAllField, "field-34", { config: {type: 'car', field: '.VehUseCd'} }, [
+                Form.field(LabeledDropdown, {
+                    atr: () => fields.choice('.VehUseCd',  [ 'Furnished for Non-Business Use', 'All Other' ], { text: 'Usage' })
                 })
-            }), __f_applytoall("field-42", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.OperUse', 'Operator Use', {
-                    cstyle: 'padding-left: 10px',
-                    items: [ 'Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles' ],
-                    type: 'car'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }) ]) ]), __c_dfe_table("truck", {
+            ]), Form.field(InlineRows, "nonbus", { get: $$ => $$('.VehUseCd') == 'Furnished for Non-Business Use' ? [ $$ ] : [] }, [
+                    Form.field(ApplyToAllField, "field-38", { config: {type: 'car', field: '.OperExp'} }, [
+                        Form.field(LabeledDropdown, {
+                            atr: () => fields.choice('.OperExp',  [ 'No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs' ], { text: 'Operator Experience', cstyle: 'padding-left: 10px' })
+                        })
+                    ]), 
+                    Form.field(ApplyToAllField, "field-42", { config: {type: 'car', field: '.OperUse'} }, [
+                        Form.field(LabeledDropdown, {
+                            atr: () => fields.choice('.OperUse',  [ 'Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles' ], { text: 'Operator Use', cstyle: 'padding-left: 10px' })
+                        })
+                    ]) ]) ]), 
+            Form.field(Table, "truck", {
                 get: $$ => $$('.vehicletype') == 'truck' ? [ $$ ] : [],
                 atr: $$ => ({
-                    class: 'col-va-middle col-3-centred tab-cols-3-4-3'
+                    class: 'dfe-table col-va-middle col-3-centred tab-cols-3-4-3',
+                    singles: true,
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "2",
-                    s: ".dfe-inline-section-1",
-                    colclass: "dfe-inline-section-1"
+                    class: "dfe-inline-section"
                 } ]
-            }, [ __c_label("field-49", {
+            }, [ Form.field(Label, "field-49", {
                 get: () => 'Trucks, Tractors and Trailers',
                 pos: [ {
-                    w: "3"
+                    colSpan: "3",
+                    class: "inline-section-header"
                 } ]
-            }), __f_applytoall("field-51", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.VehicleClass', 'Vehicle Class', {
-                    items: [ 'Light Truck 10,000 lbs GVW or less', 'Medium Truck 10,001 to 20,000 lbs GVW', 'Heavy Truck 20,001 to 45,000 lbs GVW', 'Extra-Heavy Truck over 45,000 lbs GVW', 'Heavy Truck-Tractor 45,000 lbs GCW or less', 'Extra-Heavy Truck-Tractor over 45,000 lbs GCW', 'Trailer Types' ],
-                    type: 'truck'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __c_container("tt-switch", {
-                get: $$ => $$('.VehicleClass') == 'Trailer Types' ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-va-middle col-3-centred dfe-table tab-cols-3-4-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-55", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.TrailerType', 'Trailer Type', {
-                    items: [ 'Semitrailers', 'Trailers', 'Service or Utility Trailer (0-200 lbs. Load Capacity)' ],
-                    type: 'truck'
-                })
-            }) ]), __f_applytoall("field-58", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.UseClassInd1', 'Is this auto used for transporting personnel, tools and equipment to and from a job location where it is parked for the majority of the day?', {
-                    component: 'radiolist',
-                    type: 'truck'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-62", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.UseClassInd2', 'Is this auto used for pick-up and/or delivery of property to residential households?', {
-                    component: 'radiolist',
-                    type: 'truck'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-65", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.RadiusClass', 'Radius', {
-                    items: [ 'Local up to 50 miles', 'Intermediate 51 to 200 miles', 'Long distance over 200 miles' ],
-                    type: 'truck'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-68", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.DumpingOpInd', 'Used in dumping', {
-                    component: 'checkbox',
-                    type: 'truck'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-71", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.SecondaryClass', 'Secondary Class', {
-                    items: [ 'Truckers', 'Food Delivery', 'Waste Disposal', 'Farmers', 'Dump & Transit Mix', 'Contractors', 'Not Otherwise Specified' ],
-                    style: 'width:fit-content',
-                    type: 'truck'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-74", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.SecondaryClassType', 'Secondary Class Type', {
-                    component: 'ajax-dropdown',
-                    ajax: {
-                        method: 'CMAUVehicleScriptHelper',
-                        action: 'getSecondaryClassTypeOptions',
-                        secondaryClass: $$('.SecondaryClass')
-                    },
-                    style: 'width: fit-content',
-                    type: 'truck'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }) ]), __c_dfe_table("golf", {
+            }),
+                Form.field(ApplyToAllField, "field-51", { config: {type: 'truck', field: '.VehicleClass'} }, [
+                    Form.field(LabeledDropdown, {
+                        atr: () => fields.choice('.VehicleClass',  [ 'Light Truck 10,000 lbs GVW or less', 'Medium Truck 10,001 to 20,000 lbs GVW', 'Heavy Truck 20,001 to 45,000 lbs GVW', 'Extra-Heavy Truck over 45,000 lbs GVW', 'Heavy Truck-Tractor 45,000 lbs GCW or less', 'Extra-Heavy Truck-Tractor over 45,000 lbs GCW', 'Trailer Types' ], { text: 'Vehicle Class' })
+                    })
+                ]),
+                Form.field(InlineRows, "tt-switch", { get: $$ => $$('.VehicleClass') == 'Trailer Types' ? [ $$ ] : [] }, 
+                    Form.field(ApplyToAllField, "field-55", { config: {type: 'truck', field: '.TrailerType'} }, 
+                        Form.field(LabeledDropdown, {
+                            atr: () => fields.choice('.TrailerType',  [ 'Semitrailers', 'Trailers', 'Service or Utility Trailer (0-200 lbs. Load Capacity)' ], { text: 'Trailer Type' })
+                        })
+                    )
+                ),
+                Form.field(ApplyToAllField, "field-58", { config: {type: 'truck', field: '.UseClassInd1'} }, 
+                    Form.field(LabeledRadiolist, {
+                        atr: () => fields.simple('.UseClassInd1', { text: 'Is this auto used for transporting personnel, tools and equipment to and from a job location where it is parked for the majority of the day?' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-59", { config: {type: 'truck', field: '.UseClassInd2'} }, 
+                    Form.field(LabeledRadiolist, {
+                        atr: () => fields.simple('.UseClassInd2', { text: 'Is this auto used for pick-up and/or delivery of property to residential households?' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-65", { config: {type: 'truck', field: '.RadiusClass'} }, 
+                    Form.field(LabeledDropdown, {
+                        atr: () => fields.choice('.RadiusClass',  [ 'Local up to 50 miles', 'Intermediate 51 to 200 miles', 'Long distance over 200 miles' ], { text: 'Radius' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-68", { config: {type: 'truck', field: '.DumpingOpInd'} }, 
+                    Form.field(LabeledCheckbox, {
+                        atr: () => fields.simple('.DumpingOpInd',  [], { text: 'Used in dumping' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-71", { config: {type: 'truck', field: '.SecondaryClass'} }, 
+                    Form.field(LabeledDropdown, {
+                        atr: () => fields.choice('.SecondaryClass',  [ 'Truckers', 'Food Delivery', 'Waste Disposal', 'Farmers', 'Dump & Transit Mix', 'Contractors', 'Not Otherwise Specified' ], { style: 'width: fit-content', text: 'Secondary Class' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-74", { config: {type: 'truck', field: '.SecondaryClassType'} }, 
+                    Form.field(LabeledDropdown, {
+                        atr: $$ => fields.ajaxChoice('.SecondaryClassType', {
+                            method: 'CMAUVehicleScriptHelper',
+                            action: 'getSecondaryClassTypeOptions',
+                            secondaryClass: $$('.SecondaryClass')
+                        }, { 
+                            style: 'width: fit-content', text: 'Secondary Class Type' 
+                        })
+                    })
+                )
+            ]), Form.field(Table, "golf", {
                 get: $$ => $$('.vehicletype') == 'golf' ? [ $$ ] : [],
                 atr: () => ({
-                    class: 'col-3-centred tab-cols-4-3-3'
+                    class: 'dfe-table col-3-centred tab-cols-4-3-3',
+                    singles: true
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "2",
-                    s: ".dfe-inline-section-1",
-                    colclass: "dfe-inline-section-1"
+                    class: "dfe-inline-section"
                 } ]
-            }, [ __c_label("field-122", {
+            }, [ Form.field(Label, "field-122", {
                 get: () => 'Golf Carts and Low Speed Vehicles',
                 pos: [ {
-                    w: "3"
+                    colSpan: "3",
+                    class: "inline-section-header"
                 } ]
-            }), __f_applytoall("field-125", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.GolfType', 'Type', {
-                    items: [ 'Golf Cart', 'Low Speed Vehicles' ],
-                    style: 'width: fit-content',
-                    type: 'golf'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-128", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.GolfUse', 'Use', {
-                    items: [ 'Used On Golf Course', 'Other Commercial Purposes' ],
-                    style: 'width: fit-content',
-                    type: 'golf'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-131", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.GolfVhsub', 'Vehicle subject to compulsory, financial or other law', {
-                    component: 'checkbox',
-                    type: 'golf'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }) ]), __c_dfe_table("mobile", {
+            }),
+                Form.field(ApplyToAllField, "field-125", { config: {type: 'golf', field: '.GolfType'} }, 
+                    Form.field(LabeledDropdown, {
+                        atr: () => fields.choice('.GolfType', [ 'Golf Cart', 'Low Speed Vehicles' ], { style: 'width: fit-content', text: 'Type' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-128", { config: {type: 'golf', field: '.GolfUse'} }, 
+                    Form.field(LabeledDropdown, {
+                        atr: () => fields.choice('.GolfUse', [ 'Used On Golf Course', 'Other Commercial Purposes' ], { style: 'width: fit-content', text: 'Use' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-131", { config: {type: 'golf', field: '.GolfVhsub'} }, 
+                    Form.field(LabeledCheckbox, {
+                        atr: () => fields.simple('.GolfVhsub',  [], { text: 'Vehicle subject to compulsory, financial or other law' })
+                    })
+                ) ]), 
+            Form.field(Table, "mobile", {
                 get: $$ => $$('.vehicletype') == 'mobile' ? [ $$ ] : [],
                 atr: $$ => ({
-                    class: 'col-3-centred tab-cols-2-5-3'
+                    class: 'dfe-table col-3-centred tab-cols-2-5-3',
+                    singles: true
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "2",
-                    s: ".dfe-inline-section-1",
-                    colclass: "dfe-inline-section-1"
+                    class: "dfe-inline-section"
                 } ]
-            }, [ __c_label("field-123", {
+            }, [ Form.field(Label, "field-123", {
                 get: () => 'Mobile Homes',
                 pos: [ {
-                    w: "3"
+                    colSpan: "3",
+                    class: "inline-section-header"
                 } ]
-            }), __f_applytoall("field-134", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.MobileHomeType', 'Type', {
-                    items: [ 'Trailer Equipped As Living Quarters', 'Pickup Trucks Used Solely To Transport Camper Bodies', 'Motor Homes Self-Propelled Equipped As Living Quarters' ],
-                    style: 'width: fit-content',
-                    type: 'mobile'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __c_container("size-switch", {
-                get: $$ => $$('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-2-5-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-138", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.MotorHomeSize', 'Length', {
-                    items: [ 'Up To 22 feet', 'More Than 22 feet' ],
-                    style: 'width: fit-content',
-                    type: 'mobile'
-                })
-            }) ]) ]), __c_dfe_table("covs", {
-                get: $$ => [ $$ ],
+            }),
+                Form.field(ApplyToAllField, "field-134", { config: {type: 'mobile', field: '.MobileHomeType'} }, 
+                    Form.field(LabeledDropdown, {
+                        atr: () => fields.choice('.MobileHomeType', [ 'Trailer Equipped As Living Quarters', 'Pickup Trucks Used Solely To Transport Camper Bodies', 'Motor Homes Self-Propelled Equipped As Living Quarters' ], { style: 'width: fit-content', text: 'Type' })
+                    })
+                ),
+                Form.field(InlineRows, "size-switch", { get: $$ => $$('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [ $$ ] : [] }, 
+                    Form.field(ApplyToAllField, "field-138", { config: {type: 'mobile', field: '.MotorHomeSize'} }, 
+                        Form.field(LabeledDropdown, {
+                            atr: () => fields.choice('.MotorHomeSize', [ 'Up To 22 feet', 'More Than 22 feet' ], { style: 'width: fit-content', text: 'Length' })
+                        })
+                    )
+                ) ]), 
+            Form.field(Table, "covs", {
                 atr: $$ => ({
-                    class: 'col-3-centred tab-cols-4-3-3'
+                    class: 'dfe-table col-3-centred tab-cols-4-3-3',
+                    singles: true
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "2",
-                    s: ".dfe-inline-section-1",
-                    colclass: "dfe-inline-section-1"
+                    class: "dfe-inline-section"
                 } ]
-            }, [ __c_label("field-77", {
+            }, [ Form.field(Label, "field-77", {
                 get: () => 'Coverages',
                 pos: [ {
-                    w: "3"
+                    colSpan: "3",
+                    class: "inline-section-header"
                 } ]
-            }), __f_applytoall("field-81", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.PhysDmgInd', 'Physical Damage Only?', {
-                    component: 'checkbox'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-82", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.otc.ded', 'Comp. Ded', {
-                    component: 'ajax-dropdown',
-                    ajax: {
-                        query: {
-                            method: 'CMAUVehicleScriptHelper',
-                            action: 'getCompDedOptions',
-                            vehicleType: $$('.vehicletype')
-                        },
-                        mapper: o => ({
-                            value: o.value,
-                            description: o.text
+            }),
+                Form.field(ApplyToAllField, "field-81", { config: { field: '.PhysDmgInd'} }, 
+                    Form.field(LabeledCheckbox, {
+                        atr: () => fields.simple('.PhysDmgInd',  [], { text: 'Physical Damage Only?' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-82", { config: { field: '.coverages.otc.ded'} }, 
+                    Form.field(LabeledDropdown, {
+                        atr: $$ => fields.ajaxChoice('.coverages.otc.ded', {
+                            query: {
+                                method: 'CMAUVehicleScriptHelper',
+                                action: 'getCompDedOptions',
+                                vehicleType: $$('.vehicletype')
+                            },
+                            mapper: o => ({ value: o.value, description: o.text })
+                        }, { text: 'Comp. Ded' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-85", { config: { field: '.coverages.col.ded'} }, 
+                    Form.field(LabeledDropdown, {
+                        atr: $$ => fields.ajaxChoice('.coverages.col.ded', {
+                            query: {
+                                method: 'CMAUVehicleScriptHelper',
+                                action: 'getCollDedOptions',
+                                vehicleType: $$('.vehicletype')
+                            },
+                            mapper: o => ({ value: o.value, description: o.text })
+                        }, { text: 'Coll. Ded' })
+                    })
+                ),
+                Form.field(InlineRows, "val-switch", { get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) ? [ $$ ] : [] }, 
+                    Form.field(ApplyToAllField, "field-88", { config: { field: '.ValuationMethod'} }, 
+                        Form.field(LabeledDropdown, {
+                            atr: $$ => fields.ajaxChoice('.ValuationMethod', {
+                                method: 'CMAUVehicleScriptHelper',
+                                action: 'getValuationMethodOptions',
+                                vehicleType: $$('.vehicletype')
+                            }, { text: 'Valuation' })
                         })
-                    },
-                    style: 'width: fit-content'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-85", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.col.ded', 'Coll. Ded', {
-                    component: 'ajax-dropdown',
-                    ajax: {
-                        query: {
-                            method: 'CMAUVehicleScriptHelper',
-                            action: 'getCollDedOptions',
-                            vehicleType: $$('.vehicletype')
-                        },
-                        mapper: o => ({
-                            value: o.value,
-                            description: o.text
+                    )
+                ),
+                Form.field(InlineRows, "amt-switch", { get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) && $$('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [] }, 
+                    Form.field(ApplyToAllField, "field-92", { config: { field: '.StatedAmt'} }, 
+                        Form.field(LabeledEditboxMoney, {
+                            atr: () => fields.simple('.StatedAmt', { formatting: '$9,999,999', text: 'Stated Amount', cstyle: 'padding-left: 10px;', style: 'width: 100px' })
                         })
-                    },
-                    style: 'width: fit-content'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __c_container("val-switch", {
-                get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-88", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.ValuationMethod', 'Valuation', {
-                    component: 'ajax-dropdown',
-                    ajax: {
-                        method: 'CMAUVehicleScriptHelper',
-                        action: 'getValuationMethodOptions',
-                        vehicleType: $$('.vehicletype')
-                    },
-                    style: 'width: min-content'
-                })
-            }) ]), __c_container("amt-switch", {
-                get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) && $$('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-92", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.StatedAmt', 'Stated Amount', {
-                    component: 'editbox-$',
-                    cstyle: 'padding-left: 10px;',
-                    style: 'width: 100px'
-                })
-            }) ]), __c_container("pdonly-switch", {
-                get: $$ => $$('.PhysDmgInd') == 'Y' || $$('..state') != 'KS' ? [] : [ $$ ],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-96", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.IncludeInd', 'Personal Injury Protection Coverage', {
-                    component: 'checkbox'
-                })
-            }), __c_container("pip-switch", {
-                get: $$ => $$('.coverages.pip.IncludeInd') == 'Y' ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-100", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.addedpipoption', 'Additional Personal Injury Protection', {
-                    items: [ 'Option 1', 'Option 2' ],
-                    cstyle: 'padding-left: 10px',
-                    style: 'width: fit-content'
-                })
-            }), __f_applytoall("field-103", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.broadpipnum', 'Number of Individuals for Broadened PIP', {
-                    component: 'editbox',
-                    pattern: '[0-9]{1,5}',
-                    cstyle: 'padding-left: 10px',
-                    style: 'width: 80px'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __c_container("added-pip", {
-                get: $$ => +$$('.coverages.pip.broadpipnum') > 0 ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-145", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.addedbroadpipnum', 'Number of Named Individuals for Additional Broadened PIP', {
-                    component: 'editbox',
-                    pattern: '[0-9]{1,5}',
-                    cstyle: 'padding-left: 10px',
-                    style: 'width: 80px'
-                })
-            }), __c_container("added-pip-s", {
-                get: $$ => +$$('.coverages.pip.addedbroadpipnum') ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-149", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.pip.addedbpipoptioncd', 'Additional Broadened Personal Injury Protection', {
-                    items: [ 'Option 1', 'Option 2' ],
-                    cstyle: 'padding-left: 10px',
-                    style: 'width: fit-content'
-                })
-            }) ]) ]) ]) ]) ]), __c_dfe_table("opt-covs", {
-                get: $$ => [ $$ ],
+                    )
+                ),
+                Form.field(InlineRows, "pdonly-switch", { get: $$ => $$('.PhysDmgInd') == 'Y' || $$('..state') != 'KS' ? [] : [ $$ ] }, 
+                    Form.field(ApplyToAllField, "field-96", { config: { field: '.coverages.pip.IncludeInd'} }, 
+                        Form.field(LabeledCheckbox, {
+                            atr: () => fields.simple('.coverages.pip.IncludeInd',  [], { text: 'Personal Injury Protection Coverage' })
+                        })
+                    ),
+                    Form.field(InlineRows, "pip-switch", { get: $$ => $$('.coverages.pip.IncludeInd') == 'Y' ? [ $$ ] : [] }, 
+                        Form.field(ApplyToAllField, "field-100", { config: { field: '.coverages.pip.addedpipoption' } }, 
+                            Form.field(LabeledDropdown, {
+                                atr: () => fields.choice('.coverages.pip.addedpipoption', [ 'Option 1', 'Option 2' ], { cstyle: 'padding-left: 10px', style: 'width: fit-content', text: 'Additional Personal Injury Protection' })
+                            })
+                        ),
+                        Form.field(ApplyToAllField, "field-103", { config: { field: '.coverages.pip.broadpipnum' } }, 
+                            Form.field(LabeledEditbox, {
+                                atr: () => fields.simple('.coverages.pip.broadpipnum', { pattern: '[0-9]{1,5}', cstyle: 'padding-left: 10px', style: 'width: 80px', text: 'Number of Individuals for Broadened PIP' })
+                            })
+                        ),
+                        Form.field(InlineRows, "added-pip", { get: $$ => +$$('.coverages.pip.broadpipnum') > 0 ? [ $$ ] : [] }, 
+                            Form.field(ApplyToAllField, "field-145", { config: { field: '.coverages.pip.addedbroadpipnum' } }, 
+                                Form.field(LabeledEditbox, {
+                                    atr: () => fields.simple('.coverages.pip.addedbroadpipnum', { pattern: '[0-9]{1,5}', cstyle: 'padding-left: 10px', style: 'width: 80px', text: 'Number of Named Individuals for Additional Broadened PIP' })
+                                })
+                            ), 
+                            Form.field(InlineRows, "added-pip-s", { get: $$ => +$$('.coverages.pip.addedbroadpipnum') ? [ $$ ] : [] }, 
+                                Form.field(ApplyToAllField, "field-149", { config: { field: '.coverages.pip.addedbpipoptioncd' } }, 
+                                    Form.field(LabeledDropdown, {
+                                        atr: () => fields.choice('.coverages.pip.addedbpipoptioncd', [ 'Option 1', 'Option 2' ], { cstyle: 'padding-left: 10px', style: 'width: fit-content', text: 'Additional Broadened Personal Injury Protection' })
+                                    })
+                                )
+                            )
+                        )
+                    )
+                )
+            ]), Form.field(Table, "opt-covs", {
                 atr: $$ => ({
-                    class: `col-3-centred tab-cols-4-3-3`,
-                    skip: $$('..state') == 'KS' ? [ 'field-111', 'field-114' ] : [ 'field-113' ]
+                    class: `dfe-table col-3-centred tab-cols-4-3-3`,
+                    skip: $$('..state') == 'KS' ? [ 'field-111', 'field-114' ] : [ 'field-113' ],
+                    singles: true
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "2",
-                    s: ".dfe-inline-section-1",
-                    colclass: "dfe-inline-section-1"
+                    class: "dfe-inline-section"
                 } ]
-            }, [ __c_label("field-106", {
+            }, [ Form.field(Label, "field-106", {
                 get: () => 'Optional Coverages',
                 pos: [ {
-                    w: "3"
+                    colSpan: "3",
+                    class: "inline-section-header"
                 } ]
-            }), __c_container("towing-switch", {
-                get: $$ => $$('.vehicletype') == 'car' && $$('.coverages.otc.ded').toString().match(/\d|Full/) ? [ $$ ] : [],
-                atr: () => ({
-                    class: 'col-3-centred dfe-table tab-cols-4-3-3'
-                }),
-                pos: [ {
-                    w: "3",
-                    n: "Y",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-118", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.coverages.towlabor.towlabor', 'Towing and Labor', {
-                    items: fields.choiceItems({
-                        'No Coverage': 'No Coverage',
-                        $50: '50',
-                        $100: '100',
-                        $200: '200'
-                    }),
-                    style: 'width: fit-content'
-                })
-            }) ]), __f_applytoall("field-108", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.losspayeeInd', 'Loss Payee', {
-                    component: 'checkbox'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-111", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.ailessorInd', 'Additional Insured - Lessor', {
-                    component: 'checkbox'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-114", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.haownInd', 'Hired Auto - Specified As Covered Auto You Own', {
-                    component: 'checkbox'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __f_applytoall("field-157", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.emplessor', 'Employee as Lessor', {
-                    component: 'checkbox'
-                }),
-                pos: [ {
-                    n: "Y"
-                }, {}, {} ]
-            }), __c_container("field-113", {
-                get: $$ => [ $$ ],
-                atr: $$ => ({
-                    class: `col-3-centred dfe-table tab-cols-4-3-3`
-                }),
-                pos: [ {
-                    n: "Y",
-                    w: "3",
-                    s: "padding: 0px;"
-                } ]
-            }, [ __f_applytoall("field-116", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.namedinsuredInd', 'Additional Named Insured', {
-                    component: 'checkbox'
-                })
-            }), __c_container("field-120", {
-                get: $$ => $$('.losspayee.namedinsuredInd') == 'Y' ? [ $$ ] : [],
-                atr: $$ => ({
-                    class: `col-3-centred dfe-table tab-cols-4-3-3`
-                }),
-                pos: [ {
-                    n: "Y",
-                    s: "padding: 0px;",
-                    w: "3"
-                } ]
-            }, [ __f_applytoall("field-121", {
-                atr: $$ => this.makeApplyAllAttrs($$, '.losspayee.namedInsured.Name', '<b style="color: red">*</b>Name', {
-                    component: 'editbox',
-                    cstyle: 'padding-left: 10px;',
-                    html: true
-                })
-            }) ]) ]) ]), __c_div("car-ctrl", {
-                get: $$ => [ $$ ],
+            }), Form.field(InlineRows, "towing-switch", { get: $$ => $$('.vehicletype') == 'car' && $$('.coverages.otc.ded').toString().match(/\d|Full/) ? [ $$ ] : [] }, 
+                    Form.field(ApplyToAllField, "field-118", { config: { field: '.coverages.towlabor.towlabor' } }, 
+                        Form.field(LabeledDropdown, {
+                            atr: () => fields.choice('.coverages.towlabor.towlabor', fields.choiceItems({
+                                'No Coverage': 'No Coverage',
+                                $50: '50',
+                                $100: '100',
+                                $200: '200'
+                            }), { style: 'width: fit-content', text: 'Towing and Labor' })
+                        })
+                    )
+                ),
+                Form.field(ApplyToAllField, "field-108", { config: { field: '.losspayee.losspayeeInd'} }, 
+                    Form.field(LabeledCheckbox, {
+                        atr: () => fields.simple('.losspayee.losspayeeInd',  [], { text: 'Loss Payee' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-111", { config: { field: '.losspayee.ailessorInd'} }, 
+                    Form.field(LabeledCheckbox, {
+                        atr: () => fields.simple('.losspayee.ailessorInd',  [], { text: 'Additional Insured - Lessor' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-114", { config: { field: '.losspayee.haownInd'} }, 
+                    Form.field(LabeledCheckbox, {
+                        atr: () => fields.simple('.losspayee.haownInd',  [], { text: 'Hired Auto - Specified As Covered Auto You Own' })
+                    })
+                ),
+                Form.field(ApplyToAllField, "field-157", { config: { field: '.emplessor'} }, 
+                    Form.field(LabeledCheckbox, {
+                        atr: () => fields.simple('.emplessor',  [], { text: 'Employee as Lessor' })
+                    })
+                ),
+                Form.field(InlineRows, "field-113", 
+                    Form.field(ApplyToAllField, "field-116", { config: { field: '.losspayee.namedinsuredInd'} }, 
+                        Form.field(LabeledCheckbox, {
+                            atr: () => fields.simple('.losspayee.namedinsuredInd',  [], { text: 'Additional Named Insured' })
+                        })
+                    ),
+                    Form.field(InlineRows, "field-120", { get: $$ => $$('.losspayee.namedinsuredInd') == 'Y' ? [ $$ ] : [] },
+                        Form.field(ApplyToAllField, "field-121", { config: { field: '.losspayee.namedInsured.Name'} }, 
+                            Form.field(LabeledEditbox, {
+                                atr: () => fields.simple('.losspayee.namedInsured.Name',  [], { cstyle: 'padding-left: 10px;', html: '<b style="color: red">*</b>Name' })
+                            })
+                        )
+                    )
+                )
+           ]), Form.field(Div, "car-ctrl", {
                 atr: $$ => ({
                     skip: $$('..car').length > 1 ? [] : [ 'remove-car' ],
                     style: 'padding: 5px; text-align: right; background: lightgray;'
                 }),
                 pos: [ {
-                    n: "Y",
-                    w: "2",
-                    s: "padding: 2px 0px"
+                    style: "padding: 2px 0px"
                 } ]
-            }, [ __c_button("clone-car", {
+            }, [ Form.field(Button, "clone-car", {
                 get: () => 'Clone Vehicle',
-                set: function($$, value) {
-                    let r = $$.runtime, p = $$.clone();
-                    setTimeout(function() {
-                        let t = r.findChildren(r.findControls('cars', p.get('..')), 1, 0, 'vin', p).pop().ui;
-                        t && (t.focus(), t.setSelectionRange(t.value.length - 6, t.value.length));
-                    }, 100);
-                },
+                set: $$ => $$.clone(),
                 atr: () => ({
                     style: 'padding: 1px 10px; margin: 0px 5px'
                 }),
                 pos: [ {
-                    colstyle: "display: inline-block"
+                    style: "display: inline-block"
                 } ]
-            }), __c_button("remove-car", {
+            }), Form.field(Button, "remove-car", {
                 get: () => 'Remove Vehicle',
                 set: $$ => $$.detach(),
                 atr: () => ({
                     style: 'padding: 1px 10px; margin: 0px 5px'
                 }),
                 pos: [ {
-                    colstyle: "display: inline-block"
+                    style: "display: inline-block"
                 } ]
-            }) ]) ]) ]) ]), __c_button("add-loc", {
-                get: () => 'Add location',
-                set: $$ => $$.append('.location'),
-                atr: () => ({
-                    style: 'width: 150px; margin: 3px; display: none'
-                }),
-                pos: [ {
-                    colstyle: "align-self: flex-end;"
-                } ]
-            }) ]);
-            this.carDefaults = {
-                losspayee: [ {
-                    losspayeeInd: "N",
-                    ailessorInd: "N",
-                    haownInd: "N"
-                } ],
-                emplessor: "N",
-                PhysDmgInd: "N",
-                DumpingOpInd: "N",
-                hasvin: "Y",
-                vinoverride: "N",
-                custom: "N",
-                UseClassInd1: "N",
-                UseClassInd2: "N",
-                coverages: [ {
-                    pip: [ {
-                        IncludeInd: "N"
-                    } ],
-                    liab: [ {
-                        IncludeInd: "Y"
-                    } ],
-                    towlabor: [ {
-                        towlabor: "No Coverage"
-                    } ]
-                } ]
-            };
-            this.typeMap = {
-                car: {
-                    name: "Private Passenger Type",
-                    btn: "Passenger Vehicles"
-                },
-                truck: {
-                    name: "Trucks, Tractors and Trailers"
-                },
-                golf: {
-                    name: "Golf Carts and Low Speed Vehicles"
-                },
-                mobile: {
-                    name: "Mobile Homes"
-                },
-                antique: {
-                    name: "Antique Autos"
-                }
-            };
+            }) ])  ]) ]) ]);
         }
-        makeApplyAllAttrs($$, field, text, opts) {
-            return cmn.extend(opts, {
-                set: ($$, value, method) => method=='all' ? this.all($$, field, opts.type) : $$.set(field, value),
-                get: $$ => ({ value: $$(field).toString() }),
-                text: text,
-                all: opts.type ? this.typeMap[opts.type].btn || this.typeMap[opts.type].name : 'Vehicles',
-                component: 'dropdown'
-            })
-        }
-        vehDetailsDisabled($$) {
-            return $$('.hasvin') == 'Y' && ($$('.vinnumber') == 0 || $$('.vinoverride') != 'Y');
-        }
-        vehDetailsChoice($$, field, pattern, help, label, action, query) {
-            let disabled = this.vehDetailsDisabled($$), freetext = disabled || $$('.custom') == 'Y';
-            let args = {
-                cstyle: 'padding-left: 10px',
-                text: `<a href="javascript:showHelp('/cmau_help.html#${help}')" class="css-qmark"></a>${label}`,
-                html: true,
-                component: freetext ? __c_editbox : __c_dropdown,
-                pattern: pattern,
-                disabled: disabled,
-                style: freetext ? 'width: 150px; text-transform:uppercase;' : 'width: fit-content;'
-            };
-            return freetext ? fields.simple(field, args) : fields.ajaxChoice(field, {
-                query: cmn.extend(query, {
-                    method: 'CMAUVehicleScriptHelper',
-                    action: action
-                })
-            }, args);
-        }
-        vehProcessVin($$) {
+        static vehProcessVin($$) {
             $$.get('.vinnumber').length == 17 ? ajaxCache.get({
                 method: 'CMAUVehicleScriptHelper',
                 action: 'getVinLookupResults',
@@ -831,19 +653,11 @@ defineForm([ "require", "dfe-common", "dfe-field-helper", "forms/corecomm/cmau/a
                 });
             }, () => $$.set('.vinvalid', 'N')) : $$.set('.vinvalid', 'N');
         }
-        all($$, prop, type) {
-            $$('...location.car').forEach(car => type && car.data.vehicletype != type || car.set(prop, $$(prop)));
-        }
-        onstart($$) {
-            $$('policy.cmau.location').forEach(loc => loc.defaultSubset('.car', this.carDefaults).forEach(car => car.get('.hasvin') == 'Y' && this.vehProcessVin(car)));
-        }
-        onpost($$) {}
-        setup() {
-            if (typeof window != 'undefined') {
-                window.showHelp = function(url) {
-                    window.open(url, 'DetailWin', 'scrollbars=yes,resizable=yes,toolbar=no,height=250,width=250').focus();
-                };
-            }
-        }
-    }();
-});
+    }
+    if (typeof window !== 'undefined') {
+        window.showHelp = function(url) {
+            window.open(url, 'DetailWin', 'scrollbars=yes,resizable=yes,toolbar=no,height=250,width=250').focus();
+        };
+    }
+    return QuoteCmauCarForm;
+})

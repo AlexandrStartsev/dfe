@@ -346,11 +346,11 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
 		var formName = node.getAttribute('dfe-form'), args = eval(node.getAttribute('dfe-arguments')), model = eval(node.getAttribute('dfe-model'))||{}, pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
 		Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
 			var dfe = values[0], arf = values[1], cur = node._dfe_runtime;
-			if(cur && cur.form.name != formName) {
+			if(cur && cur.formName != formName) {
 				cur.shutdown();
 				cur = null;
 			}
-	        if(!cur) node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe }));
+	        if(!cur) node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe, params: {formName: formName} }));
 		})
 	}
     var _isIE7 = (navigator.appVersion.indexOf("MSIE 7.") != -1);
@@ -364,9 +364,9 @@ define('ui/utils', ['dfe-core', 'module'], function(core, m) {
     link.setAttribute('href', styleUri);
     var document_head = _isIE7 || _isIE8 ? document.getElementsByTagName('head')[0] : document.head;
     document_head.appendChild(link);
-    /*function lookup() { for(var n = document.querySelectorAll('div[dfe-form]'), i = 0; i < n.length; setupNode(n[i++])); }
+    function lookup() { for(var n = document.querySelectorAll('[dfe-form]'), i = 0; i < n.length; setupNode(n[i++])); }
     setInterval(lookup, 100);
-    setTimeout(lookup, 0);  */
+    setTimeout(lookup, 0); 
     return {
         setAttribute: function (node, name, value) { 
         	if(value===true) value = '';
@@ -401,7 +401,8 @@ var ajaxCache = (function() {
         },
         get: function(opt) {
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
-                var u = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
+                var u = //'https://cors-anywhere.herokuapp.com/
+                        'https://arrowheadexchange.com/AJAXServlet.srv?';
                 //var u = '/AJAXServlet.srv?';
                 for(var o in opt)
                     (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
