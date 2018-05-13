@@ -27,13 +27,16 @@ define('components/text', ['components/base'], function(BaseComponent) {
 define('components/span', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
     return class Span extends BaseComponent {         
         render(data, error, attributes, children) {
-            let sub = [];
+            let sub = [], {wrap: wrap, ...rest} = attributes, header = children.get(null);
+            header && header.forEach( 
+                child => sub.push( Core.createElement('span', child) ) 
+            );
             children.forEach( 
-                (map, row) => map.forEach( 
+                (map, row) => row && map.forEach( 
                     child => sub.push( Core.createElement('span', child) ) 
-                )
+                ) 
             )
-            return Core.createElement('span', attributes, sub);
+            return wrap === false ? [sub] : Core.createElement('span', attributes, sub);
         }
     }
 })
@@ -41,13 +44,16 @@ define('components/span', ['dfe-core', 'components/base'], function(Core, BaseCo
 define('components/div', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
     return class Div extends BaseComponent {         
         render(data, error, attributes, children) {
-            let sub = [];
+            let sub = [], {wrap: wrap, ...rest} = attributes, header = children.get(null);
+            header && header.forEach( 
+                child => sub.push( Core.createElement('div', child) ) 
+            );
             children.forEach( 
-                (map, row) => map.forEach( 
+                (map, row) => row && map.forEach( 
                     child => sub.push( Core.createElement('div', child) ) 
-                )
+                ) 
             )
-            return Core.createElement('div', attributes, sub);
+            return wrap === false ? [sub] : Core.createElement('div', rest, sub);
         }
     }
 })
@@ -55,7 +61,7 @@ define('components/div', ['dfe-core', 'components/base'], function(Core, BaseCom
 define('components/inline-rows', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
     return class InlineRows extends BaseComponent {         
         render(data, error, attributes, children) {
-            let { element: cellElement, singles: singles } = attributes;
+            let { element: cellElement, singleColumn: singleColumn } = attributes;
             let rows = [], current;
             if(['div', 'span', 'td'].indexOf(cellElement) === -1) {
                 cellElement = 'td';
@@ -67,8 +73,8 @@ define('components/inline-rows', ['dfe-core', 'components/base'], function(Core,
                             rows.push( child );
                             current = undefined;
                         } else {
-                            let ii = child.field.pos && child.field.pos[0];
-                            if( current === undefined || !singles || ii && ii.newRow ) {
+                            let ii = child.field.layout && child.field.layout[0];
+                            if( current === undefined || !singleColumn || ii && ii.newRow ) {
                                 rows.push( current = [] );
                             }
                             current.push( Core.createElement( cellElement, child ) );
@@ -96,7 +102,7 @@ define('components/table', ['dfe-core', 'components/base', 'components/inline-ro
                 rowstyle$footer: footerStyle,
                 rowclass: rowClass,
                 rowstyle: rowStyle, 
-                singles: singles,
+                singleColumn: singleColumn,
                 skip: skip,
                 colOrder: colOrder,
                 filter: filter,
@@ -105,16 +111,16 @@ define('components/table', ['dfe-core', 'components/base', 'components/inline-ro
             } = attributes;
             data = this.orderFilterRows(data, filter, order).map(row => row.data);
             let columns = this.orderFilterFields(skip, colOrder);
-            let head = this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'tr', 'th', singles );
-            let foot = this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'tr', 'td', singles );
-            let body = this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'tr', 'td', singles );
+            let head = this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'tr', 'th', singleColumn );
+            let foot = this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'tr', 'td', singleColumn );
+            let body = this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'tr', 'td', singleColumn );
             return Core.createElement('table', rest, [
                 head.length && Core.createElement('thead', {}, head),
                 body.length && Core.createElement('tbody', {}, body),
                 foot.length && Core.createElement('tfoot', {}, foot)
             ]);
         }
-        makeRows( orderedFilteredColumns, orderedFilteredRows, children, clazz, rowAttributes, rowElement, cellElement, singles) {
+        makeRows( orderedFilteredColumns, orderedFilteredRows, children, clazz, rowAttributes, rowElement, cellElement, singleColumn) {
             let rows = [];
             orderedFilteredRows.forEach(
                 row => {
@@ -126,11 +132,11 @@ define('components/table', ['dfe-core', 'components/base', 'components/inline-ro
                                     let child = map.get(field);
                                     if( child ) {
                                         if( child.control instanceof InlineRows ) {
-                                            rows.push( Core.createElement( rowElement,  child,  pos => ({ ...pos, ...rowAttributes }) ));
+                                            rows.push( Core.createElement( rowElement,  child,  layout => ({ ...layout, ...rowAttributes }) ));
                                             current = undefined;
                                         } else {
-                                            let ii = child.field.pos && child.field.pos[0];
-                                            if( current === undefined || singles || ii && ii.newRow ) {
+                                            let ii = child.field.layout && child.field.layout[0];
+                                            if( current === undefined || singleColumn || ii && ii.newRow ) {
                                                 rows.push( current = Core.createElement(rowElement, { key: row ? row.key : 0, ...rowAttributes }));
                                             }
                                             current.children.push( Core.createElement( cellElement, child ) );
@@ -167,7 +173,7 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
                 rowstyle$footer: footerStyle,
                 rowclass: rowClass,
                 rowstyle: rowStyle,
-                singles: singles,
+                singleColumn: singleColumn,
                 skip: skip,
                 colOrder: colOrder,
                 filter: filter,
@@ -177,9 +183,9 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
             data = this.orderFilterRows(data, filter, order).map(row => row.data);
             let columns = this.orderFilterFields(skip, colOrder);
             return Core.createElement('div', rest, [
-                ...this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'div', 'div', singles ), 
-                ...this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'div', 'div', singles ),
-                ...this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'div', 'div', singles )
+                ...this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'div', 'div', singleColumn ), 
+                ...this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'div', 'div', singleColumn ),
+                ...this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'div', 'div', singleColumn )
             ]);
         }
     }
@@ -464,8 +470,8 @@ define('components/html', ['dfe-core', 'components/base'], function(Core, BaseCo
     }
 })
 
-define('components/form', ['dfe-core', 'components/div'], function(Core, Div) {
-    return class Form extends Div {
+define('components/html-form', ['dfe-core', 'components/div'], function(Core, Div) {
+    return class HtmlForm extends Div {
         render(data, error, attributes, children) {
             let {name: name, id: id, action: action, method: method, target: target, ...rest} = attributes;
             return Core.createElement('form', { name: name, id: id, action: action, method: method, target: target }, [super.render(data, error, rest, children)]);
@@ -513,13 +519,14 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                         map.forEach(
                             (child, field) => {
                                 if( field.name === headField ) {
-                                    head.children.push( Core.createElement('div', child, pos => ({
-                                        ...pos, 
-                                        ...(row.key === this.activeTab ? {class: (pos.class ? pos.class + ' ' : '') + haclass} : {}),
+                                    head.children.push( Core.createElement('div', child, layout => ({
+                                        ...layout, 
+                                        ...(row.key === this.activeTab ? {class: (layout.class ? layout.class + ' ' : '') + haclass} : {}),
                                         onClick: () => this.setActiveTab(row.key)
                                     })))
                                 } else {
                                     row.key === this.activeTab && body.children.push( Core.createElement('div', child) );
+                                    //body.children.push( Core.createElement('div', child, layout => row.key === this.activeTab ? layout : ({...layout, style: 'display: none'}) ) );
                                 }
                             }
                         )
@@ -569,9 +576,9 @@ define('components/tab-d', ['dfe-core', 'components/base'], function(Core, BaseC
                 model => {
                     let child = children.get(model.data).get(headField), isActive = (useHandler ? this.handler.activeTab : activeTab)(model);
                     if(child) {
-                        head.children.push( Core.createElement('div', child, pos => ({
-                            ...pos, 
-                            ...(isActive ? {class: (pos.class ? pos.class + ' ' : '') + haclass} : {}),
+                        head.children.push( Core.createElement('div', child, layout => ({
+                            ...layout, 
+                            ...(isActive ? {class: (layout.class ? layout.class + ' ' : '') + haclass} : {}),
                             onClick: () => (this.handler.store(model), this.store(model))
                         })));
                     }
@@ -688,38 +695,24 @@ define('components/textarea', ['dfe-core', 'components/editbox', 'components/val
 define('components/dfe-runtime', ['dfe-core'], function(Core) {
     return class ChildRuntime extends Core.Component {
         render(data, error, attributes, children) {
-            // TODO ... 
             let { form: formName, editTarget: editTarget, ...rest } = attributes;
-            let model = (Array.isArray(data) ? data[0] : data) || {}
-            if( this.formName !== formName ) {
-                this.runtime && this.runtime.shutdown();
-                require([formName], 
-                    formClass => this.runtime = Core.startRuntime({
-                        params: {parentControl: null}, 
-                        form: formClass, 
-                        model: model, 
-                        node: this.domElement
-                    })
-                )
-            }
-            if( this.domElement ) {
-                element.setAttribute('dfe-form', formName);
-                editTarget ? element.setAttribute('dfe-edit-target', '') : element.removeAttribute('dfe-edit-target');
-            }
-            return Core.createElement('div', { ...rest, ref: element => {
-                this.domElement = element;
-                element.setAttribute('dfe-form', formName);
-                if( editTarget ) {
-                    element.setAttribute('dfe-edit-target', '');
-                }
-                if( this.runtime ) {
-                    this.runtime.setRoot(element);
-                }
-            }})
+            let model = data[0]||{};
+            ChildRuntime.setDOMAttributes(this.ref, formName, editTarget, model);
+            return Core.createElement('div', { ...rest, ref: dom => ChildRuntime.setDOMAttributes(this.ref = dom, formName, editTarget, model) });
         }
         destroy() {
-            this.runtime && this.runtime.shutdown();
+            let rt = this.ref && this.ref._dfe_runtime;
+            if(rt) {
+                rt.shutdown();
+            }
             super.destroy();
+        }
+        static setDOMAttributes(ref, formName, editTarget, model) {
+            if(ref) {
+                ref.setAttribute('dfe-form', formName);
+                ref.dfeModel = model;
+                editTarget ? ref.setAttribute('dfe-edit-target', '') : element.removeAttribute('dfe-edit-target');
+            }
         }
     }
 })

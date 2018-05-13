@@ -1,6 +1,6 @@
 define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-$", "components/radiolist", "components/table", "components/checkbox", "ui/jquery-ui" ], function(require, Core, cmn, uiUtils, fields, Label, Editbox, Dropdown, Button, Div, EditboxMoney, Radiolist, Table, Checkbox, jQuery) {
     let Form = Core.Form;
-    let clazz = class QuoteWorkClassForm extends Form {
+    class QuoteWorkClassForm extends Form {
         constructor(node) {
             super(node);
             let $$ = node.unboundModel, ref = $$.first('insured.location');
@@ -38,25 +38,25 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 atr: () => ({
                     style: 'background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; line-height: 2em; display: block; '
                 }),
-                pos: [ {
+                layout: [ {
                     colSpan: "7"
                 } ]
             }), Form.field(Label,"field-3", {
                 class: "header",
                 get: () => '#',
-                pos: [ {
+                layout: [ {
                     newRow: true
                 } ]
             }), Form.field(Label,"field-4", {
                 class: "header",
                 get: () => 'Street',
-                pos: [ {
+                layout: [ {
                    style: "width:45%"
                 } ]
             }), Form.field(Label,"field-5", {
                 class: "header",
                 get: () => 'City',
-                pos: [ {
+                layout: [ {
                    style: "width:30%"
                 } ]
             }), Form.field(Label,"field-6", {
@@ -65,13 +65,13 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
             }), Form.field(Label,"field-7", {
                 class: "header",
                 get: () => 'Zip Code',
-                pos: [ {
+                layout: [ {
                    style: "width:70px; min-width:70px"
                 } ]
             }), Form.field(Label,"field-1", {
                 class: "header",
                 get: $$ => '',
-                pos: [ {
+                layout: [ {
                     colSpan: "2"
                 } ]
             }), Form.field(Label,"field-9", {
@@ -114,7 +114,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     class: 'no-specific-field',
                     attributeMapper: pos => $$('.state').match(/MO|AZ|IN|IA|KY|MT|TX/) ? {...pos, style: 'visibility: hidden;'} : pos
                 }),
-                pos: [{ 
+                layout: [{ 
                     class: 'no-specific-field' 
                 }]
             }), Form.field(Button, "field-14", {
@@ -127,14 +127,14 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     style: 'width: 100%;',
                     skip: $$('.class').length > 1 ? [] : [ 'field-23', 'field-31' ]
                 }),
-                pos: [ {
+                layout: [ {
                     newRow: true,
                     colSpan: "7"
                 } ]
             }, [ Form.field(Div, "field-38", {
                 class: "header",
                 get: $$ => [ $$ ],
-                pos: [ {
+                layout: [ {
                     colSpan: "8"
                 } ]
             }, [ Form.field(Label,"field-39", {
@@ -145,7 +145,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
             }) ]), Form.field(Label,"field-17", {
                 class: "header",
                 get: () => '#',
-                pos: [ {
+                layout: [ {
                     newRow: true
                 } ]
             }), Form.field(Label,"field-18", {
@@ -214,18 +214,18 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     disabled: $$('.ifAny') != 'Y' && $$('...location.class').filter(c => c.get('.ifAny') != 'Y').length < 2,
                     val: () => 0
                 }),
-                pos: [ {
+                layout: [ {
                    style: "text-align: center"
                 } ]
             }), Form.field(Button, "field-31", {
                 get: () => 'Delete',
                 set: $$ => $$.detach(),
-                pos: [ {
+                layout: [ {
                    style: "max-width: 50px"
                 } ]
             }), Form.field(Div, "field-37", {
                 get: $$ => $$('.code').length == 4 ? [ $$ ] : [],
-                pos: [ {
+                layout: [ {
                     newRow: true,
                     colSpan: "8"
                 } ]
@@ -250,14 +250,14 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     style: 'padding: 2px 0px 0px 2px;',
                     orientation: 'vertical'
                 }),
-                pos: [ {
+                layout: [ {
                     newRow: true,
                     colSpan: "7"
                 } ]
             }) ]), Form.field(Label,"field-33", {
                 get: () => '',
                 val: $$ => $$('.ifAny') == 'Y' && QuoteWorkClassForm.ifAnyEmptyFields().filter(field => $$('.' + field).toString() !== '').length && $$.error('If Any is selected, you may not enter Employees or Payroll'),
-                pos: [ {
+                layout: [ {
                     newRow: true,
                     colSpan: "8"
                 } ]
@@ -266,20 +266,20 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 atr: () => ({
                     style: 'background: #dcdcdc; padding: 2px'
                 }),
-                pos: [ {
+                layout: [ {
                     newRow: true,
                     colSpan: "7"
                 } ]
             }, [ Form.field(Button, "field-24", {
                 get: () => 'Add additional class',
                 set: $$ => $$.append('.class'),
-                pos: [ {
+                layout: [ {
                     style: "display: inline;"
                 } ]
             }), Form.field(Button, "field-36", {
                 get: () => 'Available class code list',
                 set: $$ => QuoteWorkClassForm.showAvailable($$('..effective'), $$('.state')),
-                pos: [ {
+                layout: [ {
                     style: "display: none;"
                 } ]
             }) ]) ]), Form.field(Button, "field-15", {
@@ -379,6 +379,6 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
         .ui-widget-overlay {
             opacity: .3;
         }
-    `, clazz.prototype.constructor.name);
-    return clazz;
+    `, QuoteWorkClassForm.name);
+    return QuoteWorkClassForm;
 })

@@ -1,9 +1,4 @@
-define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", 
-        "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/c-editbox-$", 
-        "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component",
-       "components/container", "components/inline-rows", "components/c-checkbox"], 
-       function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, 
-                 LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
+define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/c-editbox-$", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/c-checkbox"], function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
     let Form = Core.Form;
     
     let carDefaults = {
@@ -52,9 +47,11 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
         }
     };
     
-    class AutoFocus extends LabeledEditbox {
+    class VinNumber extends LabeledEditbox {
         render(data, error, attributes) {
-            return super.render(data, error, {...attributes, ref: dom => (dom.focus(), dom.select())});
+            let structure = super.render(data.vin, error, {...attributes, ref: dom => (dom.focus(), dom.select())});
+            data.vinvalid === 'Y' || data.vin && (structure[1][1] = 'vin not found'); // hax(!)
+            return structure;
         }
     }
     
@@ -63,8 +60,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
     }
     
     class VehDetailsChoice extends Form {
-        static fields(children, field) {
-            let config = field.config || {};
+        static fields(children, config) {
             return Form.field(Labeled, {
                 atr: () => ({
                     style: 'padding-left: 10px', 
@@ -80,7 +76,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 atr: $$ => fields.simple(config.field, {
                     pattern: config.pattern, 
                     disabled: vehDetailsDisabled($$),
-                    style: 'width: 150px; text-transform:uppercase;',
+                    style: 'width: 150px; text-transform: uppercase;',
                     hideError: true
                 })
             }), Form.field(Dropdown, {
@@ -99,8 +95,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
     }
     
     class ApplyToAllField extends Form {
-        static fields(children, field) {
-            let config = field.config || {};
+        static fields(children, config) {
             return [ ...children, Form.field(Button, { 
                 get: () => 'Apply to all ' + (config.type ? typeMap[config.type].btn || typeMap[config.type].name : 'Vehicles'), 
                 set: ($$, value) => $$('...location.car').forEach(car => config.type && car.data.vehicletype != config.type || car.set(config.field, $$(config.field))),
@@ -135,11 +130,11 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     class: 'div-button',
                     errorwatch: { target: 'peers', accept: () => 'error' }
                 }),
-                pos: [ {
+                layout: [ {
                     class: "tab-item"
                 } ]
             }), Form.field(Div, "loc-title1", {
-                pos: [ {
+                layout: [ {
                     class: "inline-section-header"
                 } ]
             }, [ Form.field(Label, "field-159", {
@@ -150,7 +145,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 atr: () => ({
                     style: 'padding: 1px 10px'
                 }),
-                pos: [ {
+                layout: [ {
                     style: "position: absolute; right: 5px; top: 5px"
                 } ]
             }) ]), Form.field(TabS, "cars", {
@@ -165,7 +160,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     rowclass: 'tab-body',
                     rowstyle: 'padding: 0px; overflow: hidden;'
                 }),
-                pos: [ {
+                layout: [ {
                     style: "width: 100%; "
                 } ]
             }, [ Form.field(DivButton, "car-hdr", {
@@ -174,26 +169,26 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     class: 'div-button',
                     errorwatch: { target: 'peers', accept: () => 'error' }
                 }),
-                pos: [ {
+                layout: [ {
                     class: "tab-item"
                 } ]
             }),  
                 Form.field(Table, "info", {
                 atr: function($$) {
-                    let skip = $$('.hasvin') == 'Y' ? $$('.vinvalid') != 'Y' && $$('.vinnumber') != 0 ? [] : [ 'override' ] : [ 'vin', 'override' ];
+                    let skip = $$('.hasvin') != 'Y' || $$('.vinvalid') == 'Y' || $$('.vinnumber') == 0 ? [ 'override' ] : [];
                     vehDetailsDisabled($$) && skip.push('custom');
                     return {
-                        singles: true,
+                        singleColumn: true,
                         class: 'dfe-table tab-cols-5-5',
                         skip: skip
                     };
                 },
-                pos: [ {
+                layout: [ {
                     class: "dfe-inline-section"
                 } ]
             }, [ Form.field(Label, "field-154", {
                 get: $$ => 'Vehicle #' + ($$.index() + 1),
-                pos: [ {
+                layout: [ {
                     colSpan: "2",
                     class: "inline-section-header"
                 } ]
@@ -204,32 +199,23 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     orientation: 'horizontal',
                     text: 'Do you have the VIN?'
                 })
-            }), Form.field(AutoFocus, "vin", {
-                get: $$ => $$('.vinnumber'),
-                set: function($$, value) {
-                    $$.set('.vinnumber', value);
-                    QuoteCmauCarForm.vehProcessVin($$);
-                },
-                val: function($$, events) {
-                    let vin = $$('.vinnumber');
-                    if (vin != 0) {
-                        $$('.vinoverride') == 'Y' || (vin.length != 17 ? $$.error('Invalid VIN format') : ajaxCache.get({
-                            method: 'CMAUVehicleScriptHelper',
-                            action: 'getVinLookupResults',
-                            vinNumber: vin
-                        }).then(data => data.result.isMatch || $$.error('Vin not found'), () => $$.error('Error fetching VIN data')));
-                    } else events.filter(e => 'validate' == e.action).length && $$.error('Required');
-                },
-                atr: $$ => ({
-                    spellcheck: 'false',
-                    disabled: $$('.hasvin') != 'Y',
-                    style: 'width: 150px; text-transform:uppercase;',
-                    pattern: '[a-zA-Z0-9]{1,17}',
-                    text: 'Vihicle Identification Number (VIN)',
-                    vstrategy: 'notified',
-                    trigger: 'change'
+            }), Form.field(InlineRows, { get: $$ => $$('.hasvin') == 'Y' ? [$$] : [] },
+                Form.field(VinNumber, "vin", {
+                    get: $$ => ({ vin: $$('.vinnumber'), vinvalid: $$('.vinvalid') }),
+                    set: function($$, value) {
+                        $$.set('.vinnumber', value);
+                        QuoteCmauCarForm.vehProcessVin($$);
+                    },
+                    val: $$ => $$('.vinoverride') == 'Y' || $$.required('.vinnumber') && $$.required('.vinnumber', /[a-zA-Z0-9]{17}/, 'Invalid VIN format') && ($$('.vinvalid') == 'Y' || $$.error('Vin not found')),
+                    atr: $$ => ({
+                        spellcheck: 'false',
+                        disabled: $$('.hasvin') != 'Y',
+                        style: 'width: 150px; text-transform: uppercase; display: block;',
+                        pattern: /[a-zA-Z0-9]{1,17}/,
+                        text: 'Vihicle Identification Number (VIN)',
+                    })
                 })
-            }), Form.field(LabeledRadiolist, "override", {
+            ), Form.field(LabeledRadiolist, "override", {
                 atr: () => fields.simple('.vinoverride', [], {
                     cstyle: 'padding-left: 10px;',
                     orientation: 'horizontal',
@@ -299,14 +285,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 get: $$ => $$('.vehicletype') == 'car' ? [ $$ ] : [],
                 atr: () => ({
                     class: 'dfe-table col-3-centred tab-cols-2-5-3',
-                    singles: true
+                    singleColumn: true
                 }),
-                pos: [ {
+                layout: [ {
                     class: "dfe-inline-section"
                 } ]
             }, [ Form.field(Label, "field-36", {
                 get: () => 'Private Passenger Auto',
-                pos: [ {
+                layout: [ {
                     colSpan: "3",
                     class: "inline-section-header"
                 } ]
@@ -329,14 +315,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 get: $$ => $$('.vehicletype') == 'truck' ? [ $$ ] : [],
                 atr: $$ => ({
                     class: 'dfe-table col-va-middle col-3-centred tab-cols-3-4-3',
-                    singles: true,
+                    singleColumn: true,
                 }),
-                pos: [ {
+                layout: [ {
                     class: "dfe-inline-section"
                 } ]
             }, [ Form.field(Label, "field-49", {
                 get: () => 'Trucks, Tractors and Trailers',
-                pos: [ {
+                layout: [ {
                     colSpan: "3",
                     class: "inline-section-header"
                 } ]
@@ -393,14 +379,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 get: $$ => $$('.vehicletype') == 'golf' ? [ $$ ] : [],
                 atr: () => ({
                     class: 'dfe-table col-3-centred tab-cols-4-3-3',
-                    singles: true
+                    singleColumn: true
                 }),
-                pos: [ {
+                layout: [ {
                     class: "dfe-inline-section"
                 } ]
             }, [ Form.field(Label, "field-122", {
                 get: () => 'Golf Carts and Low Speed Vehicles',
-                pos: [ {
+                layout: [ {
                     colSpan: "3",
                     class: "inline-section-header"
                 } ]
@@ -424,14 +410,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 get: $$ => $$('.vehicletype') == 'mobile' ? [ $$ ] : [],
                 atr: $$ => ({
                     class: 'dfe-table col-3-centred tab-cols-2-5-3',
-                    singles: true
+                    singleColumn: true
                 }),
-                pos: [ {
+                layout: [ {
                     class: "dfe-inline-section"
                 } ]
             }, [ Form.field(Label, "field-123", {
                 get: () => 'Mobile Homes',
-                pos: [ {
+                layout: [ {
                     colSpan: "3",
                     class: "inline-section-header"
                 } ]
@@ -451,14 +437,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
             Form.field(Table, "covs", {
                 atr: $$ => ({
                     class: 'dfe-table col-3-centred tab-cols-4-3-3',
-                    singles: true
+                    singleColumn: true
                 }),
-                pos: [ {
+                layout: [ {
                     class: "dfe-inline-section"
                 } ]
             }, [ Form.field(Label, "field-77", {
                 get: () => 'Coverages',
-                pos: [ {
+                layout: [ {
                     colSpan: "3",
                     class: "inline-section-header"
                 } ]
@@ -547,14 +533,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 atr: $$ => ({
                     class: `dfe-table col-3-centred tab-cols-4-3-3`,
                     skip: $$('..state') == 'KS' ? [ 'field-111', 'field-114' ] : [ 'field-113' ],
-                    singles: true
+                    singleColumn: true
                 }),
-                pos: [ {
+                layout: [ {
                     class: "dfe-inline-section"
                 } ]
             }, [ Form.field(Label, "field-106", {
                 get: () => 'Optional Coverages',
-                pos: [ {
+                layout: [ {
                     colSpan: "3",
                     class: "inline-section-header"
                 } ]
@@ -609,7 +595,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     skip: $$('..car').length > 1 ? [] : [ 'remove-car' ],
                     style: 'padding: 5px; text-align: right; background: lightgray;'
                 }),
-                pos: [ {
+                layout: [ {
                     style: "padding: 2px 0px"
                 } ]
             }, [ Form.field(Button, "clone-car", {
@@ -618,7 +604,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 atr: () => ({
                     style: 'padding: 1px 10px; margin: 0px 5px'
                 }),
-                pos: [ {
+                layout: [ {
                     style: "display: inline-block"
                 } ]
             }), Form.field(Button, "remove-car", {
@@ -627,7 +613,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 atr: () => ({
                     style: 'padding: 1px 10px; margin: 0px 5px'
                 }),
-                pos: [ {
+                layout: [ {
                     style: "display: inline-block"
                 } ]
             }) ])  ]) ]) ]);

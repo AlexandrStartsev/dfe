@@ -18,7 +18,7 @@ define(["ui/shapes", "ui/utils", "module", "ui/jquery", "dfe-common"], function(
 	        white-space: nowrap;
 	    }
 
-	    .dashboard-table th label {
+	    .dashboard-table th {
 	        color: white;
 	        outline: none;
 	        white-space: nowrap;

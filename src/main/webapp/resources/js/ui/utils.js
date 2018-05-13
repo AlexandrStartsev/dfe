@@ -20,7 +20,7 @@ require.config({
                                 'components/container', 
                                 'components/pass-through', 
                                 'components/div', 
-                                'components/form', 
+                                'components/html-form', 
                                 'components/div-r', 
                                 'components/tab-d', 
                                 'components/tab-s', 
@@ -343,15 +343,21 @@ DFE.nav = function () {
 define('ui/utils', ['dfe-core', 'module'], function(core, m) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
     function setupNode(node) {
-		var formName = node.getAttribute('dfe-form'), args = eval(node.getAttribute('dfe-arguments')), model = eval(node.getAttribute('dfe-model'))||{}, pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
-		Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
-			var dfe = values[0], arf = values[1], cur = node._dfe_runtime;
-			if(cur && cur.formName != formName) {
-				cur.shutdown();
-				cur = null;
-			}
-	        if(!cur) node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe, params: {formName: formName} }));
-		})
+		var formName = node.getAttribute('dfe-form'), args = node.getAttribute('dfe-arguments'), model = node.getAttribute('dfe-model'), cur = node._dfe_runtime;
+        if( !cur || cur.formName !== formName ) {
+            model = (typeof model === 'string' && model != 0 ? eval(model) : node.dfeModel) || {};
+            args = (typeof args === 'string' && args != 0 ? eval(args) : node.dfeArguments) || {};
+            var pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
+            Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
+                cur = node._dfe_runtime;
+                var dfe = values[0], arf = values[1];
+                if(cur && cur.formName !== formName) {
+                    cur.shutdown();
+                    cur = null;
+                }
+                if(!cur) node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe, params: {formName: formName} }));
+            })
+        }
 	}
     var _isIE7 = (navigator.appVersion.indexOf("MSIE 7.") != -1);
     var _isIE8 = (navigator.appVersion.indexOf("MSIE 8.") != -1);

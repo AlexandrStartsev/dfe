@@ -1,34 +1,39 @@
-defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "components/label", "components/editbox", "components/button", "components/container", "components/form", "dfe-field-helper", "components/dropdown", "ui/jquery-ui", "components/html" ], function(require, uiUtils, core, cmn, __c_div, __c_label, __c_editbox, __c_button, __c_container, __c_form, fields, __c_dropdown, jQuery, __c_html) {
-    return new class {
-        constructor() {
-            this.dfe = __c_div("root", {
-                get: $$ => [ $$ ],
+defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "components/label", "components/editbox", "components/button", "components/table", "components/form", "dfe-field-helper", "components/dropdown", "ui/jquery-ui", "components/html" ], function(require, uiUtils, Core, cmn, Div, Label, Editbox, Button, Table, HtmlForm, fields, Dropdown, jQuery, Html) {
+    let Form = Core.Form;
+    
+    class RatingTableExpirationForm extends Form {
+        constructor(node) {
+            super(node);
+            node.unboundModel.append('expirations', { edit: 'Y' });
+        }
+        static fields() {
+            return Form.field(Div, "root", {
                 atr: () => ({
                     style: 'display: table; background-color: white; width: 900px; position: relative'
                 })
-            }, [ __c_form("form", {
-                get: $$ => [ $$ ],
+            }, [ Form.field(HtmlForm,"form", {
                 atr: () => ({
-                    method: 'POST'
+                    method: 'POST',
+                    name: 'ratingTableEpirationsHtmlForm'
                 })
-            }, [ __c_container("field-1", {
+            }, [ Form.field(Table, "field-1", {
                 get: $$ => $$('expirations'),
                 atr: () => ({
                     class: 'expirations-table'
                 })
-            }, [ __c_label("field-3", {
+            }, [ Form.field(Label, "field-3", {
                 class: "header",
                 get: $$ => 'Company'
-            }), __c_label("field-4", {
+            }), Form.field(Label, "field-4", {
                 class: "header",
                 get: $$ => 'Expiration Date'
-            }), __c_label("field-5", {
+            }), Form.field(Label, "field-5", {
                 class: "header",
                 get: $$ => 'Comment'
-            }), __c_label("field-6", {
+            }), Form.field(Label, "field-6", {
                 class: "header",
                 get: $$ => 'Action'
-            }), __c_dropdown("field-2", {
+            }), Form.field(Dropdown, "field-2", {
                 get: function($$) {
                     let desc, descs = {};
                     let companies = $$('companies').map(row => row.data).map(company => ({
@@ -57,7 +62,7 @@ defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", 
                         disabled: true
                     }
                 })
-            }), __c_editbox("field-7", {
+            }), Form.field(Editbox, "field-7", {
                 atr: $$ => fields.date('.expirationDate', {
                     type: 'datepicker',
                     ...$$('.edit') == 'Y' ? {
@@ -66,22 +71,25 @@ defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", 
                         disabled: true
                     }
                 })
-            }), __c_editbox("field-8", {
+            }), Form.field(Editbox, "field-8", {
                 atr: $$ => fields.simple('.comment', {
                     style: 'width: 400px',
                     disabled: $$('.edit') != 'Y'
                 })
-            }), __c_button("field-9", {
+            }), Form.field(Button,"field-9", {
                 get: $$ => $$('.edit') == 'Y' ? 'Add' : 'Remove',
                 set: ($$, value) => {
-                    let runtime = $$.runtime, form = runtime.findControls("form").shift();
+                    //let runtime = $$.runtime, form = runtime.findControls("form").shift();
+                    let form = document.querySelector('[name="ratingTableEpirationsHtmlForm"]');
+                    let formNode = Core.nodeFromElement(form);
+                    let runtime = formNode.runtime;
                     if ($$('.edit') == 'Y') {
-                        runtime.notifyControls(runtime.findChildren(form), 'validate');
+                        runtime.notifyControls(runtime.findChildren(formNode), 'validate');
                         $$('..').set({
                             action: 'add',
                             cmnt: $$('.comment')
                         });
-                        runtime.schedule.push(() => form.erroringControls.size || form.ui.submit());
+                        runtime.schedule.push(() => formNode.erroringControls.size || form.submit());
                     } else {
                         let ui = jQuery('<div>'), edit = jQuery('<textarea>').appendTo(ui), close = () => ui.dialog('destroy');
                         let handler = () => ui.parent().find('button:contains("OK")').attr({
@@ -109,7 +117,7 @@ defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", 
                                         id: $$('.expirationId'),
                                         cmnt: edit.val()
                                     });
-                                    runtime.schedule.push(() => form.ui.submit());
+                                    runtime.schedule.push(() => form.submit());
                                     close();
                                 },
                                 Cancel: () => close()
@@ -122,110 +130,103 @@ defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", 
                 atr: $$ => ({
                     class: 'link-button'
                 }),
-                pos: [ {
-                    s: "text-align: center"
+                layout: [ {
+                    style: "text-align: center"
                 } ]
-            }) ]), __c_editbox("action", {
+            }) ]), Form.field(Editbox, "action", {
                 get: $$ => $$('action'),
                 atr: () => ({
                     name: 'action',
                     type: 'hidden'
                 })
-            }), __c_editbox("id", {
+            }), Form.field(Editbox, "id", {
                 get: $$ => $$('id'),
                 atr: () => ({
                     name: 'id',
                     type: 'hidden'
                 })
-            }), __c_editbox("cmnt", {
+            }), Form.field(Editbox, "cmnt", {
                 get: $$ => $$('cmnt'),
                 atr: () => ({
                     name: 'cmnt',
                     type: 'hidden'
                 })
-            }) ]), __c_div("changelog", {
-                get: $$ => [ $$ ]
-            }, [ __c_html("field-10", {
+            }) ]), Form.field(Div, "changelog", [
+            Form.field(Html, "field-10", {
                 get: () => '<h3>Change Log:</h3>'
-            }), __c_container("field-11", {
+            }), Form.field(Table, "field-11", {
                 get: $$ => $$('changelog'),
                 atr: $$ => ({
                     class: 'changelog-table',
                     style: 'width: 90%'
                 })
-            }, [ __c_label("field-13", {
+            }, [ Form.field(Label, "field-13", {
                 class: "header",
                 get: $$ => 'Insert Date'
-            }), __c_label("field-14", {
+            }), Form.field(Label, "field-14", {
                 class: "header",
                 get: $$ => 'User'
-            }), __c_label("field-15", {
+            }), Form.field(Label, "field-15", {
                 class: "header",
                 get: $$ => 'Company'
-            }), __c_label("field-16", {
+            }), Form.field(Label, "field-16", {
                 class: "header",
                 get: $$ => 'Expiration Date'
-            }), __c_label("field-17", {
+            }), Form.field(Label, "field-17", {
                 class: "header",
                 get: $$ => 'Comment'
-            }), __c_label("field-18", {
+            }), Form.field(Label, "field-18", {
                 class: "header",
                 get: $$ => 'Action'
-            }), __c_label("field-12", {
+            }), Form.field(Label, "field-12", {
                 get: $$ => $$('.entryDate').replace(/^0|(\/)0/g, '$1'),
-                pos: [ {
-                    s: "text-align: center"
+                layout: [ {
+                    style: "text-align: center"
                 } ]
-            }), __c_label("field-19", {
+            }), Form.field(Label, "field-19", {
                 get: $$ => $$('.userName')
-            }), __c_label("field-20", {
+            }), Form.field(Label, "field-20", {
                 get: $$ => {
                     let code = $$('.companyCode');
-                    return $$('companies').map(c => c.data).filter(c => c.companyCode === code).map(c => c.stateCode + ' - ' + c.companyShortName).pop() || codefunction($$);
+                    return $$('companies').map(c => c.data).filter(c => c.companyCode === code).map(c => c.stateCode + ' - ' + c.companyShortName).pop() || code;
                 }
-            }), __c_label("field-21", {
+            }), Form.field(Label, "field-21", {
                 get: $$ => $$('.expirationDate').replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1'),
-                pos: [ {
-                    s: "text-align: center"
+                layout: [ {
+                    style: "text-align: center"
                 } ]
-            }), __c_label("field-22", {
+            }), Form.field(Label, "field-22", {
                 get: $$ => $$('.comment'),
-                pos: [ {
-                    s: "width: 300px"
+                layout: [ {
+                    style: "width: 300px"
                 } ]
-            }), __c_label("field-23", {
+            }), Form.field(Label, "field-23", {
                 get: $$ => $$('.action'),
-                pos: [ {
-                    s: "text-align: center"
+                layout: [ {
+                    style: "text-align: center"
                 } ]
             }) ]) ]) ]);
         }
-        onstart($$) {
-            $$.append('expirations', {
-                edit: 'Y'
-            });
+    }
+    uiUtils.setDfeCustomStyle(`
+        input[disabled]{
+            background: white;
         }
-        setup() {
-            uiUtils.setDfeCustomStyle(`
-                input[disabled]{
-            		background: white;
-                }
-                button.ui-button[disabled] {
-				    opacity: .5;
-				    cursor: default!Important;
-				}
-				table.expirations-table {
-				    border-collapse: collapse;
-				}
-				table.changelog-table {
-				    border: 1px solid #888;
-				    border-collapse: collapse;
-				}
-				table.changelog-table td, table.changelog-table th, table.expirations-table th {
-				    border: 1px solid #888;
-				    padding: 2px;
-				}
-            `, this.name);
+        button.ui-button[disabled] {
+            opacity: .5;
+            cursor: default!Important;
         }
-    }();
-});
+        table.expirations-table {
+            border-collapse: collapse;
+        }
+        table.changelog-table {
+            border: 1px solid #888;
+            border-collapse: collapse;
+        }
+        table.changelog-table td, table.changelog-table th, table.expirations-table th {
+            border: 1px solid #888;
+            padding: 2px;
+        }
+    `, RatingTableExpirationForm.name);
+    return RatingTableExpirationForm;
+})

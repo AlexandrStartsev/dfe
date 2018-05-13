@@ -433,10 +433,13 @@ define('dfe-core', function() {
                 }
                 return false;
             }
-            let exploreContent = (structure, nodes) => structure.forEach(st => st.childNode instanceof Node || (nodes.push(st.dom), exploreContent(st.children, nodes)))
+            let exploreContent = (content, nodes) => content.forEach(st => st.childNode instanceof Node || (nodes.push(st.dom), exploreContent(st.children, nodes)))
             function getContentNodes(node) {
+                if(node.key === 'accountName-22') {
+                    node = node;
+                }
                 let ret = [];
-                node.lastRenderStructure.map(lrs => lrs.content).filter(a => a).forEach(st => exploreContent(st, ret));
+                node.lastRenderStructure.filter(lrs => lrs.dom).forEach(st => (ret.push(st.dom), exploreContent(st.content, ret)));
                 return ret;
             }
             let runtime = null, prnt = domElement;
@@ -480,7 +483,7 @@ define('dfe-core', function() {
         }
         render(data, error, attributes, children) {
             let sub = [];
-            children.forEach( 
+            children.forEach(
                 map => map.forEach( 
                     child => sub.push( child ) 
                 )
@@ -522,8 +525,12 @@ define('dfe-core', function() {
         static field(clazz, ...args) {
             let field = new Field(clazz, ...args);
             if( clazz.prototype instanceof Form ) {
-                field.children = clazz.fields(field.children, field)||[];
+                field.children = clazz.fields(field.children, field.config||{})||[];
                 Array.isArray(field.children) || ( field.children = [field.children] );
+                // Not quite sure about this.
+                if( field.layout ) {
+                    field.layout.forEach((layout, i) => field.children[i] && (field.children[i].layout = Array.isArray(layout) ? layout : [layout] ))
+                }
             }
             return field;
         }
@@ -569,7 +576,8 @@ define('dfe-core', function() {
                 $prevNode: null,
                 $followingChildNode: null,
                 shouldRender: false,
-                lastRenderStructure: []
+                lastRenderStructure: [],
+                lastAttachedChildren: new Set()
             })            
             let control = new (field.component)(this);
             this.key = (field.name + '-' + unboundModel.data.key);
@@ -581,21 +589,23 @@ define('dfe-core', function() {
                 this.shouldRender = false;
                 let { attributeMapper: mapper, ...rest} = this.attributes;
                 let renderStructure = this.control.render(this.lastData, this.lastError, rest, this.children);
-                let attributes = this.field.pos||[], posIndex = 0;
+                let attributes = this.field.layout||[], layoutIndex = 0;
                 if( this.elementInfo.attributeMapper ) {
                     let f = mapper;
                     mapper = a => this.elementInfo.attributeMapper(f ? f(a) : a);
                 }
+                // The problem here is we have layout attributes of container, but we can't pass its portion to children because there s no telling what s their size. 
+                // if we were to calculate current size, every time child moves or its dimensions change it would need to notify all siblings to update their parent node attributes
                 renderStructure = (Array.isArray(renderStructure) ? renderStructure : [renderStructure]).map(
                     st => st instanceof Node ? st : {
                         key: st && st.type || '0',
-                        attributes: (mapper ? mapper(attributes[posIndex++]||{}) : attributes[posIndex++])||{},
+                        attributes: (mapper ? mapper(attributes[layoutIndex++]||{}) : attributes[layoutIndex++])||{},
                         dom: null, 
                         content: st
                     }
                 )
                 let lrs = 0, tail = this.$prevDom, prevNode = null, followingChildNode = null, keyMap = DOM.makeKeyMap(renderStructure, this.lastRenderStructure);
-                let usedChildren = new Set();
+                let attachedChildren = new Set();
                 this.lastRenderStructure.forEach( lst => lst.used = false );
                 for(let rs = 0; rs < renderStructure.length; rs++) {
                     let st = renderStructure[rs]; 
@@ -608,50 +618,57 @@ define('dfe-core', function() {
                     if( st instanceof Node ) {
                         followingChildNode || (followingChildNode = st);
                         tail = st.setDom(this.elementInfo, this.$parentDom, tail);
-                        usedChildren.add(st);
+                        attachedChildren.add(st);
                         prevNode && (prevNode.$nextNode = st), st.$prevNode = prevNode, prevNode = st;
                     } else {
                         st.dom = tail = use ? lst.dom : this.$parentDom.insertBefore(
                             document.createElement(this.elementInfo.type), tail ? tail.nextSibling : this.$parentDom.firstChild
                         );
-                        st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : [], usedChildren);
+                        st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : [], attachedChildren);
                         DOM.reconcileAttributes(this.elementInfo.type, st.dom, st.attributes, use ? lst.attributes : {});
                         use || st.attributes.ref && st.attributes.ref(st.dom);
                     }
                 }
                 prevNode && (prevNode.$nextNode = null);
                 tail === this.$lastDom || this.adjustLastDom(tail);
-                this.lastRenderStructure.forEach( lst => {
+                this.lastRenderStructure.forEach( lst => lst.used || lst instanceof Node || this.$parentDom.removeChild(lst.dom) );
+                this.lastAttachedChildren.forEach( child => attachedChildren.has(child) || child.setDom(null, null, null) );
+                this.lastAttachedChildren = attachedChildren;
+                /*this.lastRenderStructure.forEach( lst => {
                     if( lst instanceof Node ) {
-                        lst.used || usedChildren.has(lst) || lst.setDom(null, null, null);
+                        lst.used || attachedChildren.has(lst) || lst.setDom(null, null, null);
                         delete lst.used;
                     } else {
                         lst.used || this.$parentDom.removeChild(lst.dom);
                     }
-                });
+                });*/
                 this.$followingChildNode = followingChildNode;
                 this.lastRenderStructure = renderStructure;
             }
         }
         adjustLastDom(tail) {
-            if( this.parent && this.parent.$lastDom === this.$lastDom) {
-                this.parent.adjustLastDom(tail);
+            if(tail !== this.$lastDom) {
+                if( this.parent && this.parent.$lastDom === this.$lastDom) {
+                    this.parent.adjustLastDom(tail);
+                }
+                if(this.$nextNode && this.$nextNode.$prevDom === this.$lastDom) {
+                    this.$nextNode.adjustPrevDom(tail);
+                }
+                this.$lastDom = tail;
             }
-            if(this.$nextNode && this.$nextNode.$prevDom === this.$lastDom) {
-                this.$nextNode.adjustPrevDom(tail);
-            }
-            this.$lastDom = tail;
         }
         adjustPrevDom(head) {
-            /*if(this.$followingChildNode && this.$followingChildNode.$prevDom === this.$prevDom) {
-                this.$followingChildNode.adjustPrevDom(head)
-            } else */ 
-            if(this.$lastDom === this.$prevDom) {
-                this.adjustLastDom(head);
+            if(head !== this.$prevDom) {
+                if(this.$followingChildNode && this.$followingChildNode.$prevDom === this.$prevDom) {
+                    this.$followingChildNode.adjustPrevDom(head)
+                }
+                if(this.$lastDom === this.$prevDom) {
+                    this.adjustLastDom(head);
+                }
+                this.$prevDom = head;
             }
-            this.$prevDom = head;
         }
-        applyInPlace(domElement, renderStructure, lastRenderStructure, usedChildren) {
+        applyInPlace(domElement, renderStructure, lastRenderStructure, attachedChildren) {
             renderStructure = (Array.isArray(renderStructure) ? renderStructure : [renderStructure]).map(
                 st => typeof st === 'string' ? { type: '#text', attributes: {text: st}, children: [] } : st
             ).filter( st => st && st.type );
@@ -668,14 +685,14 @@ define('dfe-core', function() {
                 }
 
                 let lst = keyMap ? keyMap[rs] : lastRenderStructure[lrs], child = st.childNode;
-                let use = lst && !lst.used && st.type === lst.type && child === lst.childNode && !usedChildren.has(child);
+                let use = lst && !lst.used && st.type === lst.type && child === lst.childNode; // this should never happen && !attachedChildren.has(child);
                 if( use ) {
                     lst.used = true ;
                     lrs++;
                 }
                 if( child !== undefined ) {
                     prev = child.setDom(st, domElement, prev);
-                    usedChildren.add(child);
+                    attachedChildren.add(child);
                     prevNode && (prevNode.$nextNode = child), child.$prevNode = prevNode, prevNode = child;
                 } else {
                     st.dom = use ? lst.dom : st.type === '#text' ? document.createTextNode('') : document.createElement(st.type);
@@ -683,19 +700,18 @@ define('dfe-core', function() {
                     if(prev !== st.dom) {
                         prev = domElement.insertBefore(st.dom, prev);
                     }
-                    st.children = this.applyInPlace(st.dom, st.children, use ? lst.children : [], usedChildren);
+                    st.children = this.applyInPlace(st.dom, st.children, use ? lst.children : [], attachedChildren);
                     DOM.reconcileAttributes( st.type, st.dom, st.attributes, use ? lst.attributes : {} );
                     use || st.attributes.ref && st.attributes.ref(st.dom);
                 }
             }
             prevNode && (prevNode.$nextNode = null);
-            lastRenderStructure.forEach( lst => {
-                lst.used || ( lst.childNode ? usedChildren.has(lst.childNode) || lst.childNode.setDom(null, null, null) : lst.dom.parentElement.removeChild(lst.dom) )
-            });
+            lastRenderStructure.forEach( lst => lst.used || lst.childNode || lst.dom.parentElement.removeChild(lst.dom) );
+            //lst.used || ( lst.childNode ? attachedChildren.has(lst.childNode) || lst.childNode.setDom(null, null, null) : lst.dom.parentElement.removeChild(lst.dom) )
             return renderStructure;
         }
         setDom( elementInfo, parentDom, prevDom ) {
-            let updateAttributes = false, prev = prevDom, posIndex = 0;
+            let updateAttributes = false, prev = prevDom, layoutIndex = 0;
             if( parentDom ) {
                 updateAttributes = !this.shouldRender;
                 if( this.elementInfo && elementInfo.type !== this.elementInfo.type ) {
@@ -714,7 +730,7 @@ define('dfe-core', function() {
                             prev = parentDom.insertBefore( lst.dom, prev );
                         }
                         if(updateAttributes) {
-                            let attributes = this.field.pos && this.field.pos[posIndex++] || {};
+                            let attributes = this.field.layout && this.field.layout[layoutIndex++] || {};
                             if( typeof elementInfo.attributeMapper === 'function' ) {
                                 attributes = elementInfo.attributeMapper(attributes);
                             }

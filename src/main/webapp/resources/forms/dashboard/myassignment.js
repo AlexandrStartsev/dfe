@@ -1,38 +1,51 @@
-defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/button", "components/container" ], function(__f_statusgrid, notes, dashboardCommon, jq, cmn, uiUtils, shapes, fields, __c_html, __c_label, __c_div, __c_c_editbox, __c_c_dropdown, __c_editbox, __c_button, __c_container) {
-    return new class {
-        constructor() {
-            this.dfe = __c_container("root", {
-                get: $$ => [ $$ ],
+define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/button", "components/table", "components/container", "components/span" ], function(Core, StatusGridForm, NotesForm, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Container, Span) {
+    let Form = Core.Form;
+    let detailGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'producerCode', 'effectiveDate', 'writtenPremium', 'govClass', 'grade', 'newRenewal', 'notes' ];
+    let detailsGridClass = 'dashboard-rbody-tbl';
+    class MyAssignmentForm extends Form {
+        constructor(node) {
+            super(node);
+            let $$ = node.unboundModel;
+            let tsUpdate = () => $$.get('my.quotes.rows.note').forEach(n => n.get('.isnew') != 0 && n.set('.datetime', NotesForm.now()));
+            setTimeout(() => {
+                tsUpdate(), setInterval(tsUpdate, 6e4);
+            }, (61 - new Date().getSeconds()) * 1e3);
+            $$.get('qs-crit') == 0 && $$.set('qs-crit', 'submissionId');
+            this.idKey = this.lastProcessedKey = 0;
+        }
+        static fields() {
+            return Form.field(Table, "root", {
                 atr: $$ => ({
                     style: 'width: 100%'
                 })
-            }, [ __c_container("filtr", {
+            }, [ Form.field(Table, "filtr", {
                 get: $$ => $$('filterCollapsed') == 'Y' ? [] : $$('criteria'),
                 atr: () => ({
                     class: 'dashboard-table'
                 })
-            }, [ __c_div("field-2", {
+            }, [ Form.field(Span, "field-2", {
                 class: "header",
-                get: $$ => [ $$ ],
-                pos: [ {
-                    w: "4"
+                atr: () => ({wrap: false}),
+                layout: [ {
+                    colSpan: "4"
                 } ]
-            }, [ __c_html("field-49", {
+            }, [ Form.field(Html, "field-49", {
                 get: $$ => shapes.cssShape($$, $$('filterCollapsed') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
                 atr: $$ => ({
                     events: {
-                        click: () => $$.set('filterCollapsed', $$('filterCollapsed') == 'Y' ? 'N' : 'Y')
+                        onClick: () => $$.set('filterCollapsed', $$('filterCollapsed') == 'Y' ? 'N' : 'Y')
                     }
                 }),
-                pos: [ {
-                    colstyle: "display: inline-block; float: left; padding: 1px; background: white; border-radius: 3px;"
+                layout: [ {
+                    style: "display: inline-block; float: left; padding: 1px; background: white; border-radius: 3px;"
                 } ]
-            }), __c_label("field-48", {
+            }), Form.field(Label, "field-48", {
                 get: () => 'Report Filter',
-                pos: [ {
-                    colstyle: "display: inline-block; padding: 0px 100px"
+                layout: [ {
+                    style: "display: inline-block; padding: 0px 100px"
                 } ]
-            }) ]), __c_c_editbox("field-4", {
+            }) ]), 
+            Form.field(LabeledEditbox, "field-4", {
                 set: function($$, value) {
                     $$.set('.effFrom', value);
                     let to = cmn.ARFtoDate($$('.effTo')), fr = cmn.ARFtoDate(value);
@@ -44,7 +57,7 @@ defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashb
                     eclass: 'wrong-date',
                     type: 'datepicker'
                 })
-            }), __c_c_editbox("field-6", {
+            }), Form.field(LabeledEditbox, "field-6", {
                 set: function($$, value) {
                     $$.set('.effTo', value);
                     let fr = cmn.ARFtoDate($$('.effFrom')), to = cmn.ARFtoDate(value);
@@ -56,7 +69,7 @@ defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashb
                     eclass: 'wrong-date',
                     type: 'datepicker'
                 })
-            }), __c_c_dropdown("field-8", {
+            }), Form.field(LabeledDropdown, "field-8", {
                 get: function($$) {
                     var uniq = new Set();
                     $$('my.quotes.rows.companyCode').forEach(c => uniq.add(c));
@@ -72,12 +85,12 @@ defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashb
                 atr: () => ({
                     text: 'Carrier:'
                 }),
-                pos: [ {
-                    n: "Y"
+                layout: [ {
+                    newRow: true
                 }, {
-                    w: "3"
+                    colSpan: "3"
                 } ]
-            }), __c_c_dropdown("field-10", {
+            }), Form.field(LabeledDropdown, "field-10", {
                 get: $$ => ({
                     value: $$('.newRenewal'),
                     items: [ {
@@ -89,12 +102,12 @@ defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashb
                 atr: $$ => ({
                     text: 'New/Renewal:'
                 }),
-                pos: [ {
-                    n: "Y"
+                layout: [ {
+                    newRow: true
                 }, {
-                    w: "3"
+                    colSpan: "3"
                 } ]
-            }), __c_c_dropdown("field-12", {
+            }), Form.field(LabeledDropdown, "field-12", {
                 get: $$ => ({
                     value: $$('.optional'),
                     items: [ {
@@ -126,41 +139,41 @@ defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashb
                 atr: $$ => ({
                     text: 'Optional Filter:'
                 }),
-                pos: [ {
-                    n: "Y"
+                layout: [ {
+                    newRow: true
                 }, {
-                    w: "2"
+                    colSpan: "2"
                 } ]
-            }), __c_editbox("field-19", {
+            }), Form.field(Editbox, "field-19", {
                 atr: $$ => fields.simple('.optionalValue', [], {
-                    pattern: this.optPattern($$('optional')),
+                    pattern: MyAssignmentForm.optPattern($$('optional')),
                     disabled: $$('.optional') == 0
                 })
-            }), __c_button("field-3", {
+            }), Form.field(Button, "field-3", {
                 get: $$ => 'Expand/Collapse All',
                 set: $$ => $$.set('my.quotes.expanded', $$('my.quotes.expanded').filter(v => v == 'Y') == 0 ? 'Y' : 'N'),
-                pos: [ {
-                    n: "Y"
+                layout: [ {
+                    newRow: true
                 } ]
-            }), __c_button("field-1", {
+            }), Form.field(Button, "field-1", {
                 get: $$ => 'Reset',
                 set: $$ => jq.get('/AJAXServlet.srv?method=DashboardScriptHelper&action=getcriteria&default=true', r => $$.reflect(JSON.parse(r.result).criteria[0])),
                 atr: $$ => ({
                     style: 'color: #000'
                 }),
-                pos: [ {
-                    s: "padding-bottom: 20px;"
+                layout: [ {
+                    style: "padding-bottom: 20px;"
                 } ]
-            }) ]), __c_div("myassignment", {
+            }) ]), Form.field(Div, "myassignment", {
                 get: $$ => $$.defaultSubset('my'),
                 atr: () => ({
                     style: 'width: 100%; position: relative;'
                 }),
-                pos: [ {
-                    n: "Y",
-                    w: "2"
+                layout: [ {
+                    newRow: true,
+                    colSpan: "2"
                 } ]
-            }, [ __c_div("loader", {
+            }, [ Form.field(Div, "loader", {
             	get: function($$) {
             		let effFrom = $$('criteria.effFrom'), effTo = $$('criteria.effTo');
                     cmn.ARFtoDate(effFrom) instanceof Date && cmn.ARFtoDate(effTo) instanceof Date && this.loadDateRange($$.unbound, effFrom, effTo);
@@ -169,22 +182,23 @@ defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashb
             	atr: $$ => ({
             		style: 'width: 100%;'
             	})
-            }, [ __c_html("loading", {
+            }, [ Form.field(Html, "loading", {
                 get: $$ => shapes.cssShape($$, 'css-loading-anim-circle'),
                 atr: $$ => ({
                     class: 'loading-overlay',
                     style: `display: ${$$('.loading') == 0 ? 'none' : ''}`
                 })
-            }), __f_statusgrid("report", {
-                get: $$ => $$,
-                atr: $$ => ({
-                    rowFilter: this.makeRowFilter($$),
-            		skipColumns: colName => this.columns.indexOf(colName.replace(/^.*\./,'')) == -1,
-            		tableClass: this.detailsClass
-                })
+            }), Form.field(StatusGridForm, "report", {
+                config: {
+                    rowFilterMaker: $$ => MyAssignmentForm.makeRowFilter($$),
+            		skipColumns: colName => detailGridColumns.indexOf(colName.replace(/^.*\./,'')) == -1,
+            		tableClass: detailsGridClass
+                }
             }) ]) ]) ]);
         }
         loadDateRange(px, effFrom, effTo) {
+            console.warn("loadDateRange is disabled");
+            return ;
         	let self = this, defaultSort = { sortOrder: '.effectiveDate.writtenPremium.govClass.newRenewal', sortInverse: '.writtenPremium' };
             let url = `/AJAXServlet.srv?method=DashboardScriptHelper&action=geninfo&lob=WORK&eff=${effFrom}&effTo=${effTo}&idKey=${++self.idKey}`, toLoad = [], curRep = px.get('.quotes'), matched = new Set();
             px.set('.loading', 1);
@@ -224,10 +238,10 @@ defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashb
                 }
             });
         }
-        optPattern(opt) {
+        static optPattern(opt) {
             return opt == '.quoteid' || opt == '.FEIN' ? '\\d{1,9}' : opt == '.producerCode' ? '\\d{1,6}' : '.{1,50}';
         }
-        makeRowFilter($$) {
+        static makeRowFilter($$) {
         	let cc = $$.get('criteria.companyCode').toString(), nr = $$.get('criteria.newRenewal').toString(), v = $$.get('criteria.optionalValue').toString().toUpperCase().replace(/[^\w]/g, ''), f = $$.get('criteria.optional').toString();
         	return (cc + nr + v + f) == 0 ? () => true : $$ => {
         		if (f != 0 && v != 0 && (f == '.accountName' ? [ f, '.DBA' ] : [ f ]).filter(f => $$.get(f).toString().toUpperCase().replace(/[^\w]/g, '').indexOf(v) != -1).length == 0) 
@@ -235,102 +249,91 @@ defineForm([ "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashb
 	            return (cc == 0 || $$.get('.companyCode') == cc) && (nr == 0 || $$.get('.newRenewal') == nr);
         	}
         }
-        onstart($$) {
-            let tsUpdate = () => $$.get('my.quotes.rows.note').forEach(n => n.get('.isnew') != 0 && n.set('.datetime', notes.form.now()));
-            setTimeout(() => {
-                tsUpdate(), setInterval(tsUpdate, 6e4);
-            }, (61 - new Date().getSeconds()) * 1e3);
-            $$.get('qs-crit') == 0 && $$.set('qs-crit', 'submissionId');
-        }
-        setup() {
-            this.idKey = this.lastProcessedKey = 0;
-            this.columns = [ 'quoteid', 'accountName', 'companyCode', 'producerCode', 'effectiveDate', 'writtenPremium', 'govClass', 'grade', 'newRenewal', 'notes' ];
-            this.detailsClass = 'dashboard-rbody-tbl';
-            this.style(this.name, this.columns, this.detailsClass);
-        }
-        style(name, columns, clazz) {
-            uiUtils.setDfeCustomStyle(`
-            	.${clazz}{
-            		width: 100%
-            	}
-            	            
-            	.${clazz} td {
-				    font-size: 12px;
-				}
-				
-				.${clazz} th {
-                    padding: 2px 15px 2px 15px;
-                }
-                
-                .${clazz} th > div {
-                    display: flex;
-                	justify-content: center;
-                }
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('quoteid') + 1}) {
-            		text-align: center;
-				}
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('accountName') + 1}) {
-				    min-width: 300px;
-				    width: 300px;
-				}
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('companyCode') + 1}) {
-				    text-align: center;
-				}
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('producerCode') + 1}) {
-            		text-align: center;
-            		position: relative;
-            		overflow: visible;
-				}
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('effectiveDate') + 1}) {
-            		text-align: center;
-				}
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('writtenPremium') + 1}) {
-            		text-align: right;
-            		position: relative;
-				}
-				
-                .${clazz} td:nth-child(10n+${columns.indexOf('writtenPremium') + 1})::before {
-                    content: '$';
-                    position: absolute;
-                    font: 400 12px Arial;
-                    left: 15px;
-                }				
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('govClass') + 1}) {
-            		text-align: center;
-				}
+    }
 
-				.${clazz} td:nth-child(10n+${columns.indexOf('govClass') + 1}) > .dashboard-quotes-popup > label {
-            		left: -110px;
-				}
-								
-				.${clazz} td:nth-child(10n+${columns.indexOf('grade') + 1}) {
-            		text-align: center;
-				}
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('newRenewal') + 1}) {
-            		padding-left: 5px
-				}	
-					
-				.${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) {
-            		text-align: center;
-            		cursor: pointer;
-				}
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) > svg {
-            		width: 16px;
-            		height: 16px;
-				}
-				
-				.${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) > .dashboard-quotes-popup > label {
-            		left: -120px;
-				}`, name);     
-		}
-    }();
-});
+    function setupStyle(name, columns, clazz) {
+        uiUtils.setDfeCustomStyle(`
+            .${clazz}{
+                width: 100%
+            }
+
+            .${clazz} td {
+                font-size: 12px;
+            }
+
+            .${clazz} th {
+                padding: 2px 15px 2px 15px;
+            }
+
+            .${clazz} th > div {
+                display: flex;
+                justify-content: center;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('quoteid') + 1}) {
+                text-align: center;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('accountName') + 1}) {
+                min-width: 300px;
+                width: 300px;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('companyCode') + 1}) {
+                text-align: center;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('producerCode') + 1}) {
+                text-align: center;
+                position: relative;
+                overflow: visible;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('effectiveDate') + 1}) {
+                text-align: center;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('writtenPremium') + 1}) {
+                text-align: right;
+                position: relative;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('writtenPremium') + 1})::before {
+                content: '$';
+                position: absolute;
+                font: 400 12px Arial;
+                left: 15px;
+            }				
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('govClass') + 1}) {
+                text-align: center;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('govClass') + 1}) > .dashboard-quotes-popup > label {
+                left: -110px;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('grade') + 1}) {
+                text-align: center;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('newRenewal') + 1}) {
+                padding-left: 5px
+            }	
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) {
+                text-align: center;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) > .dashboard-quotes-popup > label {
+                left: -120px;
+            }`, name);     
+    }
+    setupStyle(MyAssignmentForm.name, detailGridColumns, detailsGridClass);
+    return MyAssignmentForm;
+})

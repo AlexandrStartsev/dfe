@@ -1,89 +1,94 @@
-defineForm([ "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery", "components/label", "components/html", "components/container", "components/div" ], function(cmn, __f_sortableheader, dashboardCommon, uiUtils, shapes, fields, jq, __c_label, __c_html, __c_container, __c_div) {
-    return new class {
-        constructor() {
-            this.dfe = __c_div("root", {
+define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery", "components/label", "components/table", "components/div" ], function(Core, cmn, SortableHeaderForm, dashboardCommon, uiUtils, shapes, fields, jq, Label, Table, Div) {
+    let Form = Core.Form; 
+    let diariesRt = new Map();
+    let columnNames = [ 'actionDate', 'appNumber', 'accountName', 'diarySubject', 'notes', 'createdByUser', 'creationDate', 'taskId' ];
+    console.warn("DiaryForm.openTask --- on close refresh table");
+    
+    class DiaryForm extends Form {
+        constructor(node) {
+            super(node);
+            node.unboundModel.defaultSubset('diary', {sortOrder: '.actionDate' });
+        }
+        static fields() {
+            return Form.field(Div, "root", {
                 get: $$ => $$('diary'),
                 atr: $$ => ({
                     style: 'width: 100%;'
                 })
-            }, [ __c_div("loader", {
+            }, [ Form.field(Div, "loader", {
                 get: function($$) {
-                	this.loadDiaries($$);
+                	DiaryForm.loadDiaries($$);
                 	return [$$]
                 }
-            }, [ __c_container("diaries", {
+            }, [ Form.field(Table, "diaries", {
                 get: $$ => $$('.rows'),
                 atr: $$ => ({
                     class: 'dashboard-table diaries-table',
                     order: dashboardCommon.makeSortFunction($$)
                 })
-            }, [ __c_label("field-1", {
+            }, [ Form.field(Label, "field-1", {
                 class: "header",
                 get: $$ => 'Action Items (Diaries)',
                 pos: [ {
                     w: "10",
                     s: "text-align: center"
                 } ]
-            }), __f_sortableheader("h.actionDate", {
+            }), Form.field(SortableHeaderForm, "h.actionDate", {
                 class: "header",
             	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'Action Date', '.actionDate'),
             	pos: [ {
                     n: "Y"
                 } ]
-            }), __c_label("h.appNumber", {
+            }), Form.field(Label, "h.appNumber", {
                 class: "header",
                 get: $$ => 'QuoteId'
-            }), __c_label("h.accountName", {
+            }), Form.field(Label, "h.accountName", {
                 class: "header",
                 get: $$ => 'Account Name'
-            }), __f_sortableheader("h.diarySubject", {
+            }), Form.field(SortableHeaderForm, "h.diarySubject", {
                 class: "header",
             	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'Subject', '.diarySubject')
-            }), __c_label("h.notes", {
+            }), Form.field(Label, "h.notes", {
                 class: "header",
                 get: $$ => 'Notes'
-            }), __c_label("h.createdByUser", {
+            }), Form.field(Label, "h.createdByUser", {
                 class: "header",
                 get: $$ => 'Created By'
-            }), __c_label("h.creationDate", {
+            }), Form.field(Label, "h.creationDate", {
                 class: "header",
                 get: $$ => 'Created Date'
-            }), __c_label("h.taskId", {
+            }), Form.field(Label, "h.taskId", {
                 class: "header",
                 get: $$ => 'Task Link'
-            }), __c_label("actionDate", {
+            }), Form.field(Label, "actionDate", {
                 get: $$ => $$('.actionDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
-            }), __c_label("appNumber", {
-                get: $$ => `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$('.appNumber')}">${$$('.appNumber')}</a>`,
+            }), Form.field(Label, "appNumber", {
                 atr: $$ => ({
-                    html: true
+                    html: `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$('.appNumber')}">${$$('.appNumber')}</a>`
                 })
-            }), __c_label("accountName", {
+            }), Form.field(Label, "accountName", {
                 get: $$ => $$('.accountName')
-            }), __c_label("diarySubject", {
+            }), Form.field(Label, "diarySubject", {
                 get: $$ => $$('.diarySubject')
-            }), __c_label("notes", {
+            }), Form.field(Label, "notes", {
                 get: $$ => $$('.notes')
-            }), __c_label("createdByUser", {
+            }), Form.field(Label, "createdByUser", {
                 get: $$ => $$('.createdByUser')
-            }), __c_label("creationDate", {
+            }), Form.field(Label, "creationDate", {
                 get: $$ => $$('.creationDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
-            }), __c_label("taskId", {
+            }), Form.field(Label, "taskId", {
                 get: $$ => 'Edit',
                 atr: $$ => ({
                     style: 'text-decoration: underline; cursor: pointer;',
                     events: {
-                        click: () => this.openTask($$('.taskId'), () => $$.control.parentControl.parentControl.notifications.push({
-                            action: 'self'
-                        }))
+                        onClick: () => DiaryForm.openTask($$('.taskId'), () => $$.node.parent.parent.update())
                     }
                 })
-            }) ]) ]) ]);
+            }) ]) ]) ])
         }
-        onstart($$) {
-            $$.defaultSubset('diary', {sortOrder: '.actionDate' });
-        }
-        loadDiaries($$) {
+        static loadDiaries($$) {
+            console.warn("loadDiaries return;");
+            return ;
             jq.get('/AJAXServlet.srv?method=DashboardScriptHelper&action=diaries', function(data) {
                 if (data && data.status == 'success') {
                 	delete $$.data.rows;
@@ -95,8 +100,8 @@ defineForm([ "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/co
                 }
             });
         }
-        openTask(taskId, update) {
-        	let map = this.diariesRt, ui = map.get(taskId);
+        static openTask(taskId, update) {
+        	let map = diariesRt, ui = map.get(taskId);
         	if(!ui) {
         		let url = `/tools/commercial/workerscomp/diaryFollowupTaskEdit.jsp?taskId=${taskId}&diaryContext=UNSPECIFIED&saveSuccess=N`;
         		let ov = jq('<div>').attr({class: 'loading-overlay'}).css({top: '40px', left: '0px', display: 'flex', height: 'calc(100% - 40px)'}), cb;
@@ -116,37 +121,35 @@ defineForm([ "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/co
         		ui.dialog('moveToTop');
         	}
         }
-        setup() {
-        	this.diariesRt = new Map();
-            window.diaryFollowUpEdit = {};
-            
-            this.style(this.name, [ 'actionDate', 'appNumber', 'accountName', 'diarySubject', 'notes', 'createdByUser', 'creationDate', 'taskId' ]);
-        }
-        style(name, columns) {
-            uiUtils.setDfeCustomStyle(`
-            	.diaries-table {
-            		width: 100%;
-            	}
-            	
-            	.diaries-table th {
-    		        border-bottom: solid 2px white;
-            	}
-            	
-                .diaries-table th > div {
-                    display: flex;
-                    justify-content: center;
-                }
-            	
-            	.diaries-table td {
-            		text-align: center;
-            	}
-            	
-            	.diaries-table td:nth-child(8n+${columns.indexOf('accountName') + 1}),
-            	.diaries-table td:nth-child(8n+${columns.indexOf('diarySubject') + 1}),
-            	.diaries-table td:nth-child(8n+${columns.indexOf('notes') + 1}) {
-            		text-align: left;
-            	}            	
-            `, this.name);
-        }
-    }();
-});
+    }
+    
+    function style(name, columns) {
+        uiUtils.setDfeCustomStyle(`
+            .diaries-table {
+                width: 100%;
+            }
+
+            .diaries-table th {
+                border-bottom: solid 2px white;
+            }
+
+            .diaries-table th > div {
+                display: flex;
+                justify-content: center;
+            }
+
+            .diaries-table td {
+                text-align: center;
+            }
+
+            .diaries-table td:nth-child(8n+${columns.indexOf('accountName') + 1}),
+            .diaries-table td:nth-child(8n+${columns.indexOf('diarySubject') + 1}),
+            .diaries-table td:nth-child(8n+${columns.indexOf('notes') + 1}) {
+                text-align: left;
+            }            	
+        `, name);
+    }
+    
+    style(DiaryForm.name, columnNames );
+    return DiaryForm;
+})

@@ -16,7 +16,7 @@
                 require(['babel', 'uglify', 'ui/jquery'], function() {
                     window.babel = require('babel');
                     window.uglify = require('uglify');
-                    $.get('/test/test-arf-2.json', function(arf) { 
+                    $.get('/test/test-db.json', function(arf) { 
                         //arf.policy[0].cmau[0].location.shift();
                         resolve(arf);
                         /*setTimeout(function() {
@@ -26,7 +26,7 @@
                 })
             });
             require.config({ baseUrl: '/js', paths: { /* 'dfe-core': 'es5', 'components/generic': 'es5', 'forms/corecomm/quote.cmau.car': 'es5',*/  forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
-            require(['ui/utils']);
+            require(['ui/utils', 'dfe-core'], function() { window.Core = require('dfe-core')});
             
             /*require(['ui/utils'], function() {
                 require(['forms/corecomm/quote.cmau.car', 'dfe-core', 'ui/jquery'], function(form, core, $){
@@ -55,7 +55,7 @@
     </head>
             
     <body> 
-        <span id='dfe' dfe-form='corecomm/quote.cmau.car' dfe-model='window.model' dfe-edit-target ></span>
+        <span id='dfe' dfe-form='dfe.mydashboard' dfe-model='window.model' dfe-edit-target ></span>
         <br>
         <br>
         <br>
