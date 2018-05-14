@@ -12,22 +12,41 @@
         <script src="/js/require.js"></script>
         
         <script> 
+            require.config({
+                baseUrl: '/js', 
+                paths: { 
+                    //'dfe-core': 'es5', 'components/generic': 'es5', 'forms/corecomm/quote.cmau.car': 'es5',  
+                    forms : '../forms' 
+                }
+            })
             var model = new Promise(function(resolve, reject) {
-                require(['babel', 'uglify', 'ui/jquery'], function() {
-                    window.babel = require('babel');
-                    window.uglify = require('uglify');
-                    $.get('/test/test-db.json', function(arf) { 
-                        //arf.policy[0].cmau[0].location.shift();
-                        resolve(arf);
-                        /*setTimeout(function() {
-                            document.querySelector('[dfe-form]')._dfe_runtime.enforceValidation();
-                        }, 1000);*/
-                    })
+                require(['../test/test-100-cars', 'dfe-core', 'ui/utils' ], function(json, core) {
+                    window.Core = core;
+                    resolve(json);
                 })
             });
-            require.config({ baseUrl: '/js', paths: { /* 'dfe-core': 'es5', 'components/generic': 'es5', 'forms/corecomm/quote.cmau.car': 'es5',*/  forms : '../forms', 'dfe-for-react': '../test/dfe-for-react' }})
-            require(['ui/utils', 'dfe-core'], function() { window.Core = require('dfe-core')});
             
+            function getES5(doUglify) {
+                require(['babel', 'uglify', 'ui/jquery'], function(babel, uglify) {
+                    let formName = "forms/" + document.getElementById("dfe").getAttribute("dfe-form") + ".js"
+                    Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get(formName)]).then( // "transform-react-jsx",   , "react"
+                    function(a) {
+                        var s = babel.transform(a.join('\n\n\n'), {  plugins: [ "transform-object-rest-spread", "transform-object-assign"],  presets: ["es2015"] }).code;
+                        if( doUglify ) {
+                            s = uglify.parse(s); s.figure_out_scope(); s.compute_char_frequency(); s.mangle_names(); s = s.print_to_string({ ie8: true, max_line_len: 1000});
+                        }
+                        console.log(s);
+                    });
+                })
+            }
+            
+                    /*$.get('/test/test-arf-2.json', function(arf) { 
+                        //arf.policy[0].cmau[0].location.shift();
+                        resolve(arf);
+                        setTimeout(function() {
+                            document.querySelector('[dfe-form]')._dfe_runtime.enforceValidation();
+                        }, 1000);
+                    })*/
             /*require(['ui/utils'], function() {
                 require(['forms/corecomm/quote.cmau.car', 'dfe-core', 'ui/jquery'], function(form, core, $){
                     window.DfeCore = core;
@@ -55,7 +74,7 @@
     </head>
             
     <body> 
-        <span id='dfe' dfe-form='dfe.mydashboard' dfe-model='window.model' dfe-edit-target ></span>
+        <span id='dfe' dfe-form='corecomm/quote.cmau.car' dfe-model='window.model' dfe-edit-target ></span>
         <br>
         <br>
         <br>
