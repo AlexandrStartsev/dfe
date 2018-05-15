@@ -1,8 +1,7 @@
-define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery", "components/label", "components/table", "components/div" ], function(Core, cmn, SortableHeaderForm, dashboardCommon, uiUtils, shapes, fields, jq, Label, Table, Div) {
+define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery-ui", "components/label", "components/table", "components/div" ], function(Core, cmn, SortableHeaderForm, dashboardCommon, uiUtils, shapes, fields, jq, Label, Table, Div) {
     let Form = Core.Form; 
     let diariesRt = new Map();
     let columnNames = [ 'actionDate', 'appNumber', 'accountName', 'diarySubject', 'notes', 'createdByUser', 'creationDate', 'taskId' ];
-    console.warn("DiaryForm.openTask --- on close refresh table");
     
     class DiaryForm extends Form {
         constructor(node) {
@@ -13,11 +12,11 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
             return Form.field(Div, "root", {
                 get: $$ => $$('diary'),
                 atr: $$ => ({
-                    style: 'width: 100%;'
+                    style: 'width: 100%; padding-top: 2px'
                 })
             }, [ Form.field(Div, "loader", {
                 get: function($$) {
-                	DiaryForm.loadDiaries($$);
+                	this.loadDiaries($$);
                 	return [$$]
                 }
             }, [ Form.field(Table, "diaries", {
@@ -29,15 +28,15 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
             }, [ Form.field(Label, "field-1", {
                 class: "header",
                 get: $$ => 'Action Items (Diaries)',
-                pos: [ {
-                    w: "10",
-                    s: "text-align: center"
+                layout: [ {
+                    colSpan: "10",
+                    style: "text-align: center"
                 } ]
             }), Form.field(SortableHeaderForm, "h.actionDate", {
                 class: "header",
             	atr: $$ => dashboardCommon.sortHeaderAtr($$, 'Action Date', '.actionDate'),
-            	pos: [ {
-                    n: "Y"
+            	layout: [ {
+                    newRow: true
                 } ]
             }), Form.field(Label, "h.appNumber", {
                 class: "header",
@@ -77,18 +76,18 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
             }), Form.field(Label, "creationDate", {
                 get: $$ => $$('.creationDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
             }), Form.field(Label, "taskId", {
-                get: $$ => 'Edit',
-                atr: $$ => ({
-                    style: 'text-decoration: underline; cursor: pointer;',
-                    events: {
-                        onClick: () => DiaryForm.openTask($$('.taskId'), () => $$.node.parent.parent.update())
+                atr: function($$) {
+                    return {
+                        label: 'Edit',
+                        style: 'text-decoration: underline; cursor: pointer;',
+                        events: {
+                            onClick: () => this.openTask($$('.taskId'), () => this.loadDiaries($$('..')))
+                        }
                     }
-                })
+                }
             }) ]) ]) ])
         }
-        static loadDiaries($$) {
-            console.warn("loadDiaries return;");
-            return ;
+        loadDiaries($$) {
             jq.get('/AJAXServlet.srv?method=DashboardScriptHelper&action=diaries', function(data) {
                 if (data && data.status == 'success') {
                 	delete $$.data.rows;
@@ -100,7 +99,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
                 }
             });
         }
-        static openTask(taskId, update) {
+        openTask(taskId, update) {
         	let map = diariesRt, ui = map.get(taskId);
         	if(!ui) {
         		let url = `/tools/commercial/workerscomp/diaryFollowupTaskEdit.jsp?taskId=${taskId}&diaryContext=UNSPECIFIED&saveSuccess=N`;
@@ -115,7 +114,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
 	                	map.delete(taskId);
                         jq(this).dialog('destroy');
 	                }}).css({width: "100%"}).load(() => ov.remove()));
-        		window.diaryFollowUpEdit.onsavesuccess = update;
+        		window.diaryFollowUpEdit = {onsavesuccess: update};
         		ov.appendTo(ui.parent());
         	} else {
         		ui.dialog('moveToTop');

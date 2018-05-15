@@ -1,4 +1,4 @@
-define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-$", "components/radiolist", "components/table", "components/checkbox", "ui/jquery-ui" ], function(require, Core, cmn, uiUtils, fields, Label, Editbox, Dropdown, Button, Div, EditboxMoney, Radiolist, Table, Checkbox, jQuery) {
+define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-money", "components/radiolist", "components/container", "components/table", "components/checkbox", "ui/jquery-ui" ], function(require, Core, cmn, uiUtils, fields, Label, Editbox, Dropdown, Button, Div, EditboxMoney, Radiolist, Container, Table, Checkbox, jQuery) {
     let Form = Core.Form;
     class QuoteWorkClassForm extends Form {
         constructor(node) {
@@ -22,7 +22,6 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
             return Form.field(Div, "root", {
                 get: $$ => $$('policy.work'),
                 atr: () => ({
-                    vstrategy: 'always',
                     style: 'width: 550px'
                 })
             }, [ Form.field(Table,"locs", {
@@ -35,11 +34,9 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
             }, [ Form.field(Label,"field-2", {
                 class: "header",
                 get: () => 'Location Informaton',
-                atr: () => ({
-                    style: 'background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; line-height: 2em; display: block; '
-                }),
                 layout: [ {
-                    colSpan: "7"
+                    colSpan: "7",
+                    style: "background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; line-height: 2em;"
                 } ]
             }), Form.field(Label,"field-3", {
                 class: "header",
@@ -120,149 +117,143 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
             }), Form.field(Button, "field-14", {
                 get: () => 'Delete',
                 set: $$ => $$.detach()
-            }), Form.field(Table,"classes", {
-                get: $$ => $$('.class'),
-                val: $$ => $$.required('.class'),
-                atr: $$ => ({
-                    style: 'width: 100%;',
-                    skip: $$('.class').length > 1 ? [] : [ 'field-23', 'field-31' ]
-                }),
-                layout: [ {
-                    newRow: true,
-                    colSpan: "7"
-                } ]
-            }, [ Form.field(Div, "field-38", {
-                class: "header",
-                get: $$ => [ $$ ],
-                layout: [ {
-                    colSpan: "8"
-                } ]
-            }, [ Form.field(Label,"field-39", {
-                get: () => 'Class Informaton',
-                atr: () => ({
-                    style: 'background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; display: block; line-height: 2em;'
-                })
-            }) ]), Form.field(Label,"field-17", {
-                class: "header",
-                get: () => '#',
-                layout: [ {
-                    newRow: true
-                } ]
-            }), Form.field(Label,"field-18", {
-                class: "header",
-                get: () => 'Class Code'
-            }), Form.field(Label,"field-19", {
-                class: "header",
-                get: () => '# F.T. Employees'
-            }), Form.field(Label,"field-20", {
-                class: "header",
-                get: () => '# P.T. Employees'
-            }), Form.field(Label,"field-21", {
-                class: "header",
-                get: () => '# Seasonal Employees'
-            }), Form.field(Label,"field-22", {
-                class: "header",
-                get: () => 'Est. Annual Remuneration'
-            }), Form.field(Label,"field-16", {
-                class: "header",
-                get: $$ => 'If any',
-                atr: $$ => ({
-                    style: 'white-space: nowrap'
-                })
-            }), Form.field(Label,"field-23", {
-                class: "header",
-                get: () => ''
-            }), Form.field(Label,"field-25", {
-                get: $$ => $$.index() + 1
-            }), Form.field(Editbox, "field-26", {
-                atr: () => fields.simple('.code', [ ($$, value) => value ? value.match(/^\d{4}$/) || $$.error('Invalid format') : $$.error('Please enter class code') ], {
-                    style: 'width: 50px; border-radius: 1px; height: 18px',
-                    pattern: /\d{1,4}/
-                })
-            }), Form.field(Editbox, "field-27", {
-                atr: $$ => fields.simple('.fulltimeemployeeamt', [ QuoteWorkClassForm.nbOnlyRequired ], {
-                    style: 'width: 40px; border-radius: 1px; height: 18px',
-                    pattern: /\d{1,3}/,
-                    disabled: $$('.ifAny') == 'Y'
-                })
-            }), Form.field(Editbox, "field-28", {
-                atr: $$ => fields.simple('.parttimeemployeeamt', [ QuoteWorkClassForm.nbOnlyRequired ], {
-                    style: 'width: 40px; border-radius: 1px; height: 18px',
-                    pattern: /\d{1,3}/,
-                    disabled: $$('.ifAny') == 'Y'
-                })
-            }), Form.field(Editbox, "field-29", {
-                atr: $$ => fields.simple('.seasonalemployeeamt', [], {
-                    style: 'width: 40px; border-radius: 1px; height: 18px',
-                    pattern: /\d{1,3}/,
-                    disabled: $$('.ifAny') == 'Y'
-                })
-            }), Form.field(EditboxMoney, "field-30", {
-                atr: $$ => fields.simple('.payroll', {
-                    style: 'width: 80px; border-radius: 1px; height: 18px',
-                    formatting: '99,999,999',
-                    disabled: $$('.ifAny') == 'Y'
-                })
-            }), Form.field(Checkbox, "field-8", {
-                set: ($$, value) => $$.set((value == 'Y' ? QuoteWorkClassForm.ifAnyEmptyFields() : []).reduce((clazz, field) => {
-                    clazz[field] = '';
-                    return clazz;
-                }, {
-                    ifAny: value
-                })),
-                atr: $$ => fields.simple('.ifAny', {
-                    disabled: $$('.ifAny') != 'Y' && $$('...location.class').filter(c => c.get('.ifAny') != 'Y').length < 2,
-                    val: () => 0
-                }),
-                layout: [ {
-                   style: "text-align: center"
-                } ]
-            }), Form.field(Button, "field-31", {
-                get: () => 'Delete',
-                set: $$ => $$.detach(),
-                layout: [ {
-                   style: "max-width: 50px"
-                } ]
-            }), Form.field(Div, "field-37", {
-                get: $$ => $$('.code').length == 4 ? [ $$ ] : [],
-                layout: [ {
-                    newRow: true,
-                    colSpan: "8"
-                } ]
-            }, [ Form.field(Radiolist, "field-32", {
-                get: $$ => cmn.ajaxFeed($$, {
-                    query: {
-                        action: 'getSubcodes',
-                        classCode: $$('.code'),
-                        effectiveDate: $$('...effective') == 0 ? '20180303' : $$('...effective'),
-                        lob: 'WORK',
-                        state: $$('..state'),
-                        method: 'WORKClassCodeScriptHelper'
-                    },
-                    value: $$('.subcode'),
-                    mapper: v => ({
-                        value: v.combined,
-                        description: `${v.classCode} - ${v.description}`
+            }), 
+            Form.field(Container, { get: $$ => $$('.class').length ? [$$] : [], layout: [ { newRow: true } ] },
+                Form.field(Table,"classes", {
+                    get: $$ => $$('.class'),
+                    val: $$ => $$.required('.class'),
+                    atr: $$ => ({
+                        style: 'width: 100%;',
+                        skip: $$('.class').length > 1 ? [] : [ 'field-23', 'field-31' ]
+                    }), layout: [ { colSpan: "7" } ]
+                }, [ Form.field(Label,"field-39", {
+                    class: "header",
+                    get: () => 'Class Informaton',
+                    layout: [ {
+                        colSpan: "8",
+                        style: 'background-color: #7e8083; color: #fff; font-size: 12px; text-align: center; font-weight: bold; line-height: 2em;'
+                    } ]
+                }), Form.field(Label,"field-17", {
+                    class: "header",
+                    get: () => '#',
+                    layout: [ {
+                        newRow: true
+                    } ]
+                }), Form.field(Label,"field-18", {
+                    class: "header",
+                    get: () => 'Class Code'
+                }), Form.field(Label,"field-19", {
+                    class: "header",
+                    get: () => '# F.T. Employees'
+                }), Form.field(Label,"field-20", {
+                    class: "header",
+                    get: () => '# P.T. Employees'
+                }), Form.field(Label,"field-21", {
+                    class: "header",
+                    get: () => '# Seasonal Employees'
+                }), Form.field(Label,"field-22", {
+                    class: "header",
+                    get: () => 'Est. Annual Remuneration'
+                }), Form.field(Label,"field-16", {
+                    class: "header",
+                    get: $$ => 'If any',
+                    atr: $$ => ({
+                        style: 'white-space: nowrap'
                     })
-                }),
-                set: ($$, value) => $$.set('.subcode', value),
-                atr: () => ({
-                    style: 'padding: 2px 0px 0px 2px;',
-                    orientation: 'vertical'
-                }),
-                layout: [ {
-                    newRow: true,
-                    colSpan: "7"
-                } ]
-            }) ]), Form.field(Label,"field-33", {
-                get: () => '',
-                val: $$ => $$('.ifAny') == 'Y' && QuoteWorkClassForm.ifAnyEmptyFields().filter(field => $$('.' + field).toString() !== '').length && $$.error('If Any is selected, you may not enter Employees or Payroll'),
-                layout: [ {
-                    newRow: true,
-                    colSpan: "8"
-                } ]
-            }) ]), Form.field(Div, "field-35", {
-                get: $$ => [ $$ ],
+                }), Form.field(Label,"field-23", {
+                    class: "header",
+                    get: () => ''
+                }), Form.field(Label,"field-25", {
+                    get: $$ => $$.index() + 1
+                }), Form.field(Editbox, "field-26", {
+                    atr: () => fields.simple('.code', [ ($$, value) => value ? value.match(/^\d{4}$/) || $$.error('Invalid format') : $$.error('Please enter class code') ], {
+                        style: 'width: 50px; border-radius: 1px; height: 18px',
+                        pattern: /\d{1,4}/
+                    })
+                }), Form.field(Editbox, "field-27", {
+                    atr: $$ => fields.simple('.fulltimeemployeeamt', [ QuoteWorkClassForm.nbOnlyRequired ], {
+                        style: 'width: 40px; border-radius: 1px; height: 18px',
+                        pattern: /\d{1,3}/,
+                        disabled: $$('.ifAny') == 'Y'
+                    })
+                }), Form.field(Editbox, "field-28", {
+                    atr: $$ => fields.simple('.parttimeemployeeamt', [ QuoteWorkClassForm.nbOnlyRequired ], {
+                        style: 'width: 40px; border-radius: 1px; height: 18px',
+                        pattern: /\d{1,3}/,
+                        disabled: $$('.ifAny') == 'Y'
+                    })
+                }), Form.field(Editbox, "field-29", {
+                    atr: $$ => fields.simple('.seasonalemployeeamt', [], {
+                        style: 'width: 40px; border-radius: 1px; height: 18px',
+                        pattern: /\d{1,3}/,
+                        disabled: $$('.ifAny') == 'Y'
+                    })
+                }), Form.field(EditboxMoney, "field-30", {
+                    atr: $$ => fields.simple('.payroll', {
+                        style: 'width: 80px; border-radius: 1px; height: 18px',
+                        format: '99,999,999',
+                        disabled: $$('.ifAny') == 'Y'
+                    })
+                }), Form.field(Checkbox, "field-8", {
+                    set: ($$, value) => $$.set((value == 'Y' ? QuoteWorkClassForm.ifAnyEmptyFields() : []).reduce((clazz, field) => {
+                        clazz[field] = '';
+                        return clazz;
+                    }, {
+                        ifAny: value
+                    })),
+                    atr: $$ => fields.simple('.ifAny', {
+                        disabled: $$('.ifAny') != 'Y' && $$('...location.class').filter(c => c.get('.ifAny') != 'Y').length < 2,
+                        val: () => 0
+                    }),
+                    layout: [ {
+                    style: "text-align: center"
+                    } ]
+                }), Form.field(Button, "field-31", {
+                    get: () => 'Delete',
+                    set: $$ => $$.detach(),
+                    layout: [ {
+                    style: "max-width: 50px"
+                    } ]
+                }), Form.field(Div, "field-37", {
+                    get: $$ => $$('.code').length == 4 ? [ $$ ] : [],
+                    layout: [ {
+                        newRow: true,
+                        colSpan: "8"
+                    } ]
+                }, [ Form.field(Radiolist, "field-32", {
+                    get: $$ => cmn.ajaxFeed($$, {
+                        query: {
+                            action: 'getSubcodes',
+                            classCode: $$('.code'),
+                            effectiveDate: $$('...effective') == 0 ? '20180303' : $$('...effective'),
+                            lob: 'WORK',
+                            state: $$('..state'),
+                            method: 'WORKClassCodeScriptHelper'
+                        },
+                        value: $$('.subcode'),
+                        mapper: v => ({
+                            value: v.combined,
+                            description: `${v.classCode} - ${v.description}`
+                        })
+                    }),
+                    set: ($$, value) => $$.set('.subcode', value),
+                    atr: () => ({
+                        style: 'padding: 2px 0px 0px 2px;',
+                        orientation: 'vertical'
+                    }),
+                    layout: [ {
+                        newRow: true,
+                        colSpan: "7"
+                    } ]
+                }) ]), Form.field(Label,"field-33", {
+                    get: () => '',
+                    val: $$ => $$('.ifAny') == 'Y' && QuoteWorkClassForm.ifAnyEmptyFields().filter(field => $$('.' + field).toString() !== '').length && $$.error('If Any is selected, you may not enter Employees or Payroll'),
+                    layout: [ {
+                        newRow: true,
+                        colSpan: "8"
+                    } ]
+                }) ]) ), 
+            Form.field(Div, "field-35", {
                 atr: () => ({
                     style: 'background: #dcdcdc; padding: 2px'
                 }),
@@ -295,6 +286,8 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
             }) ]);
         }
         processNoSpecificLocationChange($$, newState, newNoSpecificLocation) {
+            newState = newState.toString();
+            newNoSpecificLocation = newNoSpecificLocation.toString()||'N'; 
             if (newState.match(/MO|AZ|IN|IA|KY|MT|TX/)) {
                 newNoSpecificLocation = 'N';
             }
@@ -313,9 +306,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 }
                 if (otherLocs != 0) {
                     let ui = jQuery('<div>'), close = () => {
-                        $$.control.notifications.push({
-                            action: 'notify'
-                        });
+                        $$.$node.notify({action: 'notify'});
                         ui.dialog('destroy');
                     };
                     ui.text('Non-specific location for this state already exists. Would you like to merge?').dialog({

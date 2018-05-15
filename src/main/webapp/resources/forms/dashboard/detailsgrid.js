@@ -60,15 +60,9 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
             }), Form.field(Label, "producerCode", {
                 get: $$ => $$('.producerCode')
             }), Form.field(Label, "effectiveDate", {
-                get: function($$) {
-                    let v = $$('.effectiveDate');
-                    if (typeof v == 'string') return v.replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1');
-                }
+                get: $$ => $$('.effectiveDate').toString().replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1')
             }), Form.field(Label, "writtenPremium", {
-                get: function($$) {
-                    let v = $$('.writtenPremium');
-                    if (typeof v == 'string') return v.replace(/(\d)(?=(\d{3})+$)/g, '$1,');
-                }
+                get: $$ => $$('.writtenPremium').toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')
             }), Form.field(Label, "govClass", {
                 get: $$ => $$('.govClass')
             }), Form.field(Label, "grade", {

@@ -1,4 +1,4 @@
-define('dfe-common', ['exports'], function(exports) {
+define(['exports'], function(exports) {
     function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
 	//#################################################################################################################
 	

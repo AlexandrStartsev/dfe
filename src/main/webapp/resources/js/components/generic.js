@@ -8,7 +8,7 @@ define('components/base', ['dfe-core'], function(Core) {
 
 define('components/container', ['dfe-core'], function(Core) {
     return class Container extends Core.Component {}
-})    
+})
 
 define('components/either', ['dfe-core'], function(Core) {
     return class Either extends Core.Component {
@@ -191,22 +191,8 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
     }
 })
 
-define('components/validation-component', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
-    return class ValidationComponent extends BaseComponent {
-        doValidation(events, attrs) {
-            let vs = (attrs.vstrategy||'').split(' ');
-            delete attrs.vstrategy;
-            if( vs.indexOf('none') != -1 || vs.indexOf('disabled') == -1 && (attrs.disabled || attrs.hidden) ) {
-                return false;
-            }
-            if( vs.indexOf('always') != -1 || vs.indexOf('followup') != -1 && this.$node.stickyError ) {
-                return true;
-            }
-            if( vs.indexOf('notified') != -1 && events[0].action != 'init' ) {
-                return true;
-            }
-            return events.some(e => 'validate' === e.action); 
-        }
+define('components/validation-component', ['dfe-core', 'core-validation-component'], function(Core, CoreValidationComponent) {
+    return class ValidationComponent extends CoreValidationComponent {
         render(data, error, attributes, children) {
             return !!error && !attributes.hideError && Core.createElement('label', {class: 'dfe-error', text: error.toString()})
         }
@@ -258,7 +244,7 @@ define('components/labeled-component', ['dfe-core', 'components/label'], functio
     }
 })
 
-define('components/editbox', ['dfe-core', 'components/validation-component', 'components/date-picker-polyfill'], function(Core, ValidationComponent) {
+define('components/editbox', ['dfe-core', 'components/validation-component', 'ui/date-picker-polyfill'], function(Core, ValidationComponent) {
     function Patterning (v, p) { 
         while(p && v != 0 && !(v.match(p) && v.match(p)[0] == v) ) {
             v = v.substr(0, v.length-1); 
@@ -290,7 +276,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
             }
         }
         onKeyUp(e, doStore) {
-            doStore = doStore || this.trigger !== 'store';
+            doStore = doStore || this.trigger !== 'change';
             let data = Patterning(Formatting(e.target.value, this.format), this.pattern); 
             let transform = typeof this.transform === 'string' && this.transform.split('').map(s => +s);
             if(transform) {
@@ -356,7 +342,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
             return data;
         }
         render(data, error, attributes, children) {
-            let { formatting: format, pattern: pattern, transform: transform, trigger: trigger, ...rest } = attributes;
+            let { format: format, pattern: pattern, transform: transform, trigger: trigger, ...rest } = attributes;
             Object.assign(this, {format: format, pattern: pattern, transform: transform, trigger: trigger});
             return [[
                 Core.createElement( 'input', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }), 
@@ -366,7 +352,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
     }
 })
 
-define('components/editbox-$', ['components/editbox'], function(Editbox) {
+define('components/editbox-money', ['components/editbox'], function(Editbox) {
     function Formatting(v, n, l) {
         do {
             v = (n?'':'$') + v.replace(/[^\d]/g,'').replace(/(\d)(?=(\d{3})+$)/g, '$1,');
@@ -375,9 +361,10 @@ define('components/editbox-$', ['components/editbox'], function(Editbox) {
     }
 
     return class EditboxMoney extends Editbox {
-        onKeyUp(e, store) {
+        onKeyUp(e, doStore) {
+            doStore = doStore || this.trigger !== 'change';
             let ui = e.target, data = this.getValueProcessed(ui.value, ui);
-            store && this.store(data);
+            doStore && this.store(data.replace(/[$,]/g,''));
         }
         onKeyDown(e) {
             let ui = e.target, ml = (this.format && this.format.length) < Formatting(ui.value + '1', this.format && this.format.charAt(0) != '$', 99).length;
@@ -454,7 +441,7 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
                 Core.createElement(
                     'select', 
                     { ...this.splitAttributes(rest, error), selectedIndex: selectedIndex, onChange: e => this.store(options[e.target.selectedIndex].value) },
-                    options.map( opt => Core.createElement('option', { text: opt.text }) )
+                    options.map( opt => Core.createElement('option', { value: opt.value, text: opt.text }) )
                 ),
                 super.render(null, error, rest)
             ]]
@@ -682,7 +669,7 @@ define('components/iframe', ['dfe-core', 'components/base'], function(Core, Base
 define('components/textarea', ['dfe-core', 'components/editbox', 'components/validation-component'], function(Core, Editbox, ValidationComponent) {
     return class Textarea extends Editbox {
         render(data, error, attributes, children) {
-            let { formatting: format, pattern: pattern, transform: transform, trigger: trigger, ...rest } = attributes;
+            let { format: format, pattern: pattern, transform: transform, trigger: trigger, ...rest } = attributes;
             Object.assign(this, {format: format, pattern: pattern, transform: transform, trigger: trigger});
             return [[
                 Core.createElement('textarea', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }), 
@@ -692,7 +679,7 @@ define('components/textarea', ['dfe-core', 'components/editbox', 'components/val
     }
 })
 
-define('components/dfe-runtime', ['dfe-core'], function(Core) {
+define('components/child-runtime', ['dfe-core'], function(Core) {
     return class ChildRuntime extends Core.Component {
         render(data, error, attributes, children) {
             let { form: formName, editTarget: editTarget, ...rest } = attributes;
@@ -770,7 +757,7 @@ define('components/labeled', ['dfe-core', 'components/validation-component'], fu
     }
 })
 
-define('components/c-checkbox', ['dfe-core', 'components/checkbox', 'components/labeled'], function(Core, Checkbox, Labeled) {
+define('components/labeled-checkbox', ['dfe-core', 'components/checkbox', 'components/labeled'], function(Core, Checkbox, Labeled) {
     return class LabeledCheckbox extends Labeled {
         getComponent() {
             return Checkbox;
@@ -778,7 +765,7 @@ define('components/c-checkbox', ['dfe-core', 'components/checkbox', 'components/
     }
 })
 
-define('components/c-editbox', ['dfe-core', 'components/editbox', 'components/labeled'], function(Core, Editbox, Labeled) {
+define('components/labeled-editbox', ['dfe-core', 'components/editbox', 'components/labeled'], function(Core, Editbox, Labeled) {
     return class LabeledEditbox extends Labeled {
         getComponent() {
             return Editbox;
@@ -786,7 +773,7 @@ define('components/c-editbox', ['dfe-core', 'components/editbox', 'components/la
     }
 })
 
-define('components/c-dropdown', ['dfe-core', 'components/dropdown', 'components/labeled'], function(Core, Dropdown, Labeled) {
+define('components/labeled-dropdown', ['dfe-core', 'components/dropdown', 'components/labeled'], function(Core, Dropdown, Labeled) {
     return class LabeledDropdown extends Labeled {
         getComponent() {
             return Dropdown;
@@ -794,7 +781,7 @@ define('components/c-dropdown', ['dfe-core', 'components/dropdown', 'components/
     }
 })
 
-define('components/c-editbox-$', ['dfe-core', 'components/editbox-$', 'components/labeled'], function(Core, EditboxMoney, Labeled) {
+define('components/labeled-editbox-money', ['dfe-core', 'components/editbox-money', 'components/labeled'], function(Core, EditboxMoney, Labeled) {
     return class LabeledEditboxMoney extends Labeled {
         getComponent() {
             return EditboxMoney;
@@ -802,7 +789,7 @@ define('components/c-editbox-$', ['dfe-core', 'components/editbox-$', 'component
     }
 })
 
-define('components/c-radiolist', ['dfe-core', 'components/radiolist', 'components/labeled'], function(Core, Radiolist, Labeled) {
+define('components/labeled-radiolist', ['dfe-core', 'components/radiolist', 'components/labeled'], function(Core, Radiolist, Labeled) {
     return class LabeledRadiolist extends Labeled {
         getComponent() {
             return Radiolist;
@@ -812,7 +799,7 @@ define('components/c-radiolist', ['dfe-core', 'components/radiolist', 'component
 
 /*  TODO: 
 
-define('components/editbox-P', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
+define('components/editbox-popup', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
     return _extend({
         cname: 'editbox-P',
         render: function (nodes, control, data, errs, attrs, events) {

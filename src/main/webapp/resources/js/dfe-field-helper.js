@@ -1,4 +1,4 @@
-define('dfe-field-helper', ['dfe-common'], function(cmn) {
+define(['dfe-common'], function(cmn) {
 	return {
         simple: function(field, val, attrs) {
         	var hasVal = Array.isArray(val); hasVal || (attrs = val); attrs || (attrs = {});
@@ -13,7 +13,7 @@ define('dfe-field-helper', ['dfe-common'], function(cmn) {
                     var ok = 1;
                     var value = model.get(field).toString();
                     hasVal ? val.forEach(function(v){
-                        ok = ok && (typeof v == 'function' ? v.call( model.control.field.data.form, model, value, field, attrs ) : typeof v == 'string' && model.required(field, v))
+                        ok = ok && (typeof v == 'function' ? v.call( model.$node.form, model, value, field, attrs ) : typeof v == 'string' && model.required(field, v))
                     }) : model.required(field);
                 }
             });
@@ -21,7 +21,7 @@ define('dfe-field-helper', ['dfe-common'], function(cmn) {
         date: function(field, val, attrs) {
         	var hasVal = Array.isArray(val); hasVal || (attrs = val); attrs || (attrs = {});
             return  cmn.extend(attrs, {
-            	formatting: 'MM/DD/YYYY',
+            	format: 'MM/DD/YYYY',
                 transform: '67890134',
                 get: function(model) {
                     return model.get(field);
@@ -32,7 +32,7 @@ define('dfe-field-helper', ['dfe-common'], function(cmn) {
                 val: function(model) {
                 	var value = cmn.ARFtoDate(model.get(field));
                 	value instanceof Date ? hasVal && val.forEach(function(v){
-                        ok = ok && (typeof v == 'function' ? v.call( model.control.field.data.form, model, value, field, attrs ) : 1)
+                        ok = ok && (typeof v == 'function' ? v.call( model.$node.form, model, value, field, attrs ) : 1)
                     }) : model.error( hasVal && val[0] || 'Invalid format' ); 
                 }
             });

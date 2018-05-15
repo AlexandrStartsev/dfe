@@ -1,4 +1,4 @@
-define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div-button", "components/dfe-runtime", "components/tab-d", "components/div", "forms/dashboard/quicksearch", "module" ], function(require, uiUtils, Core, cmn, DivButton, ChildRuntime, TabD, Div, QuickSearchForm, module) {
+define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div-button", "components/child-runtime", "components/tab-d", "components/div", "forms/dashboard/quicksearch", "module" ], function(require, uiUtils, Core, cmn, DivButton, ChildRuntime, TabD, Div, QuickSearchForm, module) {
     uiUtils.setDfeCustomStyle(`    		                
         .dashboard-tab-item {
             display: inline

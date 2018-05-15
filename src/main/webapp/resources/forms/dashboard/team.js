@@ -1,4 +1,4 @@
-define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/button", "components/table", "components/either" ], function(Core, StatusGridForm, notes, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Either) {
+define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/either" ], function(Core, StatusGridForm, notes, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Either) {
     let Form = Core.Form;
     let detailGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'effectiveDate', 'writtenPremium', 'userId', 'reassign' ];
     let detailsGridClass = 'team-rbody-tbl';
@@ -8,8 +8,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             super(node);
             let $$ = node.unboundModel;
             this.userIdToTeam = new Promise(function(resolve) {
-                console.warn("userIdToTeam endpoint");
-                jq.get(`https://arrowheadexchange.com/AJAXServlet.srv?method=TeamManagerScriptHelper&action=getGroupMap`, data => {
+                jq.get(`/AJAXServlet.srv?method=TeamManagerScriptHelper&action=getGroupMap`, data => {
                     if (data && data.status == 'success') {
                         let map = new Map(), def;
                         data.result.users.forEach(user => map.set(user.name, def = {
@@ -236,8 +235,6 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             ) ] ) ]) ])
         }
         loadTeams(px, effFrom, effTo) {
-            console.warn("loadTeams disabled")
-            return ;
             this.userIdToTeam.then(map => {
                 let users = '';
                 map.forEach((def, userId) => {

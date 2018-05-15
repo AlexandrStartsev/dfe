@@ -1,4 +1,4 @@
-defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "components/label", "components/editbox", "components/button", "components/table", "components/form", "dfe-field-helper", "components/dropdown", "ui/jquery-ui", "components/html" ], function(require, uiUtils, Core, cmn, Div, Label, Editbox, Button, Table, HtmlForm, fields, Dropdown, jQuery, Html) {
+define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "components/label", "components/editbox", "components/button", "components/table", "components/html-form", "dfe-field-helper", "components/dropdown", "ui/jquery-ui", "components/html" ], function(require, uiUtils, Core, cmn, Div, Label, Editbox, Button, Table, HtmlForm, fields, Dropdown, jQuery, Html) {
     let Form = Core.Form;
     
     class RatingTableExpirationForm extends Form {
@@ -84,12 +84,12 @@ defineForm([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", 
                     let formNode = Core.nodeFromElement(form);
                     let runtime = formNode.runtime;
                     if ($$('.edit') == 'Y') {
-                        runtime.notifyControls(runtime.findChildren(formNode), 'validate');
+                        runtime.findChildren(formNode).forEach(node => node.notify({action: 'validate'}));
                         $$('..').set({
                             action: 'add',
                             cmnt: $$('.comment')
                         });
-                        runtime.schedule.push(() => formNode.erroringControls.size || form.submit());
+                        runtime.schedule.push(() => formNode.erroringChildren.size || form.submit());
                     } else {
                         let ui = jQuery('<div>'), edit = jQuery('<textarea>').appendTo(ui), close = () => ui.dialog('destroy');
                         let handler = () => ui.parent().find('button:contains("OK")').attr({

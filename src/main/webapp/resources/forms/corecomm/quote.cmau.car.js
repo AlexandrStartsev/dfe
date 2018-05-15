@@ -1,4 +1,4 @@
-define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/c-editbox-$", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/c-checkbox"], function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
+define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/labeled-radiolist", "components/labeled-editbox", "components/labeled-dropdown", "components/labeled-editbox-money", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/labeled-checkbox"], function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
     let Form = Core.Form;
     
     let carDefaults = {
@@ -12,6 +12,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
         DumpingOpInd: "N",
         vinoverride: "N",
         hasvin: "Y",
+        vinvalid: "N",
         custom: "N",
         UseClassInd1: "N",
         UseClassInd2: "N",
@@ -278,7 +279,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 atr: $$ => fields.simple('.vehicleocostnew', {
                     disabled: vehDetailsDisabled($$),
                     style: 'width: 150px;',
-                    formatting: '$9,999,999',
+                    format: '$9,999,999',
                     text: 'Original Cost New'
                 })
             }) ]), Form.field(Table, "private", {
@@ -492,7 +493,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 Form.field(InlineRows, "amt-switch", { get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) && $$('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [] }, 
                     Form.field(ApplyToAllField, "field-92", { config: { field: '.StatedAmt'} }, 
                         Form.field(LabeledEditboxMoney, {
-                            atr: () => fields.simple('.StatedAmt', { formatting: '$9,999,999', text: 'Stated Amount', cstyle: 'padding-left: 10px;', style: 'width: 100px' })
+                            atr: () => fields.simple('.StatedAmt', { format: '$9,999,999', text: 'Stated Amount', cstyle: 'padding-left: 10px;', style: 'width: 100px' })
                         })
                     )
                 ),

@@ -1,4 +1,4 @@
-define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/c-editbox", "components/c-dropdown", "components/editbox", "components/button", "components/table", "components/container", "components/span" ], function(Core, StatusGridForm, NotesForm, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Container, Span) {
+define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/container", "components/span" ], function(Core, StatusGridForm, NotesForm, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Container, Span) {
     let Form = Core.Form;
     let detailGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'producerCode', 'effectiveDate', 'writtenPremium', 'govClass', 'grade', 'newRenewal', 'notes' ];
     let detailsGridClass = 'dashboard-rbody-tbl';
@@ -197,8 +197,6 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }) ]) ]) ]);
         }
         loadDateRange(px, effFrom, effTo) {
-            console.warn("loadDateRange is disabled");
-            return ;
         	let self = this, defaultSort = { sortOrder: '.effectiveDate.writtenPremium.govClass.newRenewal', sortInverse: '.writtenPremium' };
             let url = `/AJAXServlet.srv?method=DashboardScriptHelper&action=geninfo&lob=WORK&eff=${effFrom}&effTo=${effTo}&idKey=${++self.idKey}`, toLoad = [], curRep = px.get('.quotes'), matched = new Set();
             px.set('.loading', 1);
@@ -328,12 +326,14 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             .${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) svg {
                 width: 16px;
                 height: 16px;
+                pointer-events: all;
             }
 
             .${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) > .dashboard-quotes-popup > label {
                 left: -120px;
             }`, name);     
     }
+    
     setupStyle(MyAssignmentForm.name, detailGridColumns, detailsGridClass);
     return MyAssignmentForm;
 })

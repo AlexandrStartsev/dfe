@@ -166,14 +166,14 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
                 pointer-events: none;
             }
 
-            div.reportrow-edit-button {
+            span.reportrow-edit-button {
                 width: 12px; 
                 height: 12px; 
                 margin: 3px;
                 pointer-events: all;
             }
 
-            div.reportrow-edit-button-fixed {
+            span.reportrow-edit-button-fixed {
                 width: 12px; 
                 height: 12px; 
                 margin: 3px;

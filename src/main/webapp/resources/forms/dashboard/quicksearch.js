@@ -1,4 +1,4 @@
-define([ "dfe-core", "components/c-dropdown", "components/editbox", "components/button", "components/html-form" ], function(Core, LabeledDropdown, Editbox, Button, HtmlForm) {
+define([ "dfe-core", "components/labeled-dropdown", "components/editbox", "components/button", "components/html-form" ], function(Core, LabeledDropdown, Editbox, Button, HtmlForm) {
     let Form = Core.Form;
     return class QuickSearchForm extends Form {
         constructor(node) {
