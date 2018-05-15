@@ -818,21 +818,23 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
         render(value, error, attributes, children) {
             let { ta : popupAttributes, ref: ref, ...rest } = attributes;
             this.popupAttributes = popupAttributes;
+            this.popupData = this.getMapper(value);
+            this.popupError = error;
             this.renderPopup();
             return super.render(value, error, { ref: dom => (this.ref = dom, ref && ref(dom)), ...rest }, children);
         }
         renderPopup(show) {
-            let popup = this.popup, active = popup.$parentDom;
+            let popup = this.popup, active = this.popupContainer && this.popupContainer.parentNode;
             if( active || show ) {
                 popup.shouldRender = true;
                 popup.setDom({ type: 'div' }, this.ref.ownerDocument.body, null);
-                popup.render(this.getMapper(this.$node.lastData), this.$node.lastError, this.mapPopupAttributes());
+                popup.render(this.popupData, this.popupError, this.mapPopupAttributes());
                 if(!active) {
                     for(let element = this.ref.parentElement; element; element = element.parentElement) {
                         element.addEventListener('scroll', this.scrollFollow);
                     }
                     this.focusInterval = setInterval(() => {
-                        this.ref.ownerDocument.activeElement !== this.ref && !this.resizeOngoing && !popup.$lastDom.contains(this.ref.ownerDocument.activeElement) && this.hidePopup();
+                        this.ref.ownerDocument.activeElement !== this.ref && !this.resizeOngoing && !this.popupContainer.contains(this.ref.ownerDocument.activeElement) && this.hidePopup();
                     }, 30);
                 }
             }
@@ -851,25 +853,26 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
             if(e.key === 'Enter') {
                 this.renderPopup(true);
             }
-            if(e.key === 'Tab' && this.popup.$lastDom ) {
-                (e.target === this.ref ? this.popup.$lastDom.firstChild : this.ref).focus();
+            if(e.key === 'Tab' && this.popupContainer && this.popupContainer.parentNode ) {
+                (e.target === this.ref ? this.popupContainer.firstChild : this.ref).focus();
                 e.preventDefault();
             }
         }
         mapPopupAttributes() {
-            let { offsetTop: offsetTop, offsetLeft: offsetLeft, style: style, ...rest } = this.popupAttributes;
+            let { offsetTop: offsetTop, offsetLeft: offsetLeft, style: style, editorClass: editorClass, ...rest } = this.popupAttributes;
             let r = this.ref.getBoundingClientRect(), op = this.ref.offsetParent, wnd = this.ref.ownerDocument.defaultView||window;
             let display = (op.scrollTop > this.ref.offsetTop + this.ref.offsetHeight || op.scrollTop + op.clientHeight < this.ref.offsetTop + this.ref.offsetHeight) ? 'none' : '';
             let top = (r.bottom + 2 + (wnd.scrollY||wnd.pageYOffset) + (offsetTop||0)) + 'px';
             let left = (r.left + (wnd.scrollX||wnd.pageXOffset) + (offsetLeft||0)) + 'px';
             return {
-                class: 'edit-popup-textarea',
+                class: editorClass,
                 events: { onKeyDown: e => this.popupEvent(e) },
-                ref: dom => this.appendResizer(dom.parentNode),
+                ref: dom => this.setupPopup(dom.parentNode),
                 attributeMapper: () => ({ ...rest, style : (style ? style + ';' : '') + 'display:' + display + ';top:' + top + ';left:' + left + ';' + this.memorizedDims })
             }
         }
-        appendResizer(div) {
+        setupPopup(div) {
+            this.popupContainer = div;
             let document = this.ref.ownerDocument, window = document.defaultView||window;
             let rect = div.getBoundingClientRect();
             let width = rect.right - rect.left;

@@ -37,7 +37,8 @@ define('forms/test',[ "dfe-core",
                                 ta: {
                                     style: 'width: 200px; font-size: 14px; height: 100px;',
                                     offsetLeft: 10,
-                                    class: 'popup-editor-wrapper'
+                                    class: 'popup-editor-wrapper',
+                                    editorClass: 'edit-popup-textarea'
                                 }
                             }) 
                         }),
