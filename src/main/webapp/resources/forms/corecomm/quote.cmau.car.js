@@ -112,9 +112,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
         }            
         static fields() {
             return Form.field(TabS, "locs", {
-                get: $$ => $$('policy.cmau.location'),
-                val: $$ => $$.required('.location'),
-                atr: () => ({
+                atr: () => fields.simple('policy.cmau.location', {
                     haclass: 'tab-item-active',
                     focusnew: true,
                     rowclass$header: 'tab-header',
@@ -145,9 +143,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     style: "position: absolute; right: 5px; top: 5px"
                 } ]
             }) ]), Form.field(TabS, "cars", {
-                get: $$ => $$('.car'),
-                val: $$ => $$.required('.car'),
-                atr: () => ({
+                atr: () => fields.simple('.car', {
                     haclass: 'tab-item-active',
                     focusnew: true,
                     rowclass$header: 'tab-header'

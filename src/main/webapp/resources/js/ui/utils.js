@@ -4,41 +4,44 @@ require.config({
         echarts: 'ui/echarts-en.min'
     },
     bundles: {
-        'dfe-core' : ['dfe-core'],
-        'components/generic' : ['components/base', 
-                                'components/dfe-runtime', 
-                                'components/labeled-component', 
-                                'components/switch', 
-                                'components/editbox', 
-                                'components/labeled-editbox', 
-                                'components/labeled-switch', 
-                                'components/editbox-money', 
-                                'components/labeled-editbox-money', 
-                                'components/dropdown', 
-                                'components/labeled-dropdown', 
-                                'components/button', 
-                                'components/container', 
-                                'components/div', 
-                                'components/html-form', 
-                                'components/div-r', 
-                                'components/tab-d', 
-                                'components/tab-s', 
-                                'components/div-c', 
-                                'components/inline-rows',
-                                'components/checkbox', 
-                                'components/labeled-checkbox', 
-                                'components/labeled-radiolist', 
-                                'components/radiolist', 
-                                'components/label', 
-                                'components/html',
-                                'components/span',
-                                'components/table',
-                                'components/text',
-                                'components/textarea',
-                                'components/editbox-popup',
-                                'components/div-button',
-                                'components/multioption',
-                                'components/either' ]
+        'dfe-core' : ['dfe-core', 'core-validation-component'],
+        'components/generic' : [ 
+            'components/base',
+            'components/button',
+            'components/checkbox',
+            'components/child-runtime',
+            'components/container',
+            'components/div',
+            'components/div-button',
+            'components/div-c',
+            'components/div-r',
+            'components/dropdown',
+            'components/editbox',
+            'components/editbox-money',
+            'components/editbox-popup',
+            'components/either',
+            'components/html',
+            'components/html-form',
+            'components/iframe',
+            'components/inline-rows',
+            'components/label',
+            'components/labeled',
+            'components/labeled-checkbox',
+            'components/labeled-component',
+            'components/labeled-dropdown',
+            'components/labeled-editbox',
+            'components/labeled-editbox-money',
+            'components/labeled-radiolist',
+            'components/multioption',
+            'components/radiolist',
+            'components/span',
+            'components/tab-d',
+            'components/table',
+            'components/tab-s',
+            'components/text',
+            'components/textarea',
+            'components/validation-component' 
+        ]
     }
 });
 
@@ -261,8 +264,8 @@ function dfe_navigate(form, action) {
 	function _extend(from, to) { 
 	    for (var key in from) to[key] = from[key]; return to;
 	}
-	function postModel(runtime, onsuccess, onerror) {
-		typeof runtime.form.onpost == 'function' && runtime.form.onpost.call(runtime.form, _extend(runtime.model_proxy, function(p) { return arguments.callee.get(p); }), runtime);
+	function postModel(model, onsuccess, onerror) {
+		//typeof runtime.form.onpost == 'function' && runtime.form.onpost.call(runtime.form, _extend(runtime.model_proxy, function(p) { return arguments.callee.get(p); }), runtime);
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', '/DfeServlet.srv?a=model');
 		xhr.setRequestHeader("Content-type", "application/json");
@@ -270,34 +273,39 @@ function dfe_navigate(form, action) {
 			try {
 			    if(xhr.readyState == 4 && xhr.status == 200) {
 			    	var r = JSON.parse(xhr.responseText);
-			    	runtime.notifyControls(runtime.findControls(r.data.map(function(v) {return v.field})), 'validate');
 			    	(r.result ? onsuccess : onerror)(r, 'success');
 			    }
 			    xhr.readyState == 4 && xhr.status != 200 && onerror(xhr, xhr.statusText, e);
 			} catch(e) { onerror(xhr, 'error', e) }
 		}		
-		xhr.send(JSON.stringify(runtime.model_proxy.data));
+		xhr.send(JSON.stringify(model));
 	}
 	try {
-		var runtime = document.querySelector('div[dfe-form]')._dfe_runtime;
-		var arf = runtime.model_proxy.data;
-	    form.policy_formname.value = arf.policy[0].formname;
+        var rootElement = document.querySelector('div[dfe-form]');
+		var runtime = rootElement._dfe_runtime;
+		var model = eval(rootElement.getAttribute("dfe-model"));
+	    form.policy_formname.value = model.policy[0].formname;
 	    if(action == 'next') {
 	    	form.action.value = 'next_experimental';
 	     	postModel(
-	     		runtime, 
+                model, 
 	     		function(){ 
 	     			form.submit() 
 	     		}, 
 	     		function(xhr){
+                    if(xhr instanceof XMLHttpRequest) {
+                        if(xhr.status == 401) {
+                            form.action = '/aex/session_expire.jsp';
+                            form.submit();
+                        } else {
+                            xhr.responseText && displayServerError(xhr.responseText);
+                            xhr.data && console.log(xhr.data);
+                        }
+                    } else {
+                        console.log(xhr);
+                        runtime.nodes.forEach(function(node) { node.notify({action: 'validate'}) });
+                    }
 	     			document.getElementById('button_next').disabled = false;
-	     			if(xhr.status == 401) {
-	     				form.action = '/aex/session_expire.jsp';
-	     				form.submit();
-	     			} else {
-	     				xhr.responseText && displayServerError(xhr.responseText);
-		     			xhr.data && console.log(xhr.data);
-	     			}
 		     	}
 	     	);
 	    }
@@ -337,7 +345,7 @@ DFE.nav = function () {
     };
 } ();
 
-define('ui/utils', ['dfe-core', 'module'], function(core, m) {
+define(['dfe-core', 'module'], function(core, m) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
     function setupNode(node) {
 		var formName = node.getAttribute('dfe-form'), args = node.getAttribute('dfe-arguments'), model = node.getAttribute('dfe-model'), cur = node._dfe_runtime;
@@ -404,9 +412,8 @@ var ajaxCache = (function() {
         },
         get: function(opt) {
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
-                var u = //'https://cors-anywhere.herokuapp.com/
-                        'https://arrowheadexchange.com/AJAXServlet.srv?';
-                //var u = '/AJAXServlet.srv?';
+                //var u = //'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
+                var u = '/AJAXServlet.srv?';
                 for(var o in opt)
                     (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
                         u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';

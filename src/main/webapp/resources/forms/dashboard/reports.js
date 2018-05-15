@@ -29,7 +29,6 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
                 get: $$ => $$('reports').concat($$.shadow('reports')),
                 atr: $$ => ({
                     haclass: 'tab-report-active',
-                    rowclass: 'tab-report-content',
                     focusnew: false,
                     style: 'display: flex; flex-flow: row; position: relative'
                 })
@@ -53,23 +52,25 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
                 })
             }), Form.field(Label, "field-6", {
                 get: $$ => $$('.ReportDesc'),
-                atr: $$ => ({
-                    class: 'link-button'
-                })
-            }) ]), Form.field(Iframe, "field-3", {
-                get: $$ => $$('.ReportLink'),
-                atr: $$ => ({
-                    style: 'width: 100%; height: 100%; border: 1px solid #aaa; border-radius: 5px'
-                })
-            }), Form.field(Label, "field-4", {
-                get: $$ => window.clipboardData && '*Right-click on item > copy shortcut to open add new report link suggestion window',
-                atr: $$ => ({
-                    style: 'margin-top: 2px; font-size: 10px'
-                }),
-                layout: [ {
-                    style: "float: right"
-                } ]
-            }) ]) ]);
+                layout: [{class: 'link-button', style: 'margin: 3px'}]
+            }) ]),
+                Form.field(Div, {layout: [{class: 'tab-report-content'}]},
+                Form.field(Iframe, "field-3", {
+                    get: $$ => $$('.ReportLink'),
+                    atr: $$ => ({
+                        style: 'width: 100%; height: 100%; border: 1px solid #aaa; border-radius: 5px'
+                    })
+                }), 
+                Form.field(Label, "field-4", {
+                    get: $$ => window.clipboardData && '*Right-click on item > copy shortcut to open add new report link suggestion window',
+                    atr: $$ => ({
+                        style: 'margin-top: 2px; font-size: 10px'
+                    }),
+                    layout: [ {
+                        style: "float: right"
+                    } ]
+                }) )
+            ]) ]);
         }
         static editLink($$) {
             let store = () => jq.get('/AJAXServlet.srv?method=DashboardScriptHelper&action=updateReports&payload=' + encodeURIComponent(JSON.stringify($$.get('reports').map(px => px.data))));
@@ -168,15 +169,13 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
 
             span.reportrow-edit-button {
                 width: 12px; 
-                height: 12px; 
-                margin: 3px;
+                height: 12px;
                 pointer-events: all;
             }
 
             span.reportrow-edit-button-fixed {
                 width: 12px; 
-                height: 12px; 
-                margin: 3px;
+                height: 12px;
                 pointer-events: none; 
                 visibility: hidden;
             }

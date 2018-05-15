@@ -122,17 +122,21 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
     
     function setupNotesHint() {
         jq(document).on('mousemove', function(e) {
-            let c = jq('.dashboard-quotes-popup'), p = c.parent()[0], t = e.target, node = Core.nodeFromElement(t);
-            p && p != t && (!jq.contains(p, t) || e.target.tagName != 'LABEL') && c.remove();
-            if ( node && c.parent().length === 0 && node.form instanceof DetailsGridForm ) {
-                let $$ = node.model, text = '', fld = node.field.name;
-                if (fld == 'producerCode') text = $$('.producerName');
-                if (fld == 'govClass') text = $$('.govCCDescription');
-                if (fld == 'notes') ($$ = DetailsGridForm.firstUserNote($$)) && (text = $$.get('.subject'));
-                text && jq('<label>').appendTo(jq('<div>').appendTo(jq(t)).attr({
-                    class: 'dashboard-quotes-popup'
-                })).text(text);
-            }
+            let c = jq('.dashboard-quotes-popup'), p = c.parent()[0], t;
+            for(t = e.target; t && t.tagName !== 'TD'; t = t.parentNode );
+            if(t) {
+                let node = Core.nodeFromElement(t);
+                p && (p != t && !jq.contains(p, t) || e.target.tagName === 'DIV') && c.remove();
+                if ( e.target.tagName !== 'DIV' && node && c.parent().length === 0 && node.form instanceof DetailsGridForm ) {
+                    let $$ = node.model, text = '', fld = node.field.name;
+                    if (fld == 'producerCode') text = $$('.producerName');
+                    if (fld == 'govClass') text = $$('.govCCDescription');
+                    if (fld == 'notes') ($$ = DetailsGridForm.firstUserNote($$)) && (text = $$.get('.subject'));
+                    text && jq('<label>').appendTo(jq('<div>').appendTo(jq(t)).attr({
+                        class: 'dashboard-quotes-popup'
+                    })).text(text);
+                }
+            } else c.remove();
         });
     }
     setupNotesHint();

@@ -15,10 +15,10 @@ define(['ui/utils', 'module'], function(uiUtils, m){
 	        cb();
 	    })
 	}
-	var map = new Map(), root = m.uri.replace(m.id+'.js',''), cloneSvg = +window.navigator.userAgent.replace(/^.+Firefox\/(\d+)/,'$1') < 56;
+	var map = new Map(), root = m.uri.replace(/[^/]*\/\.\.\/([^/]*)/g,'$1/../$1').replace(m.id+'.js',''), cloneSvg = +window.navigator.userAgent.replace(/^.+Firefox\/(\d+)/,'$1') < 56;
 
 	return {	load : function(source) {
-					source = source||'ui/shapes';
+					source = source||'shapes';
 					var load = map.get(source);
 					load || map.set(source, load = new Promise(function(resolve, reject){ loadHtml(root + source + '.html', resolve) }));
 					return load;
