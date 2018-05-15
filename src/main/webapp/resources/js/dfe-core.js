@@ -317,7 +317,16 @@ define('dfe-core', function() {
 	//###############################################################################################################################
     
 
-    let DOMEvents = [{name: 'onKeyDown', event: 'keydown'}, {name: 'onKeyUp', event: 'keyup'}, {name: 'onChange', event: 'change'}, {name: 'onClick', event: 'click'}, {name: 'onMouseEnter', event: 'mouseenter'}, {name: 'onMouseLeave', event: 'mouseleave'}, {name: 'onBlur', event: 'blur'}];
+    let DOMEvents = [
+        {name: 'onKeyDown', event: 'keydown'}, 
+        {name: 'onKeyUp', event: 'keyup'}, 
+        {name: 'onChange', event: 'change'}, 
+        {name: 'onClick', event: 'click'}, 
+        {name: 'onMouseEnter', event: 'mouseenter'}, 
+        {name: 'onMouseLeave', event: 'mouseleave'}, 
+        {name: 'onBlur', event: 'blur'}, 
+        {name: 'onFocus', event: 'focus'}
+    ];
     class DOM {   
         static reconcileAttributes(type, domElement, newAttributes, oldAttributes) {
             if(newAttributes.class != oldAttributes.class) {
@@ -426,7 +435,7 @@ define('dfe-core', function() {
         }
         
         static batchRender(nodes) {
-            nodes.forEach(node => node.render());
+            nodes.forEach(node => node.render(node.lastData, node.lastError, node.attributes));
         }
         
         static nodeFromElement(domElement) {
@@ -497,7 +506,9 @@ define('dfe-core', function() {
             )
             return sub;
         }
-        onUpdate(data, error, attributes) {}
+        onUpdate(data, error, attributes) {
+            
+        }
     }
     
     class Field {
@@ -589,15 +600,15 @@ define('dfe-core', function() {
                 lastAttachedChildren: new Set()
             })            
             let control = new (field.component)(this);
-            this.key = (field.name + '-' + unboundModel.data.key);
+            this.key = field.name + '-' + unboundModel.data.key;
             this.form = control instanceof Form ? control : parent.form;
             this.control = control;
         }
-        render() {
+        render(lastData, lastError, lastAttributes) {
             if( this.shouldRender && this.isAttached() ) {
                 this.shouldRender = false;
-                let { attributeMapper: mapper, ...rest} = this.attributes;
-                let renderStructure = this.control.render(this.lastData, this.lastError, rest, this.children);
+                let { attributeMapper: mapper, ...rest} = lastAttributes;
+                let renderStructure = this.control.render(lastData, lastError, rest, this.children);
                 let attributes = this.field.layout||[], layoutIndex = 0;
                 if( this.elementInfo.attributeMapper ) {
                     let f = mapper;
@@ -633,8 +644,8 @@ define('dfe-core', function() {
                         st.dom = tail = use ? lst.dom : this.$parentDom.insertBefore(
                             document.createElement(this.elementInfo.type), tail ? tail.nextSibling : this.$parentDom.firstChild
                         );
-                        st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : [], attachedChildren);
                         DOM.reconcileAttributes(this.elementInfo.type, st.dom, st.attributes, use ? lst.attributes : {});
+                        st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : [], attachedChildren);
                         use || st.attributes.ref && st.attributes.ref(st.dom);
                     }
                 }
@@ -643,14 +654,6 @@ define('dfe-core', function() {
                 this.lastRenderStructure.forEach( lst => lst.used || lst instanceof Node || this.$parentDom.removeChild(lst.dom) );
                 this.lastAttachedChildren.forEach( child => attachedChildren.has(child) || child.setDom(null, null, null) );
                 this.lastAttachedChildren = attachedChildren;
-                /*this.lastRenderStructure.forEach( lst => {
-                    if( lst instanceof Node ) {
-                        lst.used || attachedChildren.has(lst) || lst.setDom(null, null, null);
-                        delete lst.used;
-                    } else {
-                        lst.used || this.$parentDom.removeChild(lst.dom);
-                    }
-                });*/
                 this.$followingChildNode = followingChildNode;
                 this.lastRenderStructure = renderStructure;
             }
@@ -1030,6 +1033,8 @@ define('dfe-core', function() {
         startRuntime: Runtime.startRuntime,
         createElement: createElement,
         nodeFromElement: DOM.nodeFromElement,
+        RenderNode: Node,
+        reconcileDOMAttributes: DOM.reconcileAttributes,
         Component: Component
     }
 });

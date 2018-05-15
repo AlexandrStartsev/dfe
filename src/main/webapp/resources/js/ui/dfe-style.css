@@ -145,7 +145,6 @@ th {
 .dfe-inline-section {
     width: 100%;
     box-sizing: border-box;
-    margin: 0px 2px;  /* none for tab */
     background: white!important;
     padding: 0px!important;
 }

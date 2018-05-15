@@ -61,11 +61,9 @@ define('components/div', ['dfe-core', 'components/base'], function(Core, BaseCom
 define('components/inline-rows', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
     return class InlineRows extends BaseComponent {         
         render(data, error, attributes, children) {
-            let { element: cellElement, singleColumn: singleColumn } = attributes;
-            let rows = [], current;
-            if(['div', 'span', 'td'].indexOf(cellElement) === -1) {
-                cellElement = 'td';
-            }
+            let { singleColumn: singleColumn } = attributes;
+            let rows = [], current, type = this.$node.elementInfo.type;
+            let cellElement = type === 'div' || type === 'span' ? type : 'td';
             children.forEach( 
                 (map, row) => map.forEach( 
                     child => {
@@ -491,7 +489,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                 ...rest
             } = attributes, nextRows = new Set();
             let head = Core.createElement('div', { class: headerClass, style : headerStyle });
-            let body = Core.createElement('div', { class: rowClass, style : rowStyle });
+            let body = []; //Core.createElement('div', { class: rowClass, style : rowStyle });
             this.activeTab = data.some(proxy => this.activeTab === proxy.data.key) ? this.activeTab : data[0] && data[0].data.key;
             data.forEach(proxy => {
                 let key = proxy.data.key;
@@ -512,7 +510,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                                         onClick: () => this.setActiveTab(row.key)
                                     })))
                                 } else {
-                                    row.key === this.activeTab && body.children.push( Core.createElement('div', child) );
+                                    row.key === this.activeTab && body.push( Core.createElement('div', child) ); //body.children.push( Core.createElement('div', child) );
                                     //body.children.push( Core.createElement('div', child, layout => row.key === this.activeTab ? layout : ({...layout, style: 'display: none'}) ) );
                                 }
                             }
@@ -520,7 +518,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                     }
                 }
             )
-            return Core.createElement('div', rest, [head, body]);
+            return Core.createElement('div', rest, [head, ...body]);
         }
     }
 })
@@ -682,10 +680,13 @@ define('components/textarea', ['dfe-core', 'components/editbox', 'components/val
 define('components/child-runtime', ['dfe-core'], function(Core) {
     return class ChildRuntime extends Core.Component {
         render(data, error, attributes, children) {
-            let { form: formName, editTarget: editTarget, ...rest } = attributes;
+            let { form: formName, editTarget: editTarget, ref: ref, ...rest } = attributes;
             let model = data[0]||{};
             ChildRuntime.setDOMAttributes(this.ref, formName, editTarget, model);
-            return Core.createElement('div', { ...rest, ref: dom => ChildRuntime.setDOMAttributes(this.ref = dom, formName, editTarget, model) });
+            return Core.createElement('div', { 
+                ...rest, 
+                ref: dom => ( ref && ref(dom), ChildRuntime.setDOMAttributes(this.ref = dom, formName, editTarget, model) )
+            });
         }
         destroy() {
             let rt = this.ref && this.ref._dfe_runtime;
@@ -797,125 +798,162 @@ define('components/labeled-radiolist', ['dfe-core', 'components/radiolist', 'com
     }
 })
 
-/*  TODO: 
-
-define('components/editbox-popup', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
-    return _extend({
-        cname: 'editbox-P',
-        render: function (nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                var rt = this.runtime(control), self = this;
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('input'))._dfe_ = control;
-                    uiUtils.addEventListener(control.ui, 'focus', function(e) { self.showPopup(control) });
-                    uiUtils.addEventListener(control.ui, 'click', function(e) { self.showPopup(control) });
-                    uiUtils.addEventListener(control.ui, attrs.trigger || 'keyup', function(e) { control.currentValue === control.ui.value || control.component.store(control, control.ui.value) });
-                    uiUtils.addEventListener(control.ui, 'keydown', function(e) { 
-                        (e.key == 'Esc' || e.key == 'Escape') && rt.ta && control.closePopup();
-                        e.key == 'Enter' && (e.preventDefault(), self.showPopup(control), self.getPopupActiveElement(control).focus());
-                        e.key == 'Tab' && rt.ta && (self.getPopupActiveElement(control).focus(), e.preventDefault());
-                    });
-                }
-                this.setValue(control, data, errs, attrs);
-                this.setAttributes(control, errs, attrs);
-                this.appendError(control, nodes[0], errs, attrs);
-                this.setPopupAttributes(control, attrs.ta||{}, errs);
-                this.updatePopupContent(control, data, attrs);
-            }
-        },
-        setValue: function(control, data, errs, attrs) {
-            control.ui.value === data || (control.ui.value = data);
-            control.currentValue = control.ui.value;
-        },
-        updatePopupContent: function(control, data, attrs) {
-            var rt = this.runtime(control);
-            rt.ta && rt.popup && !rt.ta.contains(control.ui.ownerDocument.activeElement) && (rt.popup.value == data || (rt.popup.value = data, rt.popup.selectionStart = rt.popup.selectionEnd = 0, rt.popup.scrollTop = 0));
-        },
-        getPopupUi: function(control) {
-            var attrs = control.model.attrs, rt = this.runtime(control), p = rt.popup;
-            if(!rt.popup) { 
-                rt.popup = p = control.ui.ownerDocument.createElement('textarea');
-                uiUtils.setAttribute(p, 'class', 'edit-popup-textarea');
-                uiUtils.addEventListener(p, attrs.trigger || 'keyup', function(){ 
-                    control.component.store(control, control.ui.value = p.value);
-                    control.currentValue = p.value;
-                });
-                uiUtils.addEventListener(p, 'keydown', function(e) { 
-                    (e.key == 'Esc' || e.key == 'Escape') && (control.ui.focus(), control.closePopup()) 
-                    e.key == 'Tab' && (control.ui.focus(), e.preventDefault()); // ??
-                });
-            }
-            return p;
-        },
-        onResize: function(control) {},
-        getPopupActiveElement: function(control) { 
-            return this.runtime(control).popup 
-        },
-        onClosePopup: function(control) {},
-        purge: function (control) { control.closePopup && rt.ta && control.closePopup(); this.emptyUI(control); },
-        showPopup: function(control) {
-            var rt = this.runtime(control), scrollFollow, escUnf, doc = control.ui.ownerDocument, self = this;
-            if(control.ui && !rt.ta) {
-                this.createPopup(control);
-                this.updatePopupContent(control, control.data, control.model.attrs);
-                (scrollFollow = function() {
-                    var r = control.ui.getBoundingClientRect(), op = control.ui.offsetParent, wnd = doc.defaultView||window;
-                    rt.ta.style.display = (op.scrollTop > control.ui.offsetTop + control.ui.offsetHeight || op.scrollTop + op.clientHeight < control.ui.offsetTop + control.ui.offsetHeight) ? 'none' : '';
-                    rt.ta.style.top = (r.bottom + 2 + (wnd.scrollY||wnd.pageYOffset) + (rt.ta_t||0)) + 'px';
-                    rt.ta.style.left = (r.left + (wnd.scrollX||wnd.pageXOffset) + (rt.ta_l||0)) + 'px';
-                })();
-                for(var e = control.ui; e; e = e.parentElement) e.addEventListener('scroll', scrollFollow);
-                var i = setInterval(function() {
-                    doc.activeElement != control.ui && !rt.resizeOngoing && ! rt.ta.contains(doc.activeElement) && control.closePopup();
-                }, 30);
-                control.closePopup = function() {
-                    for(var e = control.ui; e; e = e.parentElement) uiUtils.removeEventListener(e, 'scroll', scrollFollow);
-                    uiUtils.removeEventListener(self.getPopupActiveElement(control), 'keydown', escUnf);
-                    clearInterval(i);
-                    self.onClosePopup(control);
-                    uiUtils.removeNode(rt.ta);
-                    delete rt.ta;
-                }
-                uiUtils.addEventListener(self.getPopupActiveElement(control), 'keydown', (escUnf = function(e) { 
-                    e.key == 'Escape' && !e.defaultPrevented && (control.ui.focus(), control.closePopup());
-                }));
-            }    
-        },
-        createPopup: function(control) {
-            var rt = this.runtime(control), doc = control.ui.ownerDocument, attrs = control.model.attrs, handle, self = this;
-            rt.ta = doc.createElement('div'); 
-            rt.ta.appendChild(this.getPopupUi(control));
-            rt.ta.appendChild(handle = document.createElement('span'));
-            doc.getElementsByTagName('body')[0].appendChild(rt.ta);
-            this.setPopupAttributes(control, attrs.ta||{}, control.error);
-            handle.setAttribute('class', 'ui-resizeable-handle-br');
-            handle.addEventListener('mousedown', function(ie) {
-                rt.resizeOngoing = 1;
-                var ox = ie.screenX, oy = ie.screenY, w = rt.ta.offsetWidth, h = rt.ta.offsetHeight, move, up;
-                document.addEventListener('mousemove', move = function(me) {
-                    self.onResize(control);
-                    rt.ta.style.width = rt.ta_w = (w + me.screenX - ox) + 'px';
-                    rt.ta.style.height = rt.ta_h = (h + me.screenY - oy) + 'px';
-                    me.preventDefault(), window.getSelection().removeAllRanges();
-                });
-                document.addEventListener('mouseup', up = function(me) {
-                    rt.resizeOngoing = 0;
-                    uiUtils.removeEventListener(document, 'mousemove', move);
-                    uiUtils.removeEventListener(document, 'mouseup', up);
-                    self.getPopupActiveElement(control).focus();
-                });
-            });
-        },
-        setPopupAttributes: function(control, attrs, errs) {
-            var rt = this.runtime(control);
-            if(rt.ta) {
-                var st = rt.ta.style, w = st.width||rt.ta_w, h = st.height||rt.ta_h, t = st.top, l = st.left;
-                rt.ta_l = attrs.offsetLeft, rt.ta_t = attrs.offsetTop; 
-                attrs['class'] = (attrs['class']||'') + (errs && attrs.eclass ? ' ' + attrs.eclass : '');
-                this.setAttributesUI(rt.ta, errs, attrs);
-                w && (st.width = w), h && (st.height = h), t && (st.top = t), l && (st.left = l);
+define('components/editbox-popup', ['dfe-core', 'components/editbox', 'components/textarea'], function(Core, Editbox, Textarea) {
+    class EditboxPopup extends Editbox {
+        constructor(node) {
+            super(node);
+            let editBoxKeyDownEvent = this.events.onKeyDown;
+            this.popup = new Core.RenderNode( node, { component: Textarea, set: (_, value) => this.store(this.setMapper(value)) }, node.unboundModel );
+            this.ref = null;
+            this.focusInterval = null;
+            this.popupAttributes = {};
+            this.scrollFollow = () => this.renderPopup();
+            this.memorizedDims = '';
+            this.events = {
+                ...this.events,
+                onKeyDown: e => (this.popupEvent(e), editBoxKeyDownEvent(e)),
+                onFocus: () => this.renderPopup(true)
             }
         }
-    }, CEditbox, _base())
+        render(value, error, attributes, children) {
+            let { ta : popupAttributes, ref: ref, ...rest } = attributes;
+            this.popupAttributes = popupAttributes;
+            this.renderPopup();
+            return super.render(value, error, { ref: dom => (this.ref = dom, ref && ref(dom)), ...rest }, children);
+        }
+        renderPopup(show) {
+            let popup = this.popup, active = popup.$parentDom;
+            if( active || show ) {
+                popup.shouldRender = true;
+                popup.setDom({ type: 'div' }, this.ref.ownerDocument.body, null);
+                popup.render(this.getMapper(this.$node.lastData), this.$node.lastError, this.mapPopupAttributes());
+                if(!active) {
+                    for(let element = this.ref.parentElement; element; element = element.parentElement) {
+                        element.addEventListener('scroll', this.scrollFollow);
+                    }
+                    this.focusInterval = setInterval(() => {
+                        this.ref.ownerDocument.activeElement !== this.ref && !this.resizeOngoing && !popup.$lastDom.contains(this.ref.ownerDocument.activeElement) && this.hidePopup();
+                    }, 30);
+                }
+            }
+        }
+        hidePopup() {
+            clearInterval(this.focusInterval);
+            this.popup.setDom({ type: 'div' }, null, null);
+            for(let element = this.ref.parentElement; element; element = element.parentElement) {
+                element.removeEventListener('scroll', this.scrollFollow);
+            }
+        }
+        popupEvent(e) {
+            if(e.key === 'Esc' || e.key === 'Escape') {
+                this.hidePopup();
+            }
+            if(e.key === 'Enter') {
+                this.renderPopup(true);
+            }
+            if(e.key === 'Tab' && this.popup.$lastDom ) {
+                (e.target === this.ref ? this.popup.$lastDom.firstChild : this.ref).focus();
+                e.preventDefault();
+            }
+        }
+        mapPopupAttributes() {
+            let { offsetTop: offsetTop, offsetLeft: offsetLeft, style: style, ...rest } = this.popupAttributes;
+            let r = this.ref.getBoundingClientRect(), op = this.ref.offsetParent, wnd = this.ref.ownerDocument.defaultView||window;
+            let display = (op.scrollTop > this.ref.offsetTop + this.ref.offsetHeight || op.scrollTop + op.clientHeight < this.ref.offsetTop + this.ref.offsetHeight) ? 'none' : '';
+            let top = (r.bottom + 2 + (wnd.scrollY||wnd.pageYOffset) + (offsetTop||0)) + 'px';
+            let left = (r.left + (wnd.scrollX||wnd.pageXOffset) + (offsetLeft||0)) + 'px';
+            return {
+                class: 'edit-popup-textarea',
+                events: { onKeyDown: e => this.popupEvent(e) },
+                ref: dom => this.appendResizer(dom.parentNode),
+                attributeMapper: () => ({ ...rest, style : (style ? style + ';' : '') + 'display:' + display + ';top:' + top + ';left:' + left + ';' + this.memorizedDims })
+            }
+        }
+        appendResizer(div) {
+            let document = this.ref.ownerDocument, window = document.defaultView||window;
+            let rect = div.getBoundingClientRect();
+            let width = rect.right - rect.left;
+            let height = rect.bottom - rect.top;
+            let handle = document.createElement('span');
+            div.appendChild(handle);
+            handle.setAttribute('class', 'ui-resizeable-handle-br');
+            handle.addEventListener('mousedown', e => {
+                this.resizeOngoing = true;
+                let ox = e.screenX, oy = e.screenY, move, up;
+                document.addEventListener('mousemove', move = e => {
+                    div.style.width = (width + e.screenX - ox) + 'px';
+                    div.style.height = (height + e.screenY - oy) + 'px';
+                    e.preventDefault(), window.getSelection().removeAllRanges();
+                    this.onResize();
+                });
+                document.addEventListener('mouseup', up = () => {
+                    this.resizeOngoing = false;
+                    div.querySelector("textarea, input").focus();
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('mouseup', up);
+                    rect = div.getBoundingClientRect(), width = rect.right - rect.left, height = rect.bottom - rect.top;
+                    this.memorizedDims = 'width:' + width + 'px;height:' + height + 'px';
+                });
+            });
+        }
+        onResize() {}
+        getMapper(value) { 
+            return value; 
+        }
+        setMapper(value) { 
+            return value; 
+        }
+    }
+    return EditboxPopup;
 })
+
+/* TODO: 
+define('components/typeahead', ['components/component', 'ui/utils', 'ui/jquery', 'ui/jquery-typeahead'], function(Component, uiUtils, jQuery) {
+	function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
+    return _extend({
+        cname: 'typeahead',
+        defaultOPTS: { source : {}, minLength: 1, maxItem: 8, maxItemPerGroup: 6, order: "asc", hint: true, searchOnFocus: true, debug: false, display: ['value','description'], template: '{{value}}: {{description}}', emptyTemplate: 'no result for {{query}}' },
+        render: function (nodes, control, data, errs, attrs, events) {
+            var rt = this.runtime(control), prevValue = '', self = this, s;
+            if(!control.ui) {
+                (control.ui = document.createElement('div'))._dfe_ = control;
+                control.ui.innerHTML = '<div class="typeahead__field"><span class="typeahead__query"><input type="search" autocomplete="off"/></span></div>';
+                control.ui.setAttribute('class', 'typeahead__container');
+                self.setEvents(control.ui, control, data, errs, attrs);
+                rt.node = control.ui.firstChild.firstChild.firstChild;
+                rt.memorizedItem = {};
+                opts = _extend( attrs && attrs.options, self.defaultOPTS );
+                opts.callback = { onClickAfter: function (node, a, item, event) { control.component.store(control, rt.memorizedItem = item) } }
+                jQuery(rt.node).typeahead( opts );
+                nodes && nodes[0].appendChild(control.ui);
+            }
+
+            if( data && data.status != 'loading' ) {
+                jQuery(rt.node).prop('disabled', false);
+                jQuery(rt.node).typeahead('hideloading');
+                jQuery(rt.node).typeahead( { source : { data : typeof attrs.filter == 'function' ? attrs.filter(data.items) : data.items} }, 'reload' );
+                if(!data.found) {
+                    if(data.items.length > 0) {
+                        control.component.store(control, rt.memorizedItem = {});
+                        jQuery(rt.node).typeahead('clean');
+                    } else {
+                        jQuery(rt.node).prop('disabled', true).val('No results found for given criteria');
+                    }
+                } else {
+                    var match = true; for(v in data.value) match = match && rt.memorizedItem[v] == data.found[v];
+                    match || (rt.memorizedItem = data.found);
+                    rt.node.value = rt.memorizedItem[attrs.display || 'description'];     //jQuery(rt.node).typeahead('close');
+                }
+            } else 
+                jQuery(rt.node).typeahead('showloading');
+        },
+        emptyUI: function(control) {
+            if(control.ui) {
+                jQuery(this.runtime(control).node).typeahead( 'destroy' );
+                Component.emptyUI(control);
+            }
+        }
+    }, Component, Component.base())
+})
+
 */

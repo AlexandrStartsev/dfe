@@ -16,32 +16,41 @@ define('forms/test',[ "dfe-core",
         "components/div-c",
         "components/radiolist",
         "components/textarea",
-        "components/dfe-runtime",
+       // "components/child-runtime",
         "components/div-button",
         "components/multioption",
-        "components/c-editbox",
+        "components/labeled-editbox",
         "components/span",
-        "components/inline-rows" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
-            Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea, ChildRuntime, DivButton, Multioption,
-            LabeledEditbox, Span, InlineRows ) {
+        "components/inline-rows",
+        "components/editbox-popup" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+            Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea,// ChildRuntime, 
+            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup ) {
     let Form = Core.Form;
     
-    /*return class TestForm extends Core.Form {
+    return class TestForm extends Core.Form {
         static fields() {
             return [
                 Form.field(Container, "field-1", [
                     Form.field(Container, "field-2", [
-                        Form.field(Editbox, "field-3", { atr: () => fields.simple('.vinnumber') }),
+                        Form.field(EditboxPopup, "field-3", { 
+                            atr: () => fields.simple('.vinnumber', {
+                                ta: {
+                                    style: 'width: 200px; font-size: 14px; height: 100px;',
+                                    offsetLeft: 10,
+                                    class: 'popup-editor-wrapper'
+                                }
+                            }) 
+                        }),
                     ]),
                     Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
                 ]),
                 Form.field(LabeledEditbox, "f", { 
-                    atr: () => fields.simple('.vinnumber', { vstrategy: 'always', text: "same but labeled: " })
+                    atr: () => fields.simple('.vinnumber', { text: "same but labeled: " })
                 })
             ]
         }
     }
-    */
+    
     /*return class TestForm extends Core.Form {
         static fields() {
             return [

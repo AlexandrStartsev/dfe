@@ -111,21 +111,16 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
             node.unboundModel.get('policy.cmau.location').forEach(loc => loc.defaultSubset('.car', carDefaults).forEach(car => car.get('.hasvin') == 'Y' && QuoteCmauCarForm.vehProcessVin(car)));
         }            
         static fields() {
-            return Form.field(Container, "root", {
-                get: $$ => $$('policy.cmau')
-            }, [ Form.field(TabS, "locs", 
-                            {
-                get: $$ => $$('.location'),
+            return Form.field(TabS, "locs", {
+                get: $$ => $$('policy.cmau.location'),
                 val: $$ => $$.required('.location'),
                 atr: () => ({
                     haclass: 'tab-item-active',
-                    focusnew: 1,
-                    headField: 'loc-hdr',
+                    focusnew: true,
                     rowclass$header: 'tab-header',
-                    rowclass: 'tab-body',
-                    rowstyle: 'display: block; width: 900px;'
+                    style: 'width: 900px;'
                 })
-            }, [ Form.field(DivButton, "loc-hdr", {
+            }, [ Form.field(DivButton, "header", {
                 get: $$ => `<a style="color: #444">Location #${$$.index(2) + 1}</a><br/>${$$('.city')} ${$$('.state')} ${$$('.zip')}-${$$('.zipaddon')}`.replace(/-$/, ''),
                 atr: $$ => ({
                     class: 'div-button',
@@ -154,17 +149,10 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 val: $$ => $$.required('.car'),
                 atr: () => ({
                     haclass: 'tab-item-active',
-                    focusnew: 1,
-                    headField: 'car-hdr',
-                    style: 'width: 100%;',
-                    rowclass$header: 'tab-header',
-                    rowclass: 'tab-body',
-                    rowstyle: 'padding: 0px; overflow: hidden;'
-                }),
-                layout: [ {
-                    style: "width: 100%; "
-                } ]
-            }, [ Form.field(DivButton, "car-hdr", {
+                    focusnew: true,
+                    rowclass$header: 'tab-header'
+                })
+            }, [ Form.field(DivButton, "header", {
                 get: $$ => `${$$('..state')} - Vehicle #${$$.index() + 1}<br/>${$$('.ModelYr')} ${$$('.make')}`,
                 atr: $$ => ({
                     class: 'div-button',
@@ -218,16 +206,16 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 })
             ), Form.field(LabeledRadiolist, "override", {
                 atr: () => fields.simple('.vinoverride', [], {
-                    cstyle: 'padding-left: 10px;',
                     orientation: 'horizontal',
                     text: 'Override VIN?'
-                })
+                }),
+                layout: [{style: 'padding-left: 16px;'}]
             }), Form.field(LabeledRadiolist, "custom", {
                 atr: () => fields.simple('.custom', [], {
-                    cstyle: 'padding-left: 10px;',
                     orientation: 'horizontal',
                     text: 'Vehicle Year, Make and/or Model is not available in dropdown'
-                })
+                }),
+                layout: [{style: 'padding-left: 16px;'}]
             }), Form.field(LabeledDropdown, "type-choice", {
                 atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
                     value: k,
@@ -304,12 +292,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
             ]), Form.field(InlineRows, "nonbus", { get: $$ => $$('.VehUseCd') == 'Furnished for Non-Business Use' ? [ $$ ] : [] }, [
                     Form.field(ApplyToAllField, "field-38", { config: {type: 'car', field: '.OperExp'} }, [
                         Form.field(LabeledDropdown, {
-                            atr: () => fields.choice('.OperExp',  [ 'No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs' ], { text: 'Operator Experience', cstyle: 'padding-left: 10px' })
+                            atr: () => fields.choice('.OperExp',  [ 'No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs' ], { text: 'Operator Experience' }),
+                            layout: [{style: 'padding-left: 16px;'}]
                         })
                     ]), 
                     Form.field(ApplyToAllField, "field-42", { config: {type: 'car', field: '.OperUse'} }, [
                         Form.field(LabeledDropdown, {
-                            atr: () => fields.choice('.OperUse',  [ 'Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles' ], { text: 'Operator Use', cstyle: 'padding-left: 10px' })
+                            atr: () => fields.choice('.OperUse',  [ 'Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles' ], { text: 'Operator Use' }),
+                            layout: [{style: 'padding-left: 16px;'}]
                         })
                     ]) ]) ]), 
             Form.field(Table, "truck", {
@@ -493,7 +483,8 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 Form.field(InlineRows, "amt-switch", { get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) && $$('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [] }, 
                     Form.field(ApplyToAllField, "field-92", { config: { field: '.StatedAmt'} }, 
                         Form.field(LabeledEditboxMoney, {
-                            atr: () => fields.simple('.StatedAmt', { format: '$9,999,999', text: 'Stated Amount', cstyle: 'padding-left: 10px;', style: 'width: 100px' })
+                            atr: () => fields.simple('.StatedAmt', { format: '$9,999,999', text: 'Stated Amount', style: 'width: 100px' }),
+                            layout: [{style: 'padding-left: 16px;'}]
                         })
                     )
                 ),
@@ -506,24 +497,28 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     Form.field(InlineRows, "pip-switch", { get: $$ => $$('.coverages.pip.IncludeInd') == 'Y' ? [ $$ ] : [] }, 
                         Form.field(ApplyToAllField, "field-100", { config: { field: '.coverages.pip.addedpipoption' } }, 
                             Form.field(LabeledDropdown, {
-                                atr: () => fields.choice('.coverages.pip.addedpipoption', [ 'Option 1', 'Option 2' ], { cstyle: 'padding-left: 10px', style: 'width: fit-content', text: 'Additional Personal Injury Protection' })
+                                atr: () => fields.choice('.coverages.pip.addedpipoption', [ 'Option 1', 'Option 2' ], { style: 'width: fit-content', text: 'Additional Personal Injury Protection' }),
+                                layout: [{style: 'padding-left: 16px;'}]
                             })
                         ),
                         Form.field(ApplyToAllField, "field-103", { config: { field: '.coverages.pip.broadpipnum' } }, 
                             Form.field(LabeledEditbox, {
-                                atr: () => fields.simple('.coverages.pip.broadpipnum', { pattern: '[0-9]{1,5}', cstyle: 'padding-left: 10px', style: 'width: 80px', text: 'Number of Individuals for Broadened PIP' })
+                                atr: () => fields.simple('.coverages.pip.broadpipnum', { pattern: '[0-9]{1,5}', style: 'width: 80px', text: 'Number of Individuals for Broadened PIP' }),
+                                layout: [{style: 'padding-left: 16px;'}]
                             })
                         ),
                         Form.field(InlineRows, "added-pip", { get: $$ => +$$('.coverages.pip.broadpipnum') > 0 ? [ $$ ] : [] }, 
                             Form.field(ApplyToAllField, "field-145", { config: { field: '.coverages.pip.addedbroadpipnum' } }, 
                                 Form.field(LabeledEditbox, {
-                                    atr: () => fields.simple('.coverages.pip.addedbroadpipnum', { pattern: '[0-9]{1,5}', cstyle: 'padding-left: 10px', style: 'width: 80px', text: 'Number of Named Individuals for Additional Broadened PIP' })
+                                    atr: () => fields.simple('.coverages.pip.addedbroadpipnum', { pattern: '[0-9]{1,5}', style: 'width: 80px', text: 'Number of Named Individuals for Additional Broadened PIP' }),
+                                    layout: [{style: 'padding-left: 16px;'}]
                                 })
                             ), 
                             Form.field(InlineRows, "added-pip-s", { get: $$ => +$$('.coverages.pip.addedbroadpipnum') ? [ $$ ] : [] }, 
                                 Form.field(ApplyToAllField, "field-149", { config: { field: '.coverages.pip.addedbpipoptioncd' } }, 
                                     Form.field(LabeledDropdown, {
-                                        atr: () => fields.choice('.coverages.pip.addedbpipoptioncd', [ 'Option 1', 'Option 2' ], { cstyle: 'padding-left: 10px', style: 'width: fit-content', text: 'Additional Broadened Personal Injury Protection' })
+                                        atr: () => fields.choice('.coverages.pip.addedbpipoptioncd', [ 'Option 1', 'Option 2' ], { style: 'width: fit-content', text: 'Additional Broadened Personal Injury Protection' }),
+                                        layout: [{style: 'padding-left: 16px;'}]
                                     })
                                 )
                             )
@@ -617,7 +612,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 layout: [ {
                     style: "display: inline-block"
                 } ]
-            }) ])  ]) ]) ]);
+            }) ])  ]) ]);
         }
         static vehProcessVin($$) {
             $$.get('.vinnumber').length == 17 ? ajaxCache.get({

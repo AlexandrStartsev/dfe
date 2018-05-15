@@ -20,7 +20,7 @@
                 }
             })
             var model = new Promise(function(resolve, reject) {
-                require(['../test/test-100-cars', 'dfe-core', 'ui/utils' ], function(json, core) {
+                require(['../test/test-arf-2', 'dfe-core', 'ui/utils' ], function(json, core) {
                     window.Core = core;
                     resolve(json);
                 })
@@ -74,7 +74,11 @@
     </head>
             
     <body> 
-        <span id='dfe' dfe-form='corecomm/quote.cmau.car' dfe-model='window.model' dfe-edit-target ></span>
+        <div style="position: relative; height:200px; width: 200px; overflow: scroll">
+        <br><br>
+        <span id='dfe' dfe-form='test' dfe-model='window.model' dfe-edit-target ></span>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        </div>
         <br>
         <br>
         <br>
