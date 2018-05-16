@@ -878,12 +878,48 @@ require.config({
 	baseUrl: __STATIC_ROOT__ + '/js/core/',
 	waitSeconds: 60,
 	bundles: {
-		'dfe-core' : ['dfe-core', 'core-validation-component' ], // we don't really need this anymore but it will save some verbosity when it comes to bundled components
+		'dfe-core' : ['dfe-core', 'core-validation-component' ], 
+        'components/generic' : [ 
+            'components/base',
+            'components/button',
+            'components/checkbox',
+            'components/child-runtime',
+            'components/container',
+            'components/div',
+            'components/div-button',
+            'components/div-c',
+            'components/div-r',
+            'components/dropdown',
+            'components/editbox',
+            'components/editbox-money',
+            'components/editbox-popup',
+            'components/either',
+            'components/html',
+            'components/html-form',
+            'components/iframe',
+            'components/inline-rows',
+            'components/label',
+            'components/labeled',
+            'components/labeled-checkbox',
+            'components/labeled-component',
+            'components/labeled-dropdown',
+            'components/labeled-editbox',
+            'components/labeled-editbox-money',
+            'components/labeled-radiolist',
+            'components/modal',
+            'components/multioption',
+            'components/radiolist',
+            'components/span',
+            'components/tab-d',
+            'components/table',
+            'components/tab-s',
+            'components/text',
+            'components/textarea',
+            'components/validation-component'
+        ]
 	},
 	map: {
-		components : {
-			'*' : 'core-validation-component'
-		},
+		//components : { '*' : 'core-validation-component' },
 		ui: {
 			'*' : '__noop__'
 		}

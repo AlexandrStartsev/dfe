@@ -1,4 +1,4 @@
-define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/labeled-radiolist", "components/labeled-editbox", "components/labeled-dropdown", "components/labeled-editbox-money", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/labeled-checkbox"], function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
+define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/labeled-radiolist", "components/labeled-editbox", "components/labeled-dropdown", "components/labeled-editbox-money", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/labeled-checkbox"], function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, LabeledComponent, Container, InlineRows, LabeledCheckbox) {
     let Form = Core.Form;
     
     let carDefaults = {
@@ -62,7 +62,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
     
     class VehDetailsChoice extends Form {
         static fields(children, config) {
-            return Form.field(Labeled, {
+            return Form.field(LabeledComponent, {
                 atr: () => ({
                     style: 'padding-left: 10px', 
                     html: `<a href="javascript:showHelp('/cmau_help.html#${config.helpId}')" class="css-qmark"></a>${config.label}`, 

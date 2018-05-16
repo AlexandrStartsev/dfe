@@ -32,6 +32,7 @@ require.config({
             'components/labeled-editbox',
             'components/labeled-editbox-money',
             'components/labeled-radiolist',
+            'components/modal',
             'components/multioption',
             'components/radiolist',
             'components/span',
@@ -40,8 +41,7 @@ require.config({
             'components/tab-s',
             'components/text',
             'components/textarea',
-            'components/validation-component',
-            'components/modal'
+            'components/validation-component'
         ]
     }
 });

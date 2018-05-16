@@ -1,12 +1,12 @@
-define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils', 'ui/jquery', 'uglify', 'dfe-common'], function(CEditPopup, ace, uiUtils, $, uglify, cmn) {
-	function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
+define('components/editbox-code', ['dfe-core', 'ace/ace', 'ui/jquery', 'uglify'], function(Core, ace, jQuery, uglify) {
     //little how-to: https://ace.c9.io/#nav=howto&api=virtual_renderer
     //https://github.com/ajaxorg/ace
     //https://github.com/ajaxorg/ace/wiki/Syntax-validation
     //_addEventListener(window, 'load', function() {
 
-    var aceEditor = ace.edit(document.createElement('div'));
+    let aceEditor = ace.edit(document.createElement('div'));
     aceEditor.container.style.width = aceEditor.container.style.height = '100%';
+    aceEditor.container.style.fontSize = '14px';
     aceEditor.setTheme('ace/theme/eclipse');  //dawn, eclipse, iplastic, kuroir, textmate
     aceEditor.setShowPrintMargin(false);
     aceEditor.$blockScrolling = Infinity;
@@ -27,10 +27,10 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
                 }, 
                 //useWorker: false, 
                 startedCb: function () {
-                	$('script').each(function(){ 
+                	jQuery('script').each(function(){ 
                 		if(this.src.match(/components\/editbox-code.js$/)) {
                 			var url = this.src, src = ['ui/utils', 'dfe-core', 'dfe-common', 'ace/dfe-hints']; // $('script').each( ... )
-                			$.when.apply($, src.map(function(s) { return $.get(url.replace(/components\/editbox-code/, s), 0, 0, 'text')})).done(function() {
+                			jQuery.when.apply(jQuery, src.map(function(s) { return jQuery.get(url.replace(/components\/editbox-code/, s), 0, 0, 'text')})).done(function() {
                 				for(var i = 0; i < arguments.length; i++) {
                 					aceEditor.ternServer.addDoc(src[i], arguments[i][0]);
                 					for(var b = uglify.parse(arguments[i][0]).body, j = 0, f, n; j < b.length; j++)
@@ -46,6 +46,7 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
             enableBasicAutocompletion: true,
         });
     });
+    
     function needsReturn(code) {
 	    try {
 	        var fbody = uglify.parse('function foo($$) {' + code + '}').body[0].body;
@@ -54,18 +55,100 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
 	            fbody[0].body.filter(function(b) { return !(b instanceof uglify.AST_LabeledStatement) }).length === 0 );
 	    } catch(e) { return true }
 	}
-    function formatPopupCode(text, func) {
-        if(func) {
-            text || (text =func.template)
-            text = uglify.parse('v=' + text).print_to_string({ quote_style: 3, beautify: true, comments: true }).replace(/^v = |;$/g,'');
-            if(text.indexOf('(') == 0) // Arrow function
-                text = text.substr(1, text.length - 2);
-            else
-                text = text.replace(/^function/,'function foo');
-        }
+    function formatCode(text, func) {
+        try {
+            if(func) {
+                text || (text = func.template)
+                text = uglify.parse('v=' + text).print_to_string({ quote_style: 3, beautify: true, comments: true }).replace(/^v = |;$/g,'');
+                if(text.indexOf('(') == 0) {// Arrow function
+                    text = text.substr(1, text.length - 2);
+                } else {
+                    text = text.replace(/^function/,'function foo');
+                }
+            }
+        } catch (e) {}
         return (text||'').toString();
     }
-    function formatInlineCode(text, func) {
+    
+    return class EditboxCode extends Core.Component {
+        constructor(node) {
+            super(node);
+            this.session = null;
+            this.func = null;
+            this.editorHousing = null;
+        }
+        render(data, error, attributes, children) {
+            let { func: func, lang: lang, ...rest } = attributes;
+            let code = formatCode(data.toString(), func);
+            
+            this.func = func;
+            if(!this.session) { 
+                this.session = ace.createEditSession( code, 'ace/mode/' + (lang||'javascript') );
+                this.session.on( 'change', () => this.store(this.session.getValue()) ); // new Error().stack.indexOf('.setValue') === -1 && 
+            } else {
+                aceEditor.container.contains(aceEditor.container.ownerDocument.activeElement) || this.session.setValue(code);
+            }
+            aceEditor.setSession(this.session);
+            return Core.createElement('div', { ...rest, ref: dom => this.editorHousing = dom, html: aceEditor.container })
+        }
+        destroy() {
+            if(this.session) {
+                this.session.destroy();
+            }
+        }
+        /*store(value) {
+            if(this.func) {
+                if(!value) {
+                    value = this.func.template || '() => 1';
+                }
+                try { 
+                    let r = uglify.parse('v=' + value).body[0].body.right; 
+                    if(r instanceof uglify.AST_Arrow || r instanceof uglify.AST_Function ) {
+                        super.store(value);
+                        return ;
+                    }
+                } catch (e) {}
+                try {
+                    let r = uglify.parse( 'v=' + value ).body[0].body.right; 
+                    if( r instanceof uglify.AST_Function ) {
+                        let ret = r.body.some( s => s instanceof uglify.AST_Return );
+                        r.body = [];
+                        value = r.print_to_string({ quote_style: 3, comments: true }).replace(/\{\}$/,'{' + (ret || needsReturn(value) ? 'return ' : '') + value + '}');
+                    } else { // Arrow
+                        let pv = uglify.parse(value);
+                        r.body = pv.body.length == 1 ? pv.body[0] : pv.body;
+                        value = r.print_to_string({ quote_style: 3, comments: true });
+                    }
+                } catch (e) { }
+            }
+            super.store(value);
+        }*/
+    }
+})
+
+// TODO: trainwreck... 
+
+define('components/editbox-code-popup', ['dfe-core', 'components/editbox-popup'], function(Core, EditboxPopup, ace, jQuery, uglify) {
+    
+    
+    class EditboxPopupCode extends EditboxPopup {
+        constructor(node){
+            super(node);
+            this.popup = Core.createNode( node, { component: Textarea, set: (_, value) => this.store(this.setMapper(value)) }, node.unboundModel );
+        }
+        onResize() {}
+        getMapper(value) { 
+            return value; 
+        }
+        setMapper(value) { 
+            return value; 
+        }
+        getPopupActiveElement() {
+            return this.popupContainer.firstChild;
+        }
+    }
+    
+        function formatInlineCode(text, func) {
         if(text!=0) {
             if(func) {
                 var ast = uglify.parse('v=' + text).body[0].body.right; // instanceof uglify.AST_Arrow
@@ -76,6 +159,9 @@ define('components/editbox-code', ['components/editbox-P', 'ace/ace', 'ui/utils'
         }
         return '';
     }
+    
+    return EditboxPopupCode;
+    
     return _extend({
         cname: 'editbox-code',
         setValue: function(control, data, errs, attrs) {

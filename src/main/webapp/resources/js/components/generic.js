@@ -229,19 +229,6 @@ define('components/label', ['dfe-core', 'components/validation-component'], func
     }
 }) 
 
-define('components/labeled-component', ['dfe-core', 'components/label'], function(Core, Label) {
-    return class Labeled extends Label {
-        render(data, error, attributes, children) {
-            let firstChild;
-            children.forEach(map => map.forEach(child => firstChild || (firstChild = child) ));
-            return [ 
-                ...super.render("not specified", error, attributes, children), 
-                firstChild
-            ]
-        }
-    }
-})
-
 define('components/editbox', ['dfe-core', 'components/validation-component', 'ui/date-picker-polyfill'], function(Core, ValidationComponent) {
     function Patterning (v, p) { 
         while(p && v != 0 && !(v.match(p) && v.match(p)[0] == v) ) {
@@ -742,6 +729,19 @@ define('components/multioption', ['dfe-core', 'components/validation-component']
     }   
 })
 
+define('components/labeled-component', ['dfe-core', 'components/label'], function(Core, Label) {
+    return class LabeledComponent extends Label {
+        render(data, error, attributes, children) {
+            let firstChild;
+            children.forEach(map => map.forEach(child => firstChild || (firstChild = child) ));
+            return [ 
+                ...super.render("not specified", error, attributes, children), 
+                firstChild
+            ]
+        }
+    }
+})
+
 define('components/labeled', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
     return class Labeled extends ValidationComponent {
         constructor(node) {
@@ -883,7 +883,7 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
                 this.renderPopup(true);
             }
             if(e.key === 'Tab' && this.popupContainer && this.popupContainer.parentNode ) {
-                (e.target === this.ref ? this.popupContainer.firstChild : this.ref).focus();
+                (e.target === this.ref ? this.getPopupActiveElement() : this.ref).focus();
                 e.preventDefault();
             }
         }
@@ -934,6 +934,9 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
         }
         setMapper(value) { 
             return value; 
+        }
+        getPopupActiveElement() {
+            return this.popupContainer.firstChild;
         }
     }
     return EditboxPopup;
@@ -989,3 +992,44 @@ define('components/typeahead', ['components/component', 'ui/utils', 'ui/jquery',
 })
 
 */
+
+define([ 'module',
+            'components/base',
+            'components/button',
+            'components/checkbox',
+            'components/child-runtime',
+            'components/container',
+            'components/div',
+            'components/div-button',
+            'components/div-c',
+            'components/div-r',
+            'components/dropdown',
+            'components/editbox',
+            'components/editbox-money',
+            'components/editbox-popup',
+            'components/either',
+            'components/html',
+            'components/html-form',
+            'components/iframe',
+            'components/inline-rows',
+            'components/label',
+            'components/labeled',
+            'components/labeled-checkbox',
+            'components/labeled-component',
+            'components/labeled-dropdown',
+            'components/labeled-editbox',
+            'components/labeled-editbox-money',
+            'components/labeled-radiolist',
+            'components/modal',
+            'components/multioption',
+            'components/radiolist',
+            'components/span',
+            'components/tab-d',
+            'components/table',
+            'components/tab-s',
+            'components/text',
+            'components/textarea',
+            'components/validation-component',
+        ], function(module, ...components) {
+    return components.reduce((out, clazz) => ({...out, clazz}), {});
+})

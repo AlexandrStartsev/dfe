@@ -22,12 +22,44 @@ define('forms/test',[ "dfe-core",
         "components/labeled-editbox",
         "components/span",
         "components/inline-rows",
-        "components/editbox-popup",
+        "components/editbox-popup",         
         "components/modal",
-        "components/div-r" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+        "components/div-r",
+        "components/editbox-code" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
             Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea,// ChildRuntime, 
-            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup, Modal, Div ) {
+            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup, Modal, Div, EditboxCode ) {
     let Form = Core.Form;
+    
+    return class TestForm extends Core.Form {
+        static fields() {
+            return [
+                Form.field(Textarea, { get: $$ => $$.get('testCode'), set: ($$, value) => $$.set('testCode', value), atr: () => ({ style: 'width: 200px; height: 100px'}) }),
+                Form.field(EditboxCode, { 
+                    get: $$ => $$.get('testCode'), 
+                    set: ($$, value) => $$.set('testCode', value), 
+                    atr: () => ({ 
+                        style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',
+                        lang: 'javascript',
+                        func: {
+                            template: '($$, value) => {}'
+                        }
+                    }) 
+                }),
+                Form.field(Textarea, { get: $$ => $$.get('testCode2'), set: ($$, value) => $$.set('testCode2', value), atr: () => ({ style: 'width: 200px; height: 100px'}) }),
+                Form.field(EditboxCode, { 
+                    get: $$ => $$.get('testCode2'), 
+                    set: ($$, value) => $$.set('testCode2', value), 
+                    atr: () => ({ 
+                        style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',
+                        lang: 'javascript',
+                        func: {
+                            template: '($$, value) => {}'
+                        }
+                    }) 
+                }),
+            ]
+        }
+    }
     
     return class TestForm extends Core.Form {
         static fields() {
@@ -37,7 +69,7 @@ define('forms/test',[ "dfe-core",
                         Form.field(EditboxPopup, "field-3", { 
                             atr: () => fields.simple('.vinnumber', {
                                 ta: {
-                                    style: 'width: 200px; font-size: 14px; height: 100px;',
+                                    style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',
                                     offsetLeft: 10,
                                     class: 'popup-editor-wrapper',
                                     editorClass: 'edit-popup-textarea'
@@ -352,7 +384,7 @@ define('forms/test',[ "dfe-core",
 define('forms/test2',[ "dfe-core",
         "ui/shapes",
         'dfe-field-helper',
-        "components/labeled-component", 
+        "components/labeled", 
         "components/editbox",
         "components/container",
         "components/checkbox",
