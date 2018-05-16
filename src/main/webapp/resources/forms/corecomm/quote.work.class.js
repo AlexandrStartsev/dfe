@@ -20,16 +20,16 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
         }
         static fields() {   
             return Form.field(Div, "root", {
-                get: $$ => $$('policy.work'),
+                get: $$ => $$.get('policy.work'),
                 atr: () => ({
                     style: 'width: 550px'
                 })
             }, [ Form.field(Table,"locs", {
-                get: $$ => $$('.location'),
+                get: $$ => $$.get('.location'),
                 val: $$ => $$.required('.location'),
                 atr: $$ => ({
                     style: 'width: 100%',
-                    skip: $$('.location').length > 1 ? [] : [ 'field-14' ]
+                    skip: $$.get('.location').length > 1 ? [] : [ 'field-14' ]
                 })
             }, [ Form.field(Label,"field-2", {
                 class: "header",
@@ -78,17 +78,17 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 atr: $$ => fields.simple('.address1', {
                     style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px',
                     maxlength: 50,
-                    disabled: $$('.NoSpecificLocation') == 'Y'
+                    disabled: $$.get('.NoSpecificLocation') == 'Y'
                 })
             }), Form.field(Editbox, "field-11", {
                 atr: $$ => fields.simple('.city', {
                     style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px',
                     pattern: /[a-zA-Z ]{1,45}/,
-                    disabled: $$('.NoSpecificLocation') == 'Y'
+                    disabled: $$.get('.NoSpecificLocation') == 'Y'
                 })
             }), Form.field(Dropdown, "field-12", {
                 set: function($$, value) {
-                    this.processNoSpecificLocationChange($$, value, $$('.NoSpecificLocation'))
+                    this.processNoSpecificLocationChange($$, value, $$.get('.NoSpecificLocation'))
                 },
                 atr: () => fields.choice('.state', cmn.statesPattern.split('|'), {
                     style: 'width: 45px; border-radius: 1px; height: 20px'
@@ -97,19 +97,19 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 atr: $$ => fields.simple('.zip', [ ($$, value) => value.match(/^\d{5}$/) || $$.error('Zip code is < 5 digits') ], {
                     style: 'width: calc(100% - 3px); border-radius: 1px; height: 18px',
                     pattern: /\d{1,5}/,
-                    disabled: $$('.NoSpecificLocation') == 'Y'
+                    disabled: $$.get('.NoSpecificLocation') == 'Y'
                 })
             }), Form.field(Checkbox, "nospecific", {
                 get: $$ => ({
-                    checked: $$('.NoSpecificLocation'),
+                    checked: $$.get('.NoSpecificLocation'),
                     text: 'No Specific'
                 }),
                 set: function($$, value) {
-                    this.processNoSpecificLocationChange($$, $$('.state'), value)
+                    this.processNoSpecificLocationChange($$, $$.get('.state'), value)
                 },
                 atr: $$ => ({
                     class: 'no-specific-field',
-                    attributeMapper: pos => $$('.state').match(/MO|AZ|IN|IA|KY|MT|TX/) ? {...pos, style: 'visibility: hidden;'} : pos
+                    attributeMapper: pos => $$.get('.state').match(/MO|AZ|IN|IA|KY|MT|TX/) ? {...pos, style: 'visibility: hidden;'} : pos
                 }),
                 layout: [{ 
                     class: 'no-specific-field' 
@@ -118,13 +118,13 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 get: () => 'Delete',
                 set: $$ => $$.detach()
             }), 
-            Form.field(Container, { get: $$ => $$('.class').length ? [$$] : [], layout: [ { newRow: true } ] },
+            Form.field(Container, { get: $$ => $$.get('.class').length ? [$$] : [], layout: [ { newRow: true } ] },
                 Form.field(Table,"classes", {
-                    get: $$ => $$('.class'),
+                    get: $$ => $$.get('.class'),
                     val: $$ => $$.required('.class'),
                     atr: $$ => ({
                         style: 'width: 100%;',
-                        skip: $$('.class').length > 1 ? [] : [ 'field-23', 'field-31' ]
+                        skip: $$.get('.class').length > 1 ? [] : [ 'field-23', 'field-31' ]
                     }), layout: [ { colSpan: "7" } ]
                 }, [ Form.field(Label,"field-39", {
                     class: "header",
@@ -174,25 +174,25 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     atr: $$ => fields.simple('.fulltimeemployeeamt', [ QuoteWorkClassForm.nbOnlyRequired ], {
                         style: 'width: 40px; border-radius: 1px; height: 18px',
                         pattern: /\d{1,3}/,
-                        disabled: $$('.ifAny') == 'Y'
+                        disabled: $$.get('.ifAny') == 'Y'
                     })
                 }), Form.field(Editbox, "field-28", {
                     atr: $$ => fields.simple('.parttimeemployeeamt', [ QuoteWorkClassForm.nbOnlyRequired ], {
                         style: 'width: 40px; border-radius: 1px; height: 18px',
                         pattern: /\d{1,3}/,
-                        disabled: $$('.ifAny') == 'Y'
+                        disabled: $$.get('.ifAny') == 'Y'
                     })
                 }), Form.field(Editbox, "field-29", {
                     atr: $$ => fields.simple('.seasonalemployeeamt', [], {
                         style: 'width: 40px; border-radius: 1px; height: 18px',
                         pattern: /\d{1,3}/,
-                        disabled: $$('.ifAny') == 'Y'
+                        disabled: $$.get('.ifAny') == 'Y'
                     })
                 }), Form.field(EditboxMoney, "field-30", {
                     atr: $$ => fields.simple('.payroll', {
                         style: 'width: 80px; border-radius: 1px; height: 18px',
                         format: '99,999,999',
-                        disabled: $$('.ifAny') == 'Y'
+                        disabled: $$.get('.ifAny') == 'Y'
                     })
                 }), Form.field(Checkbox, "field-8", {
                     set: ($$, value) => $$.set((value == 'Y' ? QuoteWorkClassForm.ifAnyEmptyFields() : []).reduce((clazz, field) => {
@@ -202,7 +202,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                         ifAny: value
                     })),
                     atr: $$ => fields.simple('.ifAny', {
-                        disabled: $$('.ifAny') != 'Y' && $$('...location.class').filter(c => c.get('.ifAny') != 'Y').length < 2,
+                        disabled: $$.get('.ifAny') != 'Y' && $$.get('...location.class').filter(c => c.get('.ifAny') != 'Y').length < 2,
                         val: () => 0
                     }),
                     layout: [ {
@@ -215,7 +215,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     style: "max-width: 50px"
                     } ]
                 }), Form.field(Div, "field-37", {
-                    get: $$ => $$('.code').length == 4 ? [ $$ ] : [],
+                    get: $$ => $$.get('.code').length == 4 ? [ $$ ] : [],
                     layout: [ {
                         newRow: true,
                         colSpan: "8"
@@ -224,13 +224,13 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     get: $$ => cmn.ajaxFeed($$, {
                         query: {
                             action: 'getSubcodes',
-                            classCode: $$('.code'),
-                            effectiveDate: $$('...effective') == 0 ? '20180303' : $$('...effective'),
+                            classCode: $$.get('.code'),
+                            effectiveDate: $$.get('...effective') == 0 ? '20180303' : $$.get('...effective'),
                             lob: 'WORK',
-                            state: $$('..state'),
+                            state: $$.get('..state'),
                             method: 'WORKClassCodeScriptHelper'
                         },
-                        value: $$('.subcode'),
+                        value: $$.get('.subcode'),
                         mapper: v => ({
                             value: v.combined,
                             description: `${v.classCode} - ${v.description}`
@@ -247,7 +247,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     } ]
                 }) ]), Form.field(Label,"field-33", {
                     get: () => '',
-                    val: $$ => $$('.ifAny') == 'Y' && QuoteWorkClassForm.ifAnyEmptyFields().filter(field => $$('.' + field).toString() !== '').length && $$.error('If Any is selected, you may not enter Employees or Payroll'),
+                    val: $$ => $$.get('.ifAny') == 'Y' && QuoteWorkClassForm.ifAnyEmptyFields().filter(field => $$.get('.' + field).toString() !== '').length && $$.error('If Any is selected, you may not enter Employees or Payroll'),
                     layout: [ {
                         newRow: true,
                         colSpan: "8"
@@ -269,7 +269,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 } ]
             }), Form.field(Button, "field-36", {
                 get: () => 'Available class code list',
-                set: $$ => QuoteWorkClassForm.showAvailable($$('..effective'), $$('.state')),
+                set: $$ => QuoteWorkClassForm.showAvailable($$.get('..effective'), $$.get('.state')),
                 layout: [ {
                     style: "display: none;"
                 } ]
@@ -282,7 +282,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 }
             }), Form.field(Label,"field-34", {
                 get: () => '',
-                val: $$ => $$('.location.class').filter(c => c.get('.ifAny') != 'Y').length || $$.error('There must be payroll present on the submission')
+                val: $$ => $$.get('.location.class').filter(c => c.get('.ifAny') != 'Y').length || $$.error('There must be payroll present on the submission')
             }) ]);
         }
         processNoSpecificLocationChange($$, newState, newNoSpecificLocation) {
@@ -292,7 +292,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 newNoSpecificLocation = 'N';
             }
             if (newNoSpecificLocation == 'Y') {
-                let thisLoc = $$, otherLocs = $$('..location').filter(loc => loc.get('.state') == newState && loc.get('.NoSpecificLocation') == 'Y');
+                let thisLoc = $$, otherLocs = $$.get('..location').filter(loc => loc.get('.state') == newState && loc.get('.NoSpecificLocation') == 'Y');
                 function update() {
                     otherLocs.forEach(otherLoc => (otherLoc.get('.class').forEach(clazz => (thisLoc.append('.class', clazz),
                     clazz.detach())), otherLoc.detach()));
@@ -329,14 +329,14 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                 $$.set(Object.assign({
                     state: newState,
                     NoSpecificLocation: newNoSpecificLocation
-                }, newNoSpecificLocation == 'N' && $$('.NoSpecificLocation') == 'Y' && newState == this.locationDefaults.state ? this.locationDefaults : {}));
+                }, newNoSpecificLocation == 'N' && $$.get('.NoSpecificLocation') == 'Y' && newState == this.locationDefaults.state ? this.locationDefaults : {}));
             }
         }
         static ifAnyEmptyFields() {
             return [ 'fulltimeemployeeamt', 'parttimeemployeeamt', 'seasonalemployeeamt', 'payroll' ];
         }
         static nbOnlyRequired($$, _, field) {
-            $$('policy.common.quotetype') == 'NB' && $$.required(field);
+            $$.get('policy.common.quotetype') == 'NB' && $$.required(field);
         }
         static showAvailable(effDt, state) {
             ajaxCache.get({

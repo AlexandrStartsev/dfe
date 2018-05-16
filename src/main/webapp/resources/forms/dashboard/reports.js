@@ -26,7 +26,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
                     style: 'width: 100%;'
                 })
             }, [ Form.field(TabS, "field-1", {
-                get: $$ => $$('reports').concat($$.shadow('reports')),
+                get: $$ => $$.get('reports').concat($$.shadow('reports')),
                 atr: $$ => ({
                     haclass: 'tab-report-active',
                     focusnew: false,
@@ -42,7 +42,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
             }, [ Form.field(Html,"field-5", {
                 get: $$ => shapes.cssShape($$, $$.isShadow() ? 'css-button-plus' : 'css-button-dotted'),
                 atr: $$ => ({
-                    class: $$('.default') == 0 ? 'reportrow-edit-button' : 'reportrow-edit-button-fixed',
+                    class: $$.get('.default') == 0 ? 'reportrow-edit-button' : 'reportrow-edit-button-fixed',
                     events: {
                         onClick: e => {
                             ReportsForm.editLink($$);
@@ -51,12 +51,12 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
                     }
                 })
             }), Form.field(Label, "field-6", {
-                get: $$ => $$('.ReportDesc'),
+                get: $$ => $$.get('.ReportDesc'),
                 layout: [{class: 'link-button', style: 'margin: 3px'}]
             }) ]),
                 Form.field(Div, {layout: [{class: 'tab-report-content'}]},
                 Form.field(Iframe, "field-3", {
-                    get: $$ => $$('.ReportLink'),
+                    get: $$ => $$.get('.ReportLink'),
                     atr: $$ => ({
                         style: 'width: 100%; height: 100%; border: 1px solid #aaa; border-radius: 5px'
                     })

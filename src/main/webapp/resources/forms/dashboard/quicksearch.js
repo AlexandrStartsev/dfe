@@ -13,7 +13,7 @@ define([ "dfe-core", "components/labeled-dropdown", "components/editbox", "compo
                 })
             }, [ Form.field(LabeledDropdown, "qs-crit", {
                 get: $$ => ({
-                    value: $$('qs-crit'),
+                    value: $$.get('qs-crit'),
                     items: [ {
                         value: 'submissionId',
                         description: 'Application #'
@@ -36,11 +36,11 @@ define([ "dfe-core", "components/labeled-dropdown", "components/editbox", "compo
                     style: "display: inline"
                 } ]
             }), Form.field(Editbox, "qs-value", {
-                get: $$ => $$('qs-' + $$('qs-crit')),
-                set: ($$, value) => $$.set('qs-' + $$('qs-crit'), value),
+                get: $$ => $$.get('qs-' + $$.get('qs-crit')),
+                set: ($$, value) => $$.set('qs-' + $$.get('qs-crit'), value),
                 atr: $$ => ({
-                    pattern: $$('qs-crit') == 'policyNumber' ? /.{1,32}/ : /\d{1,12}/,
-                    name: 'com.arrow.tools.reports.app.commercial.workerscomp.SubmittedApplicationsReport.' + $$('qs-crit')
+                    pattern: $$.get('qs-crit') == 'policyNumber' ? /.{1,32}/ : /\d{1,12}/,
+                    name: 'com.arrow.tools.reports.app.commercial.workerscomp.SubmittedApplicationsReport.' + $$.get('qs-crit')
                 }),
                 layout: [ {
                     style: "display: inline; padding: 2px 2px"

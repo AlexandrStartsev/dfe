@@ -34,7 +34,7 @@ define(['dfe-common'], function(cmn) {
         },
         ajaxChoice: function(field, opts, attrs){
             return {
-                get: model => opts.query ? cmn.ajaxFeed(model, cmn.extend(opts, { value: model(field) })) : cmn.ajaxFeed(model, { query: opts, value: model(field) }),
+                get: model => opts.query ? cmn.ajaxFeed(model, cmn.extend(opts, { value: model.get(field) })) : cmn.ajaxFeed(model, { query: opts, value: model.get(field) }),
                 set: (model, value) => model.set(field, value),
                 "default": [],
                 ...attrs

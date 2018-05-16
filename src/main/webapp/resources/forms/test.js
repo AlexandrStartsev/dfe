@@ -22,9 +22,11 @@ define('forms/test',[ "dfe-core",
         "components/labeled-editbox",
         "components/span",
         "components/inline-rows",
-        "components/editbox-popup" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+        "components/editbox-popup",
+        "components/modal",
+        "components/div-r" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
             Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea,// ChildRuntime, 
-            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup ) {
+            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup, Modal, Div ) {
     let Form = Core.Form;
     
     return class TestForm extends Core.Form {
@@ -43,11 +45,13 @@ define('forms/test',[ "dfe-core",
                             }) 
                         }),
                     ]),
-                    Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
+                    Form.field(Checkbox, "field-4", { get: $$ => $$.get('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
                 ]),
-                Form.field(LabeledEditbox, "f", { 
-                    atr: () => fields.simple('.vinnumber', { text: "same but labeled: " })
-                })
+                Form.field(Modal, {get: $$ => $$.get('hideStuff') == 'Y' ? [] : [$$]}, 
+                    Form.field(LabeledEditbox, "f", {
+                        atr: () => fields.simple('.vinnumber', { text: "same but labeled: " })
+                    })
+                )
             ]
         }
     }
@@ -55,7 +59,7 @@ define('forms/test',[ "dfe-core",
     /*return class TestForm extends Core.Form {
         static fields() {
             return [
-                Form.field(TabS, { get: $$ => $$('policy.cmau.location.car'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
+                Form.field(TabS, { get: $$ => $$.get('policy.cmau.location.car'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
                     Form.field(DivButton, 'header', { get: $$ => 'Car#' + $$.index(2), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
                     Form.field(Editbox, "field-3", {
                         atr: () => fields.simple('.vinnumber', { vstrategy: 'always' })
@@ -68,16 +72,16 @@ define('forms/test',[ "dfe-core",
    /* return class TestForm extends Core.Form {
         static fields() {
             return [
-                Form.field(TabS, { get: $$ => $$('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
+                Form.field(TabS, { get: $$ => $$.get('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
                     Form.field(DivButton, 'header', { get: $$ => 'Location#' + $$.index(), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
-                    Form.field(Span, { get: $$ => $$('.car') }, [ 
+                    Form.field(Span, { get: $$ => $$.get('.car') }, [ 
                         Form.field(Container, "field-1", [
-                            Form.field(Container, "field-2", { get: $$ => $$('hideStuff') == 'Y' ? [] : [$$] }, [
+                            Form.field(Container, "field-2", { get: $$ => $$.get('hideStuff') == 'Y' ? [] : [$$] }, [
                                 Form.field(Editbox, "field-3", {
                                     atr: () => fields.simple('.vinnumber', { vstrategy: 'always' })
                                 }),
                             ]),
-                            Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
+                            Form.field(Checkbox, "field-4", { get: $$ => $$.get('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) })
                         ])
                     ])
                 ])
@@ -109,9 +113,9 @@ define('forms/test',[ "dfe-core",
     return class TestForm extends Core.Form {
         static fields() {
             return [
-                Form.field(TabS, { get: $$ => $$('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex', style: 'width: 900px'}) }, [
+                Form.field(TabS, { get: $$ => $$.get('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex', style: 'width: 900px'}) }, [
                     Form.field(DivButton, 'header', { get: $$ => 'Location#' + ($$.index()+1), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
-                    Form.field(TabS, { get: $$ => $$('.car'), atr: () => ({ rowstyle$header: 'display: flex; width: 900px; flex-flow: wrap;'}) }, [
+                    Form.field(TabS, { get: $$ => $$.get('.car'), atr: () => ({ rowstyle$header: 'display: flex; width: 900px; flex-flow: wrap;'}) }, [
                         Form.field(DivButton, 'header', { get: $$ => 'Car#' + ($$.index()+1), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
                         Form.field(Table, [
                             Form.field(LabeledEditbox, { atr: () => fields.simple('.vinnumber', { text: 'Vin' }), pos: [{newRow: true}] }),
@@ -122,13 +126,13 @@ define('forms/test',[ "dfe-core",
                             ),
                             Form.field(LabeledEditbox, { atr: () => fields.simple('.ModelYr', { text: 'Model Year' }), pos: [{newRow: true}] }),
                             Form.field(LabeledEditbox, { atr: () => fields.simple('.make', { text: 'Make' }), pos: [{newRow: true}] }),
-                            Form.field(InlineRows, { get: $$ => $$('.vehicletype') === 'car' ? [$$] : [], atr: () => ({singles: true}) }, [
+                            Form.field(InlineRows, { get: $$ => $$.get('.vehicletype') === 'car' ? [$$] : [], atr: () => ({singles: true}) }, [
                                 Form.field(LabeledEditbox, { atr: () => fields.simple('.StatedAmt', { text: 'Price' }) }),
                                 Form.field(LabeledEditbox, { atr: () => fields.simple('.Horsepower', { text: 'HP' }) }),
                                 Form.field(LabeledEditbox, { atr: () => fields.simple('.vehicleocostnew', { text: 'Cost new' }) }),
                                 Form.field(LabeledEditbox, { atr: () => fields.simple('.VehUseCd', { text: 'Vehicle use' }) })
                             ]),
-                            Form.field(InlineRows, { get: $$ => $$('.vehicletype') === 'truck' ? [$$] : [], atr: () => ({singles: true}) }, [
+                            Form.field(InlineRows, { get: $$ => $$.get('.vehicletype') === 'truck' ? [$$] : [], atr: () => ({singles: true}) }, [
                                 Form.field(LabeledEditbox, { atr: () => fields.simple('.VehicleClass', { text: 'Class' }) }),
                                 Form.field(LabeledEditbox, { atr: () => fields.simple('.TrailerType', { text: 'Trailer type' }) }),
                                 Form.field(LabeledEditbox, { atr: () => fields.simple('.DumpingOpInd', { text: 'Dumping opt' }) })
@@ -143,7 +147,7 @@ define('forms/test',[ "dfe-core",
     class SubForm extends Form {
         static fields() {
             return ([
-                Form.field(Container, "field-2", { get: $$ => $$('hideStuff') == 'Y' ? [] : [$$] }, [
+                Form.field(Container, "field-2", { get: $$ => $$.get('hideStuff') == 'Y' ? [] : [$$] }, [
                     Form.field(Editbox, "field-3", {
                         atr: () => fields.simple('.ModelYr', { vstrategy: 'always' })
                     }),
@@ -151,7 +155,7 @@ define('forms/test',[ "dfe-core",
                         atr: () => fields.simple('.ModelYr', { vstrategy: 'always', text: "same but labeled: " })
                     }) 
                 ]),
-                Form.field(Checkbox, "field-4", { get: $$ => $$('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) }),
+                Form.field(Checkbox, "field-4", { get: $$ => $$.get('hideStuff'), set: ($$, value) => $$.set('hideStuff', value) }),
                 Form.field(Text, "field-5", { 
                     get: function() { 
                         return this.$node.attributes.someProperty;
@@ -170,12 +174,12 @@ define('forms/test',[ "dfe-core",
     return class TestForm extends Core.Form {
         static fields() {
             return [
-                Form.field(DivC, { get: $$ => $$('policy.cmau.location.car'), atr: () => ({style: 'display: flex'})}, [
+                Form.field(DivC, { get: $$ => $$.get('policy.cmau.location.car'), atr: () => ({style: 'display: flex'})}, [
                     Form.field(Text, 'h1', { get: () => 'Vin number', class: 'header' }),
                     Form.field(Text, 'h2', { get: () => 'Type', class: 'header' }),
                     Form.field(Text, 'h3', { get: () => 'Has vin', class: 'header' }),
                     Form.field(Text, 'h4', { get: () => 'Has vin', class: 'header' }),
-                    Form.field(Text, 'r1', { get: $$ => ($$('.hasvin') == 'Y' ? '' : '*') + $$('.vinnumber') }),
+                    Form.field(Text, 'r1', { get: $$ => ($$.get('.hasvin') == 'Y' ? '' : '*') + $$.get('.vinnumber') }),
                     Form.field(Dropdown, 'r2', {
                         atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
                             value: k,
@@ -183,23 +187,23 @@ define('forms/test',[ "dfe-core",
                         })))
                     }),
                     Form.field(Radiolist, 'r3', { atr: () => fields.simple('.hasvin') }),
-                    Form.field(Multioption, { get: $$ => ({value: $$('.hasvin'), options: ['Y', 'N']}), set: ($$, value) => $$.set('.hasvin', value) })
+                    Form.field(Multioption, { get: $$ => ({value: $$.get('.hasvin'), options: ['Y', 'N']}), set: ($$, value) => $$.set('.hasvin', value) })
                 ]),
-                Form.field(TabS, { get: $$ => $$('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
+                Form.field(TabS, { get: $$ => $$.get('policy.cmau.location'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
                     Form.field(DivButton, 'header', { get: $$ => 'Location#' + $$.index(), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
-                    Form.field(Table, { get: $$ => $$('.car') },  
+                    Form.field(Table, { get: $$ => $$.get('.car') },  
                         Form.field(TabD, 'tab-fld', { 
                             get: () => [{caption: 'This is VIN', hfield: 'h1'}, {caption: 'This is type', hfield: 'h2'}], 
                             set: ($$, px) => $$.set('.activeTab', px.get('.hfield')),
                             atr: $$ => ({
                                 activeTab: function(px) {
-                                    let at = $$('.activeTab').toString() || 'h1';
+                                    let at = $$.get('.activeTab').toString() || 'h1';
                                     return px ? px.get('.hfield') == at : at;
                                 }
                             }) 
                         }, [
-                            Form.field(Text, 'hRow', { get: $$ => $$('.caption') }),
-                            Form.field(Text, 'h1', { get: $$ => $$('.vinnumber'), class: 'header' }),
+                            Form.field(Text, 'hRow', { get: $$ => $$.get('.caption') }),
+                            Form.field(Text, 'h1', { get: $$ => $$.get('.vinnumber'), class: 'header' }),
                             Form.field(Dropdown, 'h2', {
                                 atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
                                     value: k,
@@ -220,19 +224,19 @@ define('forms/test',[ "dfe-core",
     return class TestForm extends Core.Form {
         static fields() {
             return (
-                Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [
+                Form.field(Table, { get: $$ => $$.get('policy.cmau.location.car') }, [
                     Form.field(TabD, 'tab-fld', { 
                         get: () => [{caption: 'This is VIN', hfield: 'h1'}, {caption: 'This is type', hfield: 'h2'}], 
                         set: ($$, px) => $$.set('.activeTab', px.get('.hfield')),
                         atr: $$ => ({
                             activeTab: function(px) {
-                                let at = $$('.activeTab').toString() || 'h1';
+                                let at = $$.get('.activeTab').toString() || 'h1';
                                 return px ? px.get('.hfield') == at : at;
                             }
                         }) 
                     }, [
-                        Form.field(Text, 'hRow', { get: $$ => $$('.caption') }),
-                        Form.field(Text, 'h1', { get: $$ => $$('.vinnumber'), class: 'header' }),
+                        Form.field(Text, 'hRow', { get: $$ => $$.get('.caption') }),
+                        Form.field(Text, 'h1', { get: $$ => $$.get('.vinnumber'), class: 'header' }),
                         Form.field(Dropdown, 'h2', {
                             atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
                                 value: k,
@@ -249,8 +253,8 @@ define('forms/test',[ "dfe-core",
    /* return class TestForm extends Core.Form {
         static fields() {
             return (
-                Form.field(TabS, 'tab-fld', { get: $$ => $$('policy.cmau.location.car'), atr: () => ({headField: 'hd-fld', haclass: "me-active"}) }, [
-                    Form.field(Text, 'hd-fld', { get: $$ => $$('.vinnumber') }),
+                Form.field(TabS, 'tab-fld', { get: $$ => $$.get('policy.cmau.location.car'), atr: () => ({headField: 'hd-fld', haclass: "me-active"}) }, [
+                    Form.field(Text, 'hd-fld', { get: $$ => $$.get('.vinnumber') }),
                     Form.field(Dropdown, 'bd-fld', {
                         atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
                             value: k,
@@ -264,12 +268,12 @@ define('forms/test',[ "dfe-core",
     /*return class TestForm extends Core.Form {
         static fields() {
             return (
-                Form.field(Table, { get: $$ => $$('policy.cmau.location.car') }, [
+                Form.field(Table, { get: $$ => $$.get('policy.cmau.location.car') }, [
                     Form.field(Html, "field-49", {
-                        get: $$ => shapes.cssShape($$, $$('.hasvin') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
+                        get: $$ => shapes.cssShape($$, $$.get('.hasvin') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
                         atr: $$ => ({
                             events: {
-                                onClick: () => $$.set('.hasvin', $$('.hasvin') == 'Y' ? 'N' : 'Y')
+                                onClick: () => $$.set('.hasvin', $$.get('.hasvin') == 'Y' ? 'N' : 'Y')
                             }
                         }),
                         pos: [ {
@@ -287,7 +291,7 @@ define('forms/test',[ "dfe-core",
                             val: $$ => $$.required('.ModelYr', '(18|19|20)\\d{2}'),
                             atr: $$ => fields.ajaxChoice('.ModelYr', {
                                 query: {
-                                    vehicleType: $$('.vehicletype'),
+                                    vehicleType: $$.get('.vehicletype'),
                                     method: 'CMAUVehicleScriptHelper',
                                     action: 'getYearOptions'
                                 }
@@ -305,14 +309,14 @@ define('forms/test',[ "dfe-core",
         }
         static fields() {
             return Form.field(Table, [
-                Form.field(Button, { get: () => 'flip', set: $$ => $$.set('flip', $$('flip') == 'Y' ? 'N' : 'Y' ) }),
-                Form.field(Button, { get: () => 'skip', set: $$ => $$.set('skip', $$('skip') == 'Y' ? 'N' : 'Y' ) }),
-                Form.field(Button, { get: () => 'append', set: $$ => $$('policy.cmau.location').pop().append('.car', {vinnumber: 'New'}) }),
+                Form.field(Button, { get: () => 'flip', set: $$ => $$.set('flip', $$.get('flip') == 'Y' ? 'N' : 'Y' ) }),
+                Form.field(Button, { get: () => 'skip', set: $$ => $$.set('skip', $$.get('skip') == 'Y' ? 'N' : 'Y' ) }),
+                Form.field(Button, { get: () => 'append', set: $$ => $$.get('policy.cmau.location').pop().append('.car', {vinnumber: 'New'}) }),
                 Form.field(Table, { 
-                    get: $$ => $$('policy.cmau.location.car'),
+                    get: $$ => $$.get('policy.cmau.location.car'),
                     atr: function($$) {
-                        let flip = $$('flip') == 'Y' ? -1 : 1;
-                        let skip = $$('skip') == 'Y';
+                        let flip = $$.get('flip') == 'Y' ? -1 : 1;
+                        let skip = $$.get('skip') == 'Y';
                         return { 
                             filter: row => !skip || !(row.data.key % 4),
                             order: (row1, row2) => flip*(row1.data.key - row2.data.key) 
@@ -320,24 +324,24 @@ define('forms/test',[ "dfe-core",
                     }, 
                     pos: [{newRow: true, colSpan: 3}]
                 }, [
-                    Form.field(Text, { get: $$ => $$(".key") }),
+                    Form.field(Text, { get: $$ => $$.get(".key") }),
                     Form.field(Dropdown, "field-1", { 
                         atr: $$ => fields.choice('.vehicletype', Object.keys(typeMap).map(k => ({
                             value: k,
                             description: typeMap[k].name
                         })))
                     }),
-                    Form.field(Text, { get: $$ => $$(".vinnumber") }),
-                    Form.field(Text, { get: $$ => $$(".TrailerType") }),
-                    Form.field(Text, { get: $$ => $$(".make") }),
-                    Form.field(Text, { get: $$ => $$(".VehicleClass") }),
-                    Form.field(Text, { get: $$ => $$(".StatedAmt") }),
-                    Form.field(Text, { get: $$ => $$(".DumpingOpInd") }),
-                    Form.field(Text, { get: $$ => $$(".Horsepower") }),
-                    Form.field(Text, { get: $$ => $$(".vehicleocostnew") }),
-                    Form.field(Text, { get: $$ => $$(".ModelYr") }),
-                    Form.field(Text, { get: $$ => $$(".VehUseCd") }),
-                    Form.field(Text, { get: $$ => $$(".vinvalid") }),
+                    Form.field(Text, { get: $$ => $$.get(".vinnumber") }),
+                    Form.field(Text, { get: $$ => $$.get(".TrailerType") }),
+                    Form.field(Text, { get: $$ => $$.get(".make") }),
+                    Form.field(Text, { get: $$ => $$.get(".VehicleClass") }),
+                    Form.field(Text, { get: $$ => $$.get(".StatedAmt") }),
+                    Form.field(Text, { get: $$ => $$.get(".DumpingOpInd") }),
+                    Form.field(Text, { get: $$ => $$.get(".Horsepower") }),
+                    Form.field(Text, { get: $$ => $$.get(".vehicleocostnew") }),
+                    Form.field(Text, { get: $$ => $$.get(".ModelYr") }),
+                    Form.field(Text, { get: $$ => $$.get(".VehUseCd") }),
+                    Form.field(Text, { get: $$ => $$.get(".vinvalid") }),
                     Form.field(Button, { get: () => 'Delete', set: $$ => $$.detach() })
                 ])
             ])
@@ -360,13 +364,13 @@ define('forms/test2',[ "dfe-core",
             return ([
                 Form.field(Table, [
                     Form.field(Container, "field-2", { 
-                        get: $$ => $$('.hideStuff') == 'Y' ? [] : [$$] 
+                        get: $$ => $$.get('.hideStuff') == 'Y' ? [] : [$$] 
                     }, [
                         Form.field(Editbox, "field-3", {
                             atr: () => fields.simple('.ModelYr', { vstrategy: 'always' })
                         })
                     ]),
-                    Form.field(Checkbox, "field-4", { get: $$ => $$('.hideStuff'), set: ($$, value) => $$.set('.hideStuff', value) })
+                    Form.field(Checkbox, "field-4", { get: $$ => $$.get('.hideStuff'), set: ($$, value) => $$.set('.hideStuff', value) })
                 ])
             ])
         }

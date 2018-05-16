@@ -43,11 +43,11 @@ define(["ui/shapes", "ui/utils", "module", "ui/jquery", "dfe-common"], function(
 			                }
 			                return 0;
 			        	}
-			        })($$('.sortInverse').toString().split('.'), $$('.sortOrder').toString().split('.'))
+			        })($$.get('.sortInverse').toString().split('.'), $$.get('.sortOrder').toString().split('.'))
 		},
 	    sortHeaderAtr: function($$, caption, field) {
     		return {
-        		get: $$ => ({caption: caption, dir: $$('.sortInverse').indexOf(field) == -1 ? 'up' : 'down'}),
+        		get: $$ => ({caption: caption, dir: $$.get('.sortInverse').indexOf(field) == -1 ? 'up' : 'down'}),
         		set: () => {
                     let si = $$.get('.sortInverse').toString(), so = $$.get('.sortOrder').toString();
                     $$.set('.sortInverse', si.indexOf(field) == -1 ? field + si : si.replace(field, ''));

@@ -18,12 +18,12 @@ define([ "dfe-core", "ui/utils", "ui/shapes", "components/html", "components/lab
         static fields() {
             return (
                 Form.field(Div, "a",
-                    Form.field(Label, "b", { get: $$ => $$('caption') }), 
+                    Form.field(Label, "b", { get: $$ => $$.get('caption') }), 
                     Form.field(Html, "c", {
                         atr: function($$) { 
                             return {
                                 class: 'arrow-button',
-                                get: $$ => shapes.svgShape($$, 'svg-arrow-' + $$('dir')),
+                                get: $$ => shapes.svgShape($$, 'svg-arrow-' + $$.get('dir')),
                                 events: {
                                     onClick: () => this.store($$)
                                 }

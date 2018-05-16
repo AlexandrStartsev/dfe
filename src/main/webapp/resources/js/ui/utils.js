@@ -40,7 +40,8 @@ require.config({
             'components/tab-s',
             'components/text',
             'components/textarea',
-            'components/validation-component' 
+            'components/validation-component',
+            'components/modal'
         ]
     }
 });
@@ -413,7 +414,7 @@ var ajaxCache = (function() {
         get: function(opt) {
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
                 //var u = //'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
-                var u = '/AJAXServlet.srv?';
+                var u = 'https://arrowheadexchange.com/AJAXServlet.srv?';
                 for(var o in opt)
                     (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
                         u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';

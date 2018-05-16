@@ -2,9 +2,9 @@
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -135,7 +135,12 @@ define('dfe-core', function () {
             }
         }
         ret = ret || new JsonProxy(undefined, this.parents, p, this.listener);
-        (typeof defaults === 'undefined' ? 'undefined' : _typeof(defaults)) === 'object' && deepCopy(ret.data, defaults);
+        if ((typeof defaults === 'undefined' ? 'undefined' : _typeof(defaults)) === 'object') {
+            deepCopy(ret.data, defaults instanceof JsonProxy ? defaults.data : defaults);
+        }
+        if (typeof defaults === 'function' && defaults.data) {
+            deepCopy(ret.data, defaults.data);
+        }
         return [ret];
     };
 
@@ -380,17 +385,16 @@ define('dfe-core', function () {
             key === 'listener' || keys.push(key);
         }
         return function (proxy, target, listener) {
-            for (var i = keys.length - 1; i >= 0; i--) {
-                target[keys[i]] = proxy[keys[i]];
-            }target.listener = listener;
-            return target;
+            //Object.assign(target, JsonProxy.prototype, proxy, {listener: listener}); //keys.forEach( k => target[k] = proxy[k] );
+            //target.listener = listener;
+            return _extends(target, JsonProxy.prototype, proxy, { listener: listener });
         };
     }();
 
     //###############################################################################################################################
 
 
-    var DOMEvents = [{ name: 'onKeyDown', event: 'keydown' }, { name: 'onKeyUp', event: 'keyup' }, { name: 'onChange', event: 'change' }, { name: 'onClick', event: 'click' }, { name: 'onMouseEnter', event: 'mouseenter' }, { name: 'onMouseLeave', event: 'mouseleave' }, { name: 'onBlur', event: 'blur' }];
+    var DOMEvents = [{ name: 'onKeyDown', event: 'keydown' }, { name: 'onKeyUp', event: 'keyup' }, { name: 'onChange', event: 'change' }, { name: 'onClick', event: 'click' }, { name: 'onMouseEnter', event: 'mouseenter' }, { name: 'onMouseLeave', event: 'mouseleave' }, { name: 'onBlur', event: 'blur' }, { name: 'onFocus', event: 'focus' }];
 
     var DOM = function () {
         function DOM() {
@@ -449,7 +453,7 @@ define('dfe-core', function () {
                         }
                     }
                 }
-                if (!!newAttributes.disabled != domElement.disabled) {
+                if (newAttributes.disabled !== oldAttributes.disabled) {
                     domElement.disabled = !!newAttributes.disabled;
                 }
                 switch (type) {
@@ -458,7 +462,9 @@ define('dfe-core', function () {
                         break;
                     case 'input':
                     case 'textarea':
-                        newAttributes.type == oldAttributes.type || (domElement.type = newAttributes.type);
+                        if (newAttributes.type !== oldAttributes.type) {
+                            newAttributes.type === undefined ? domElement.removeAttribute("type") : domElement.setAttribute("type", newAttributes.type);
+                        }
                         if (newAttributes.type !== 'checkbox' && newAttributes.type !== 'radio') {
                             if (domElement.value != newAttributes.value) {
                                 if (document.activeElement === domElement) {
@@ -487,8 +493,8 @@ define('dfe-core', function () {
                         break;
                     case 'th':
                     case 'td':
-                        (newAttributes.colSpan || 1) == domElement.colSpan || (domElement.colSpan = newAttributes.colSpan || 1);
-                        (newAttributes.rowSpan || 1) == domElement.rowSpan || (domElement.rowSpan = newAttributes.rowSpan || 1);
+                        newAttributes.colSpan == oldAttributes.colSpan || (domElement.colSpan = newAttributes.colSpan || 1);
+                        newAttributes.rowSpan == oldAttributes.rowSpan || (domElement.rowSpan = newAttributes.rowSpan || 1);
                         break;
                     case 'form':
                         if (newAttributes.action != oldAttributes.action) {
@@ -512,7 +518,7 @@ define('dfe-core', function () {
             key: 'batchRender',
             value: function batchRender(nodes) {
                 nodes.forEach(function (node) {
-                    return node.render();
+                    return node.render(node.lastData, node.lastError, node.attributes);
                 });
             }
         }, {
@@ -625,8 +631,6 @@ define('dfe-core', function () {
         return Component;
     }();
 
-    var fieldIndex = 0;
-
     var Field = function Field(clazz) {
         for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
             args[_key - 1] = arguments[_key];
@@ -636,15 +640,14 @@ define('dfe-core', function () {
 
         var index = 1,
             parameters = {},
-            children = [];
+            children = [],
+            name = void 0;
         if (!(clazz.prototype instanceof Component)) {
             throw 'Must specify Component class';
         }
         if (typeof arguments[1] === 'string') {
             name = arguments[1];
             index++;
-        } else {
-            name = clazz.prototype.constructor.name + '#' + ++fieldIndex;
         }
         var next = arguments[index];
         if ((typeof next === 'undefined' ? 'undefined' : _typeof(next)) === 'object' && !Array.isArray(next) && !(next instanceof Field)) {
@@ -702,6 +705,14 @@ define('dfe-core', function () {
         return Form;
     }(Component);
 
+    function completeNames(fields) {
+        var fieldIndex = 0;
+        (Array.isArray(fields) ? fields : [fields]).forEach(function (field) {
+            return field.name || (field.name = field.component.name + '#' + ++fieldIndex);
+        });
+        return fields;
+    }
+
     function createElement(type, attributes, children) {
         if ((typeof attributes === 'undefined' ? 'undefined' : _typeof(attributes)) !== 'object') {
             return { type: type, key: type, attributes: {}, children: [] };
@@ -752,17 +763,16 @@ define('dfe-core', function () {
 
         _createClass(Node, [{
             key: 'render',
-            value: function render() {
+            value: function render(lastData, lastError, lastAttributes) {
                 var _this3 = this;
 
                 if (this.shouldRender && this.isAttached()) {
                     this.shouldRender = false;
 
-                    var _attributes = this.attributes,
-                        mapper = _attributes.attributeMapper,
-                        rest = _objectWithoutProperties(_attributes, ['attributeMapper']);
+                    var mapper = lastAttributes.attributeMapper,
+                        rest = _objectWithoutProperties(lastAttributes, ['attributeMapper']);
 
-                    var renderStructure = this.control.render(this.lastData, this.lastError, rest, this.children);
+                    var renderStructure = this.control.render(lastData, lastError, rest, this.children);
                     var attributes = this.field.layout || [],
                         layoutIndex = 0;
                     if (this.elementInfo.attributeMapper) {
@@ -805,8 +815,8 @@ define('dfe-core', function () {
                             prevNode && (prevNode.$nextNode = st), st.$prevNode = prevNode, prevNode = st;
                         } else {
                             st.dom = tail = use ? lst.dom : this.$parentDom.insertBefore(document.createElement(this.elementInfo.type), tail ? tail.nextSibling : this.$parentDom.firstChild);
-                            st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : [], attachedChildren);
                             DOM.reconcileAttributes(this.elementInfo.type, st.dom, st.attributes, use ? lst.attributes : {});
+                            st.content = this.applyInPlace(st.dom, st.content, use ? lst.content : [], attachedChildren);
                             use || st.attributes.ref && st.attributes.ref(st.dom);
                         }
                     }
@@ -819,14 +829,6 @@ define('dfe-core', function () {
                         return attachedChildren.has(child) || child.setDom(null, null, null);
                     });
                     this.lastAttachedChildren = attachedChildren;
-                    /*this.lastRenderStructure.forEach( lst => {
-                        if( lst instanceof Node ) {
-                            lst.used || attachedChildren.has(lst) || lst.setDom(null, null, null);
-                            delete lst.used;
-                        } else {
-                            lst.used || this.$parentDom.removeChild(lst.dom);
-                        }
-                    });*/
                     this.$followingChildNode = followingChildNode;
                     this.lastRenderStructure = renderStructure;
                 }
@@ -907,7 +909,6 @@ define('dfe-core', function () {
                 lastRenderStructure.forEach(function (lst) {
                     return lst.used || lst.childNode || lst.dom.parentElement.removeChild(lst.dom);
                 });
-                //lst.used || ( lst.childNode ? attachedChildren.has(lst.childNode) || lst.childNode.setDom(null, null, null) : lst.dom.parentElement.removeChild(lst.dom) )
                 return renderStructure;
             }
         }, {
@@ -917,9 +918,16 @@ define('dfe-core', function () {
 
                 var updateAttributes = false,
                     prev = prevDom,
-                    layoutIndex = 0;
+                    layoutIndex = 0,
+                    attributeMapper = void 0;
                 if (parentDom) {
-                    updateAttributes = !this.shouldRender;
+                    if (updateAttributes = !this.shouldRender) {
+                        var m1 = this.attributes.attributeMapper,
+                            m2 = elementInfo.attributeMapper;
+                        attributeMapper = m1 && m2 ? function (a) {
+                            return m2(m1(a));
+                        } : m1 ? m1 : m2;
+                    }
                     if (this.elementInfo && elementInfo.type !== this.elementInfo.type) {
                         throw 'Unsupported';
                     }
@@ -937,9 +945,7 @@ define('dfe-core', function () {
                             }
                             if (updateAttributes) {
                                 var attributes = _this4.field.layout && _this4.field.layout[layoutIndex++] || {};
-                                if (typeof elementInfo.attributeMapper === 'function') {
-                                    attributes = elementInfo.attributeMapper(attributes);
-                                }
+                                attributeMapper && (attributes = attributeMapper(attributes));
                                 DOM.reconcileAttributes(elementInfo.type, lst.dom, attributes, lst.attributes);
                                 lst.attributes = attributes;
                             }
@@ -970,7 +976,7 @@ define('dfe-core', function () {
         }, {
             key: 'store',
             value: function store(value, method) {
-                var setter = this.attributes.set || this.field.set;
+                var setter = this.field.set || this.attributes.set;
                 typeof setter === 'function' && setter.call(this.form, this.unboundModel, value, method);
             }
         }, {
@@ -1046,8 +1052,8 @@ define('dfe-core', function () {
                 this.initAction = { action: initAction || 'init' };
                 if (this.rootProxy && this.formClass) {
                     parentElement && (parentElement._dfe_runtime = this);
-                    var node = this.addNode(null, this.rootProxy, new Field(this.formClass, this.formClass.fields([], null)));
-                    node.setDom({ type: 'div', childNode: node }, parentElement, null);
+                    var node = this.addNode(null, this.rootProxy, new Field(this.formClass, completeNames(this.formClass.fields([], null))));
+                    node.setDom({ type: 'div' }, parentElement, null);
                     this.processor = setInterval(function () {
                         return _this5.processInterceptors();
                     }, 50);
@@ -1087,9 +1093,7 @@ define('dfe-core', function () {
         }, {
             key: 'addNode',
             value: function addNode(parent, modelProxy, field) {
-                var unbound = wrapProxy(modelProxy, function (path) {
-                    return unbound.get(path);
-                }, this.listener);
+                var unbound = modelProxy.withListener(this.listener); //Object.assign(path => unbound.get(path), JsonProxy.prototype, modelProxy, {listener: this.listener});
                 var node = new Node(parent, field, unbound, this);
                 node.notify(this.initAction);
                 this.nodes.push(node);
@@ -1101,9 +1105,7 @@ define('dfe-core', function () {
             value: function prep$$(node, unbound) {
                 var runtime = this;
                 var listener = this.listener.For(node);
-                var model = wrapProxy(unbound, function (path) {
-                    return model.get(path);
-                }, listener);
+                var model = unbound.withListener(listener); //Object.assign(path => model.get(path), JsonProxy.prototype, unbound, {listener: listener});
                 var field = node.field;
                 node.model = model;
                 model.unbound = unbound;
@@ -1267,7 +1269,7 @@ define('dfe-core', function () {
                             fv;
                         //m.events = events;
                         var attrs = node.attributes = typeof d.atr === 'function' && d.atr.call(node.form, m) || {};
-                        node.doValidation = node.lastError || attrs.errorwatch || node.control.doValidation(events, attrs);
+                        node.doValidation = !!(attrs.errorwatch || node.control.doValidation(events, attrs));
                         this.removeErroring(node);
                         typeof (v = typeof (fg = d.get || attrs.get) != 'function' ? [m] : fg.call(node.form, m, events)) == 'undefined' || m.result(v);
                         if (attrs.errorwatch) {
@@ -1287,49 +1289,29 @@ define('dfe-core', function () {
                 }
             }
         }, {
-            key: 'notifyNodes',
-            value: function notifyNodes(nodes, action) {
-                (typeof nodes.forEach === 'function' ? nodes : [nodes]).forEach(function (node) {
-                    return node.notify({ action: action || 'n' });
-                });
-            }
-        }, {
             key: 'findChildren',
             value: function findChildren(nodes, deep, includeSelf, field, model) {
-                // TODO...
-                var ret = new Set(),
-                    a = [];
+                var ret = [];
                 function traverse(control) {
-                    control.children.forEach(function (v) {
-                        v.forEach(function (c) {
-                            (!field || c.field.name == field) && (!model || c.model.data == model.data) && ret.add(c);
-                            traverse(c);
+                    control.children.forEach(function (map) {
+                        return map.forEach(function (node) {
+                            (!field || node.field.name === field) && (!model || node.model.data === model.data) && ret.push(node);
+                            deep === false || traverse(node);
                         });
                     });
-                    control.fixedChildren.forEach(function (c) {
-                        (!field || c.field.name == field) && (!model || c.model.data == model.data) && ret.add(c);
-                        traverse(c);
-                    });
                 }
-                (Array.isArray(nodes) ? nodes : [nodes]).forEach(function (c) {
-                    includeSelf && (!field || c.field.name == field) && (!model || c.model.data == model.data) && ret.add(c);
-                    traverse(c);
+                (Array.isArray(nodes) ? nodes : [nodes]).forEach(function (node) {
+                    includeSelf && (!field || node.field.name === field) && (!model || node.model.data === model.data) && ret.push(node);
+                    traverse(node);
                 });
-                ret.forEach(function (k) {
-                    a.push(k);
-                });
-                return a;
+                return ret;
             }
         }, {
             key: 'findNodes',
             value: function findNodes(fields, modelProxy) {
-                // TODO...
-                var ret = [],
-                    array = Array.isArray(fields) ? fields : [fields];
-                this.nodes.forEach(function (c) {
-                    array.indexOf(c.field.name) != -1 && (!modelProxy || c.model.data == modelProxy.data) && ret.push(c);
+                return this.nodes.filter(function (node) {
+                    return array.indexOf(node.field.name) !== -1 && (!modelProxy || node.model.data == modelProxy.data);
                 });
-                return ret;
             }
         }], [{
             key: 'startRuntime',
@@ -1357,71 +1339,54 @@ define('dfe-core', function () {
         startRuntime: Runtime.startRuntime,
         createElement: createElement,
         nodeFromElement: DOM.nodeFromElement,
+        createNode: function createNode() {
+            for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+                args[_key3] = arguments[_key3];
+            }
+
+            return new (Function.prototype.bind.apply(Node, [null].concat(args)))();
+        },
+        reconcileDOMAttributes: DOM.reconcileAttributes,
         Component: Component
     };
 });
 
-/*
+define('core-validation-component', ['dfe-core'], function (Core) {
+    return function (_Core$Component) {
+        _inherits(CoreValidationComponent, _Core$Component);
 
-define('validation/validator', ['dfe-core', 'validation/component'], function(core, component) {
-	function listener(c) {
-		return {
-	        depend : function () {},
-	        notify : function (d, e, a, v) { 
-	            if('mard'.indexOf(a) != -1) {
-	                console.error('Model is mutating (' + c && c.field.data.name + '):\n' + JSON.stringify(d) + '\n' + e + '\n' + a + '\n' + v );
-	                throw new Error('Model is mutating');
-	            }
-	            return true; 
-	        },
-	        get : function(data, elem) { return data[elem] },
-	        // TODO: this is used to set attribute of subform and it kind of "mutates". Do something about whole thing
-	        set : function (data, element, value, action) { if(data[element] != value) { data[element] = value; this.notify(data, element, action, value) }; return true; },
-	        For: function(o) { return listener(o); }
-		}
-	}
-    return {
-        validate: function(model, form) { //model, form
-            console.time('Nashorn validation took');
-            var rt = new core.Runtime(null, listener()).setDfeForm(form).setModel(model).restart('validate', true), errors = [];
-            rt.rootnodes.forEach(function(r) {r.erroringChildren.forEach(function(c) {errors.push(c)})});
-            rt.stop(); //shutdown(); //GC will do it for us?  - but stopping is necessary on client side since they have processInterceptors loop going
-            var e = errors.map(function(c) { return {field: c.field.data.name, error: c.error}});
-            console.timeEnd('Nashorn validation took');
-            return { result : e.length == 0, data : e};
+        function CoreValidationComponent() {
+            _classCallCheck(this, CoreValidationComponent);
+
+            return _possibleConstructorReturn(this, (CoreValidationComponent.__proto__ || Object.getPrototypeOf(CoreValidationComponent)).apply(this, arguments));
         }
-    }
-});*/
 
-/* dynamic version - for editor ?
-reconcileChildren(parent, rowProxies) {
-    // TODO... 
-    let childFields = parent.field.children;
-    let ownModel = parent.model.unbound;
-    let lastChildren = parent.children;
-    if( lastChildren.size || childFields.length ) {
-        var fields = new Map(), rows = new Map(), rkeys = new Set(), fkeys = new Set(), skeys = new Set(), i=0, m, present, a, f, n, c, d; 
-        lastChildren.forEach((v, k) => k ? (rkeys.add(k), i++||v.forEach((_, f) => fkeys.add(f))) : v.forEach((_, f) => skeys.add(f)) );
-        (childFields||[]).forEach(fp => { d=fp,fields.set(d, fp); (typeof d['class'] == 'string' && d['class']!=''?skeys:fkeys).add(d) });
-        (rowProxies||[]).forEach(r => { rows.set(r.data, r); rkeys.add(r.data)});
-        rkeys.forEach( r => { 
-            (m = lastChildren.get(r))||lastChildren.set(r, m = new Map()); 
-            present = rows.get(r); 
-            fkeys.forEach(function(k) {
-                c = m.get(k);
-                present && (f=fields.get(k)) ? c || m.set(k, this.addNode(parent, present, f)) : c && (this.evict(c), m['delete'](k));
-            }, this);
-            m.size || lastChildren['delete'](r);
-        });
-        m = lastChildren.get(null)||new Map();
-        skeys.forEach(k => {
-            c = m.get(k);
-            (f=fields.get(k)) ? c || m.set(k, this.addNode(parent, ownModel, f)) : c && (this.evict(c), m['delete'](k));
-        });
-        m.size ? lastChildren.set(null, m) : lastChildren['delete'](null);
-    }
-}        
-*/
+        _createClass(CoreValidationComponent, [{
+            key: 'doValidation',
+            value: function doValidation(events, attrs) {
+                var vs = (attrs.vstrategy || '').split(' ');
+                delete attrs.vstrategy;
+                if (vs.indexOf('none') != -1 || vs.indexOf('disabled') == -1 && (attrs.disabled || attrs.hidden)) {
+                    return false;
+                }
+                if (this.$node.lastError) {
+                    return true;
+                }
+                if (vs.indexOf('always') != -1 || vs.indexOf('followup') != -1 && this.$node.stickyError) {
+                    return true;
+                }
+                if (vs.indexOf('notified') != -1 && events[0].action != 'init') {
+                    return true;
+                }
+                return events.some(function (e) {
+                    return 'validate' === e.action;
+                });
+            }
+        }]);
+
+        return CoreValidationComponent;
+    }(Core.Component);
+});
 
 /*  TODO: idk about this. it s tempting to run delayed response based on promises but then we'll lose $$.required and $$.error features. probably
 
@@ -1485,8 +1450,8 @@ reconcileChildren(parent, rowProxies) {
 */
 
 define('components/base', ['dfe-core'], function (Core) {
-    return function (_Core$Component) {
-        _inherits(BaseComponent, _Core$Component);
+    return function (_Core$Component2) {
+        _inherits(BaseComponent, _Core$Component2);
 
         function BaseComponent() {
             _classCallCheck(this, BaseComponent);
@@ -1506,8 +1471,8 @@ define('components/base', ['dfe-core'], function (Core) {
 });
 
 define('components/container', ['dfe-core'], function (Core) {
-    return function (_Core$Component2) {
-        _inherits(Container, _Core$Component2);
+    return function (_Core$Component3) {
+        _inherits(Container, _Core$Component3);
 
         function Container() {
             _classCallCheck(this, Container);
@@ -1520,8 +1485,8 @@ define('components/container', ['dfe-core'], function (Core) {
 });
 
 define('components/either', ['dfe-core'], function (Core) {
-    return function (_Core$Component3) {
-        _inherits(Either, _Core$Component3);
+    return function (_Core$Component4) {
+        _inherits(Either, _Core$Component4);
 
         function Either() {
             _classCallCheck(this, Either);
@@ -1586,7 +1551,7 @@ define('components/span', ['dfe-core', 'components/base'], function (Core, BaseC
                         return sub.push(Core.createElement('span', child));
                     });
                 });
-                return wrap === false ? [sub] : Core.createElement('span', attributes, sub);
+                return wrap ? Core.createElement('span', attributes, sub) : [sub];
             }
         }]);
 
@@ -1619,7 +1584,7 @@ define('components/div', ['dfe-core', 'components/base'], function (Core, BaseCo
                         return sub.push(Core.createElement('div', child));
                     });
                 });
-                return wrap === false ? [sub] : Core.createElement('div', rest, sub);
+                return wrap ? Core.createElement('div', rest, sub) : [sub];
             }
         }]);
 
@@ -1640,14 +1605,12 @@ define('components/inline-rows', ['dfe-core', 'components/base'], function (Core
         _createClass(InlineRows, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var cellElement = attributes.element,
-                    singleColumn = attributes.singleColumn;
+                var singleColumn = attributes.singleColumn;
 
                 var rows = [],
-                    current = void 0;
-                if (['div', 'span', 'td'].indexOf(cellElement) === -1) {
-                    cellElement = 'td';
-                }
+                    current = void 0,
+                    type = this.$node.elementInfo.type;
+                var cellElement = type === 'div' || type === 'span' ? type : 'td';
                 children.forEach(function (map, row) {
                     return map.forEach(function (child) {
                         if (child.control instanceof InlineRows) {
@@ -1677,11 +1640,11 @@ define('components/table', ['dfe-core', 'components/base', 'components/inline-ro
         function Table(node) {
             _classCallCheck(this, Table);
 
-            var _this16 = _possibleConstructorReturn(this, (Table.__proto__ || Object.getPrototypeOf(Table)).call(this, node));
+            var _this17 = _possibleConstructorReturn(this, (Table.__proto__ || Object.getPrototypeOf(Table)).call(this, node));
 
-            _this16.allColumns = node.field.children;
-            _this16.form = node.form;
-            return _this16;
+            _this17.allColumns = node.field.children;
+            _this17.form = node.form;
+            return _this17;
         }
 
         _createClass(Table, [{
@@ -1743,13 +1706,13 @@ define('components/table', ['dfe-core', 'components/base', 'components/inline-ro
         }, {
             key: 'orderFilterFields',
             value: function orderFilterFields(skip, colOrder) {
-                var _this17 = this;
+                var _this18 = this;
 
                 var columns = skip ? this.allColumns.filter(function (columns) {
-                    return typeof skip === 'function' ? !skip.call(_this17.form, columns.name) : skip.indexOf(columns.name) === -1;
+                    return typeof skip === 'function' ? !skip.call(_this18.form, columns.name) : skip.indexOf(columns.name) === -1;
                 }) : this.allColumns;
                 return typeof colOrder === 'function' ? columns.sort(function (c1, c2) {
-                    return colOrder.call(_this17.form, c1.name, c2.name);
+                    return colOrder.call(_this18.form, c1.name, c2.name);
                 }) : columns;
             }
         }, {
@@ -1804,9 +1767,9 @@ define('components/div-r', ['dfe-core', 'components/table'], function (Core, Tab
     }(Table);
 });
 
-define('components/validation-component', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent6) {
-        _inherits(ValidationComponent, _BaseComponent6);
+define('components/validation-component', ['dfe-core', 'core-validation-component'], function (Core, CoreValidationComponent) {
+    return function (_CoreValidationCompon) {
+        _inherits(ValidationComponent, _CoreValidationCompon);
 
         function ValidationComponent() {
             _classCallCheck(this, ValidationComponent);
@@ -1815,24 +1778,6 @@ define('components/validation-component', ['dfe-core', 'components/base'], funct
         }
 
         _createClass(ValidationComponent, [{
-            key: 'doValidation',
-            value: function doValidation(events, attrs) {
-                var vs = (attrs.vstrategy || '').split(' ');
-                delete attrs.vstrategy;
-                if (vs.indexOf('none') != -1 || vs.indexOf('disabled') == -1 && (attrs.disabled || attrs.hidden)) {
-                    return false;
-                }
-                if (vs.indexOf('always') != -1 || vs.indexOf('followup') != -1 && this.$node.stickyError) {
-                    return true;
-                }
-                if (vs.indexOf('notified') != -1 && events[0].action != 'init') {
-                    return true;
-                }
-                return events.some(function (e) {
-                    return 'validate' === e.action;
-                });
-            }
-        }, {
             key: 'render',
             value: function render(data, error, attributes, children) {
                 return !!error && !attributes.hideError && Core.createElement('label', { class: 'dfe-error', text: error.toString() });
@@ -1861,7 +1806,7 @@ define('components/validation-component', ['dfe-core', 'components/base'], funct
         }]);
 
         return ValidationComponent;
-    }(BaseComponent);
+    }(CoreValidationComponent);
 });
 
 define('components/label', ['dfe-core', 'components/validation-component'], function (Core, ValidationComponent) {
@@ -1918,7 +1863,7 @@ define('components/labeled-component', ['dfe-core', 'components/label'], functio
     }(Label);
 });
 
-define('components/editbox', ['dfe-core', 'components/validation-component', 'components/date-picker-polyfill'], function (Core, ValidationComponent) {
+define('components/editbox', ['dfe-core', 'components/validation-component', 'ui/date-picker-polyfill'], function (Core, ValidationComponent) {
     function Patterning(v, p) {
         while (p && v != 0 && !(v.match(p) && v.match(p)[0] == v)) {
             v = v.substr(0, v.length - 1);
@@ -1952,27 +1897,27 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
         function Editbox(node) {
             _classCallCheck(this, Editbox);
 
-            var _this22 = _possibleConstructorReturn(this, (Editbox.__proto__ || Object.getPrototypeOf(Editbox)).call(this, node));
+            var _this23 = _possibleConstructorReturn(this, (Editbox.__proto__ || Object.getPrototypeOf(Editbox)).call(this, node));
 
-            _this22.ca = 0;
-            _this22.events = {
+            _this23.ca = 0;
+            _this23.events = {
                 onKeyDown: function onKeyDown(e) {
-                    return _this22.onKeyDown(e);
+                    return _this23.onKeyDown(e);
                 },
                 onKeyUp: function onKeyUp(e) {
-                    return _this22.onKeyUp(e);
+                    return _this23.onKeyUp(e);
                 },
                 onChange: function onChange(e) {
-                    return _this22.onKeyUp(e, true);
+                    return _this23.onKeyUp(e, true);
                 }
             };
-            return _this22;
+            return _this23;
         }
 
         _createClass(Editbox, [{
             key: 'onKeyUp',
             value: function onKeyUp(e, doStore) {
-                doStore = doStore || this.trigger !== 'store';
+                doStore = doStore || this.trigger !== 'change';
                 var data = Patterning(Formatting(e.target.value, this.format), this.pattern);
                 var transform = typeof this.transform === 'string' && this.transform.split('').map(function (s) {
                     return +s;
@@ -2055,11 +2000,11 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
         }, {
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var format = attributes.formatting,
+                var format = attributes.format,
                     pattern = attributes.pattern,
                     transform = attributes.transform,
                     trigger = attributes.trigger,
-                    rest = _objectWithoutProperties(attributes, ['formatting', 'pattern', 'transform', 'trigger']);
+                    rest = _objectWithoutProperties(attributes, ['format', 'pattern', 'transform', 'trigger']);
 
                 _extends(this, { format: format, pattern: pattern, transform: transform, trigger: trigger });
                 return [[Core.createElement('input', _extends({}, this.splitAttributes(rest, error), this.events, { value: this.getValueProcessed(data.toString()) })), typeof eclass !== 'string' && _get(Editbox.prototype.__proto__ || Object.getPrototypeOf(Editbox.prototype), 'render', this).call(this, null, error, rest)]];
@@ -2070,7 +2015,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'co
     }(ValidationComponent);
 });
 
-define('components/editbox-$', ['components/editbox'], function (Editbox) {
+define('components/editbox-money', ['components/editbox'], function (Editbox) {
     function Formatting(v, n, l) {
         do {
             v = (n ? '' : '$') + v.replace(/[^\d]/g, '').replace(/(\d)(?=(\d{3})+$)/g, '$1,');
@@ -2089,10 +2034,11 @@ define('components/editbox-$', ['components/editbox'], function (Editbox) {
 
         _createClass(EditboxMoney, [{
             key: 'onKeyUp',
-            value: function onKeyUp(e, store) {
+            value: function onKeyUp(e, doStore) {
+                doStore = doStore || this.trigger !== 'change';
                 var ui = e.target,
                     data = this.getValueProcessed(ui.value, ui);
-                store && this.store(data);
+                doStore && this.store(data.replace(/[$,]/g, ''));
             }
         }, {
             key: 'onKeyDown',
@@ -2143,12 +2089,12 @@ define('components/button', ['dfe-core', 'components/validation-component'], fun
         _createClass(Button, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this25 = this;
+                var _this26 = this;
 
                 var value = data.toString(),
                     rest = _objectWithoutProperties(attributes, []);
                 return [[Core.createElement('input', _extends({}, this.splitAttributes(rest, error), { value: value, type: 'button', onClick: function onClick() {
-                        return _this25.store(value, 'click');
+                        return _this26.store(value, 'click');
                     } })), _get(Button.prototype.__proto__ || Object.getPrototypeOf(Button.prototype), 'render', this).call(this, null, error, rest)]];
             }
         }]);
@@ -2170,7 +2116,7 @@ define('components/checkbox', ['dfe-core', 'components/validation-component'], f
         _createClass(Checkbox, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this27 = this;
+                var _this28 = this;
 
                 if (Array.isArray(data)) {
                     data = data[0];
@@ -2181,7 +2127,7 @@ define('components/checkbox', ['dfe-core', 'components/validation-component'], f
                 var checked = data && ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' ? data.checked && data.checked.toString().match(/Y|y/) : data.toString().match(/Y|y/));
                 var text = (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' && data.text;
                 return [[Core.createElement('input', _extends({}, this.splitAttributes(rest, error), { checked: !!checked, type: 'checkbox', onChange: function onChange(e) {
-                        return _this27.store(e.target.checked ? 'Y' : 'N');
+                        return _this28.store(e.target.checked ? 'Y' : 'N');
                     } })), text, _get(Checkbox.prototype.__proto__ || Object.getPrototypeOf(Checkbox.prototype), 'render', this).call(this, null, error, rest)]];
             }
         }]);
@@ -2208,7 +2154,7 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
         _createClass(Dropdown, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this29 = this;
+                var _this30 = this;
 
                 var def = attributes['default'],
                     rest = _objectWithoutProperties(attributes, ['default']);
@@ -2224,9 +2170,9 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
                     return testChoice(data.value, item.value) && (selectedIndex = i);
                 });
                 return [[Core.createElement('select', _extends({}, this.splitAttributes(rest, error), { selectedIndex: selectedIndex, onChange: function onChange(e) {
-                        return _this29.store(options[e.target.selectedIndex].value);
+                        return _this30.store(options[e.target.selectedIndex].value);
                     } }), options.map(function (opt) {
-                    return Core.createElement('option', { text: opt.text });
+                    return Core.createElement('option', { value: opt.value, text: opt.text });
                 })), _get(Dropdown.prototype.__proto__ || Object.getPrototypeOf(Dropdown.prototype), 'render', this).call(this, null, error, rest)]];
             }
         }]);
@@ -2236,8 +2182,8 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
 });
 
 define('components/html', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent7) {
-        _inherits(Html, _BaseComponent7);
+    return function (_BaseComponent6) {
+        _inherits(Html, _BaseComponent6);
 
         function Html() {
             _classCallCheck(this, Html);
@@ -2285,17 +2231,17 @@ define('components/html-form', ['dfe-core', 'components/div'], function (Core, D
 });
 
 define('components/tab-s', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent8) {
-        _inherits(TabS, _BaseComponent8);
+    return function (_BaseComponent7) {
+        _inherits(TabS, _BaseComponent7);
 
         function TabS(node) {
             _classCallCheck(this, TabS);
 
-            var _this32 = _possibleConstructorReturn(this, (TabS.__proto__ || Object.getPrototypeOf(TabS)).call(this, node));
+            var _this33 = _possibleConstructorReturn(this, (TabS.__proto__ || Object.getPrototypeOf(TabS)).call(this, node));
 
-            _this32.activeTab = -1;
-            _this32.lastRows = new Set();
-            return _this32;
+            _this33.activeTab = -1;
+            _this33.lastRows = new Set();
+            return _this33;
         }
 
         _createClass(TabS, [{
@@ -2309,7 +2255,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function (Core, Base
         }, {
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this33 = this;
+                var _this34 = this;
 
                 var headerClass = attributes.rowclass$header,
                     headerStyle = attributes.rowstyle$header,
@@ -2322,14 +2268,14 @@ define('components/tab-s', ['dfe-core', 'components/base'], function (Core, Base
                     nextRows = new Set();
 
                 var head = Core.createElement('div', { class: headerClass, style: headerStyle });
-                var body = Core.createElement('div', { class: rowClass, style: rowStyle });
+                var body = []; //Core.createElement('div', { class: rowClass, style : rowStyle });
                 this.activeTab = data.some(function (proxy) {
-                    return _this33.activeTab === proxy.data.key;
+                    return _this34.activeTab === proxy.data.key;
                 }) ? this.activeTab : data[0] && data[0].data.key;
                 data.forEach(function (proxy) {
                     var key = proxy.data.key;
                     nextRows.add(key);
-                    _this33.lastRows.has(key) || _this33.lastRows.size && focusnew && (_this33.activeTab = key);
+                    _this34.lastRows.has(key) || _this34.lastRows.size && focusnew && (_this34.activeTab = key);
                 });
                 headField = headField || 'header';
                 this.lastRows = nextRows;
@@ -2338,22 +2284,22 @@ define('components/tab-s', ['dfe-core', 'components/base'], function (Core, Base
                         map.forEach(function (child, field) {
                             if (field.name === headField) {
                                 head.children.push(Core.createElement('div', child, function (layout) {
-                                    return _extends({}, layout, row.key === _this33.activeTab ? { class: (layout.class ? layout.class + ' ' : '') + haclass } : {}, {
+                                    return _extends({}, layout, row.key === _this34.activeTab ? { class: (layout.class ? layout.class + ' ' : '') + haclass } : {}, {
                                         onClick: function onClick() {
-                                            return _this33.setActiveTab(row.key);
+                                            return _this34.setActiveTab(row.key);
                                         }
                                     });
                                 }));
                             } else {
-                                row.key === _this33.activeTab && body.children.push( Core.createElement('div', child) );
-                                /*body.children.push(Core.createElement('div', child, function (layout) {
-                                    return row.key === _this33.activeTab ? layout : _extends({}, layout, { style: 'display: none' });
-                                }));*/
+                                row.key === _this34.activeTab && body.push(Core.createElement('div', child)); //body.children.push( Core.createElement('div', child) );
+                                /*body.push( Core.createElement('div', child, function(layout) {
+                                    return row.key === _this34.activeTab ? layout : _extends({}, layout, {style: 'display: none'}) 
+                                } ) );*/
                             }
                         });
                     }
                 });
-                return Core.createElement('div', rest, [head, body]);
+                return Core.createElement('div', rest, [head].concat(body));
             }
         }]);
 
@@ -2385,23 +2331,23 @@ define('components/tab-d', ['dfe-core', 'components/base'], function (Core, Base
         return ActiveTabHandler;
     }();
 
-    return function (_BaseComponent9) {
-        _inherits(TabD, _BaseComponent9);
+    return function (_BaseComponent8) {
+        _inherits(TabD, _BaseComponent8);
 
         function TabD(node) {
             _classCallCheck(this, TabD);
 
-            var _this34 = _possibleConstructorReturn(this, (TabD.__proto__ || Object.getPrototypeOf(TabD)).call(this, node));
+            var _this35 = _possibleConstructorReturn(this, (TabD.__proto__ || Object.getPrototypeOf(TabD)).call(this, node));
 
-            _this34.handler = new ActiveTabHandler(_this34);
-            _this34.allColumns = node.field.children;
-            return _this34;
+            _this35.handler = new ActiveTabHandler(_this35);
+            _this35.allColumns = node.field.children;
+            return _this35;
         }
 
         _createClass(TabD, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this35 = this;
+                var _this36 = this;
 
                 var headerClass = attributes.rowclass$header,
                     headerStyle = attributes.rowstyle$header,
@@ -2423,19 +2369,19 @@ define('components/tab-d', ['dfe-core', 'components/base'], function (Core, Base
                 }).pop();
                 data.forEach(function (model) {
                     var child = children.get(model.data).get(headField),
-                        isActive = (useHandler ? _this35.handler.activeTab : activeTab)(model);
+                        isActive = (useHandler ? _this36.handler.activeTab : activeTab)(model);
                     if (child) {
                         head.children.push(Core.createElement('div', child, function (layout) {
                             return _extends({}, layout, isActive ? { class: (layout.class ? layout.class + ' ' : '') + haclass } : {}, {
                                 onClick: function onClick() {
-                                    return _this35.handler.store(model), _this35.store(model);
+                                    return _this36.handler.store(model), _this36.store(model);
                                 }
                             });
                         }));
                     }
                 });
                 children.get(null).forEach(function (child, field) {
-                    return field.name === (useHandler ? _this35.handler.activeTab : activeTab)() && body.children.push(Core.createElement('div', child));
+                    return field.name === (useHandler ? _this36.handler.activeTab : activeTab)() && body.children.push(Core.createElement('div', child));
                 });
                 return Core.createElement('div', rest, [head, body]);
             }
@@ -2458,7 +2404,7 @@ define('components/div-c', ['dfe-core', 'components/table'], function (Core, Tab
         _createClass(DivC, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this37 = this;
+                var _this38 = this;
 
                 var rowClass = attributes.rowclass,
                     rowStyle = attributes.rowstyle,
@@ -2482,7 +2428,7 @@ define('components/div-c', ['dfe-core', 'components/table'], function (Core, Tab
                 });
                 this.toColumns(children.get(null), fields.header, columns);
                 rows.forEach(function (model) {
-                    return _this37.toColumns(children.get(model.data), fields[""], columns);
+                    return _this38.toColumns(children.get(model.data), fields[""], columns);
                 });
                 this.toColumns(children.get(null), fields.footer, columns);
                 return Core.createElement('div', rest, columns);
@@ -2518,16 +2464,16 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
         function Radiolist(node) {
             _classCallCheck(this, Radiolist);
 
-            var _this38 = _possibleConstructorReturn(this, (Radiolist.__proto__ || Object.getPrototypeOf(Radiolist)).call(this, node));
+            var _this39 = _possibleConstructorReturn(this, (Radiolist.__proto__ || Object.getPrototypeOf(Radiolist)).call(this, node));
 
-            _this38.defaultName = 'Radiolist#' + ++radioNameCounter;
-            return _this38;
+            _this39.defaultName = 'Radiolist#' + ++radioNameCounter;
+            return _this39;
         }
 
         _createClass(Radiolist, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this39 = this;
+                var _this40 = this;
 
                 var orientation = attributes.orientation,
                     rest = _objectWithoutProperties(attributes, ['orientation']);
@@ -2538,12 +2484,12 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
                 }
                 return [[].concat(_toConsumableArray(Array.prototype.concat.apply([], normalized.items.map(function (item) {
                     return [Core.createElement('input', _extends({
-                        name: _this39.defaultName
-                    }, _this39.splitAttributes(rest, error), {
+                        name: _this40.defaultName
+                    }, _this40.splitAttributes(rest, error), {
                         type: 'radio',
                         checked: testChoice(normalized.value, item.value),
                         onChange: function onChange() {
-                            return _this39.store(item.value);
+                            return _this40.store(item.value);
                         }
                     })), item.description || item.value.toString(), orientation === 'vertical' && Core.createElement('br')];
                 }))), [_get(Radiolist.prototype.__proto__ || Object.getPrototypeOf(Radiolist.prototype), 'render', this).call(this, null, error, rest)])];
@@ -2555,8 +2501,8 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
 });
 
 define('components/iframe', ['dfe-core', 'components/base'], function (Core, BaseComponent) {
-    return function (_BaseComponent10) {
-        _inherits(Iframe, _BaseComponent10);
+    return function (_BaseComponent9) {
+        _inherits(Iframe, _BaseComponent9);
 
         function Iframe() {
             _classCallCheck(this, Iframe);
@@ -2588,11 +2534,11 @@ define('components/textarea', ['dfe-core', 'components/editbox', 'components/val
         _createClass(Textarea, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var format = attributes.formatting,
+                var format = attributes.format,
                     pattern = attributes.pattern,
                     transform = attributes.transform,
                     trigger = attributes.trigger,
-                    rest = _objectWithoutProperties(attributes, ['formatting', 'pattern', 'transform', 'trigger']);
+                    rest = _objectWithoutProperties(attributes, ['format', 'pattern', 'transform', 'trigger']);
 
                 _extends(this, { format: format, pattern: pattern, transform: transform, trigger: trigger });
                 return [[Core.createElement('textarea', _extends({}, this.splitAttributes(rest, error), this.events, { value: this.getValueProcessed(data.toString()) })), ValidationComponent.prototype.render.call(this, null, error, rest)]];
@@ -2603,9 +2549,9 @@ define('components/textarea', ['dfe-core', 'components/editbox', 'components/val
     }(Editbox);
 });
 
-define('components/dfe-runtime', ['dfe-core'], function (Core) {
-    return function (_Core$Component4) {
-        _inherits(ChildRuntime, _Core$Component4);
+define('components/child-runtime', ['dfe-core'], function (Core) {
+    return function (_Core$Component5) {
+        _inherits(ChildRuntime, _Core$Component5);
 
         function ChildRuntime() {
             _classCallCheck(this, ChildRuntime);
@@ -2616,17 +2562,20 @@ define('components/dfe-runtime', ['dfe-core'], function (Core) {
         _createClass(ChildRuntime, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this43 = this;
+                var _this44 = this;
 
                 var formName = attributes.form,
                     editTarget = attributes.editTarget,
-                    rest = _objectWithoutProperties(attributes, ['form', 'editTarget']);
+                    _ref = attributes.ref,
+                    rest = _objectWithoutProperties(attributes, ['form', 'editTarget', 'ref']);
 
                 var model = data[0] || {};
                 ChildRuntime.setDOMAttributes(this.ref, formName, editTarget, model);
-                return Core.createElement('div', _extends({}, rest, { ref: function ref(dom) {
-                        return ChildRuntime.setDOMAttributes(_this43.ref = dom, formName, editTarget, model);
-                    } }));
+                return Core.createElement('div', _extends({}, rest, {
+                    ref: function ref(dom) {
+                        return _ref && _ref(dom), ChildRuntime.setDOMAttributes(_this44.ref = dom, formName, editTarget, model);
+                    }
+                }));
             }
         }, {
             key: 'destroy',
@@ -2665,12 +2614,12 @@ define('components/div-button', ['dfe-core', 'components/validation-component'],
         _createClass(DivButton, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this45 = this;
+                var _this46 = this;
 
                 var value = data.toString(),
                     rest = _objectWithoutProperties(attributes, []);
                 return Core.createElement('div', _extends({}, this.splitAttributes(rest, error), { onClick: function onClick() {
-                        return _this45.store(value, 'click');
+                        return _this46.store(value, 'click');
                     } }), [Core.createElement('label', { class: 'div-button-text', html: value }), _get(DivButton.prototype.__proto__ || Object.getPrototypeOf(DivButton.prototype), 'render', this).call(this, null, error, rest)]);
             }
         }]);
@@ -2692,7 +2641,7 @@ define('components/multioption', ['dfe-core', 'components/validation-component']
         _createClass(Multioption, [{
             key: 'render',
             value: function render(data, error, attributes, children) {
-                var _this47 = this;
+                var _this48 = this;
 
                 var value = data.value.toString(),
                     rest = _objectWithoutProperties(attributes, []);
@@ -2701,7 +2650,7 @@ define('components/multioption', ['dfe-core', 'components/validation-component']
                         type: 'checkbox',
                         checked: option === value,
                         onChange: function onChange(e) {
-                            return _this47.store(e.target.checked ? option : []);
+                            return _this48.store(e.target.checked ? option : []);
                         }
                     }), option];
                 }))), [_get(Multioption.prototype.__proto__ || Object.getPrototypeOf(Multioption.prototype), 'render', this).call(this, null, error, rest)]));
@@ -2719,10 +2668,10 @@ define('components/labeled', ['dfe-core', 'components/validation-component'], fu
         function Labeled(node) {
             _classCallCheck(this, Labeled);
 
-            var _this48 = _possibleConstructorReturn(this, (Labeled.__proto__ || Object.getPrototypeOf(Labeled)).call(this, node));
+            var _this49 = _possibleConstructorReturn(this, (Labeled.__proto__ || Object.getPrototypeOf(Labeled)).call(this, node));
 
-            _this48.renderComponent = _this48.getComponent().prototype.render.bind(new (_this48.getComponent())(node));
-            return _this48;
+            _this49.renderComponent = _this49.getComponent().prototype.render.bind(new (_this49.getComponent())(node));
+            return _this49;
         }
 
         _createClass(Labeled, [{
@@ -2744,7 +2693,7 @@ define('components/labeled', ['dfe-core', 'components/validation-component'], fu
     }(ValidationComponent);
 });
 
-define('components/c-checkbox', ['dfe-core', 'components/checkbox', 'components/labeled'], function (Core, Checkbox, Labeled) {
+define('components/labeled-checkbox', ['dfe-core', 'components/checkbox', 'components/labeled'], function (Core, Checkbox, Labeled) {
     return function (_Labeled) {
         _inherits(LabeledCheckbox, _Labeled);
 
@@ -2765,7 +2714,7 @@ define('components/c-checkbox', ['dfe-core', 'components/checkbox', 'components/
     }(Labeled);
 });
 
-define('components/c-editbox', ['dfe-core', 'components/editbox', 'components/labeled'], function (Core, Editbox, Labeled) {
+define('components/labeled-editbox', ['dfe-core', 'components/editbox', 'components/labeled'], function (Core, Editbox, Labeled) {
     return function (_Labeled2) {
         _inherits(LabeledEditbox, _Labeled2);
 
@@ -2786,7 +2735,7 @@ define('components/c-editbox', ['dfe-core', 'components/editbox', 'components/la
     }(Labeled);
 });
 
-define('components/c-dropdown', ['dfe-core', 'components/dropdown', 'components/labeled'], function (Core, Dropdown, Labeled) {
+define('components/labeled-dropdown', ['dfe-core', 'components/dropdown', 'components/labeled'], function (Core, Dropdown, Labeled) {
     return function (_Labeled3) {
         _inherits(LabeledDropdown, _Labeled3);
 
@@ -2807,7 +2756,7 @@ define('components/c-dropdown', ['dfe-core', 'components/dropdown', 'components/
     }(Labeled);
 });
 
-define('components/c-editbox-$', ['dfe-core', 'components/editbox-$', 'components/labeled'], function (Core, EditboxMoney, Labeled) {
+define('components/labeled-editbox-money', ['dfe-core', 'components/editbox-money', 'components/labeled'], function (Core, EditboxMoney, Labeled) {
     return function (_Labeled4) {
         _inherits(LabeledEditboxMoney, _Labeled4);
 
@@ -2828,7 +2777,7 @@ define('components/c-editbox-$', ['dfe-core', 'components/editbox-$', 'component
     }(Labeled);
 });
 
-define('components/c-radiolist', ['dfe-core', 'components/radiolist', 'components/labeled'], function (Core, Radiolist, Labeled) {
+define('components/labeled-radiolist', ['dfe-core', 'components/radiolist', 'components/labeled'], function (Core, Radiolist, Labeled) {
     return function (_Labeled5) {
         _inherits(LabeledRadiolist, _Labeled5);
 
@@ -2849,130 +2798,357 @@ define('components/c-radiolist', ['dfe-core', 'components/radiolist', 'component
     }(Labeled);
 });
 
-/*  TODO: 
+define('components/modal', ['dfe-core', 'components/div'], function (Core, Div) {
+    return function (_Core$Form) {
+        _inherits(Modal, _Core$Form);
 
-define('components/editbox-P', ['components/editbox', 'ui/utils'], function(CEditbox, uiUtils) {
-    return _extend({
-        cname: 'editbox-P',
-        render: function (nodes, control, data, errs, attrs, events) {
-            if(!defer(nodes, control, data, errs, attrs, events)) {
-                var rt = this.runtime(control), self = this;
-                if(!control.ui) {
-                    nodes[0].appendChild(control.ui = document.createElement('input'))._dfe_ = control;
-                    uiUtils.addEventListener(control.ui, 'focus', function(e) { self.showPopup(control) });
-                    uiUtils.addEventListener(control.ui, 'click', function(e) { self.showPopup(control) });
-                    uiUtils.addEventListener(control.ui, attrs.trigger || 'keyup', function(e) { control.currentValue === control.ui.value || control.component.store(control, control.ui.value) });
-                    uiUtils.addEventListener(control.ui, 'keydown', function(e) { 
-                        (e.key == 'Esc' || e.key == 'Escape') && rt.ta && control.closePopup();
-                        e.key == 'Enter' && (e.preventDefault(), self.showPopup(control), self.getPopupActiveElement(control).focus());
-                        e.key == 'Tab' && rt.ta && (self.getPopupActiveElement(control).focus(), e.preventDefault());
+        function Modal(node) {
+            _classCallCheck(this, Modal);
+
+            var _this55 = _possibleConstructorReturn(this, (Modal.__proto__ || Object.getPrototypeOf(Modal)).call(this, node));
+
+            _this55.root = null;
+            return _this55;
+        }
+
+        _createClass(Modal, [{
+            key: 'render',
+            value: function render(data, error, attribures, children) {
+                var root = null;
+                children.forEach(function (map) {
+                    return map.forEach(function (child) {
+                        return root || (root = child);
                     });
+                });
+                if (this.root !== root) {
+                    this.root && this.root.setDom(null, null, null);
+                    if (root !== null) {
+                        root.setDom({ type: 'div', attributeMapper: function attributeMapper(layout) {
+                                return _extends({}, layout, attribures);
+                            } }, document.body, null);
+                    }
+                    this.root = root;
                 }
-                this.setValue(control, data, errs, attrs);
-                this.setAttributes(control, errs, attrs);
-                this.appendError(control, nodes[0], errs, attrs);
-                this.setPopupAttributes(control, attrs.ta||{}, errs);
-                this.updatePopupContent(control, data, attrs);
+                return [];
             }
-        },
-        setValue: function(control, data, errs, attrs) {
-            control.ui.value === data || (control.ui.value = data);
-            control.currentValue = control.ui.value;
-        },
-        updatePopupContent: function(control, data, attrs) {
-            var rt = this.runtime(control);
-            rt.ta && rt.popup && !rt.ta.contains(control.ui.ownerDocument.activeElement) && (rt.popup.value == data || (rt.popup.value = data, rt.popup.selectionStart = rt.popup.selectionEnd = 0, rt.popup.scrollTop = 0));
-        },
-        getPopupUi: function(control) {
-            var attrs = control.model.attrs, rt = this.runtime(control), p = rt.popup;
-            if(!rt.popup) { 
-                rt.popup = p = control.ui.ownerDocument.createElement('textarea');
-                uiUtils.setAttribute(p, 'class', 'edit-popup-textarea');
-                uiUtils.addEventListener(p, attrs.trigger || 'keyup', function(){ 
-                    control.component.store(control, control.ui.value = p.value);
-                    control.currentValue = p.value;
-                });
-                uiUtils.addEventListener(p, 'keydown', function(e) { 
-                    (e.key == 'Esc' || e.key == 'Escape') && (control.ui.focus(), control.closePopup()) 
-                    e.key == 'Tab' && (control.ui.focus(), e.preventDefault()); // ??
-                });
+        }], [{
+            key: 'fields',
+            value: function fields(children, config) {
+                return Core.Form.field(Div, {
+                    atr: function atr() {
+                        return { wrap: false };
+                    },
+                    layout: [{ style: 'position: absolute; left: 300px; top: 300px; border: 2px solid #bbb; border-radius: 3px; padding: 5px;' }]
+                }, children);
             }
-            return p;
-        },
-        onResize: function(control) {},
-        getPopupActiveElement: function(control) { 
-            return this.runtime(control).popup 
-        },
-        onClosePopup: function(control) {},
-        purge: function (control) { control.closePopup && rt.ta && control.closePopup(); this.emptyUI(control); },
-        showPopup: function(control) {
-            var rt = this.runtime(control), scrollFollow, escUnf, doc = control.ui.ownerDocument, self = this;
-            if(control.ui && !rt.ta) {
-                this.createPopup(control);
-                this.updatePopupContent(control, control.data, control.model.attrs);
-                (scrollFollow = function() {
-                    var r = control.ui.getBoundingClientRect(), op = control.ui.offsetParent, wnd = doc.defaultView||window;
-                    rt.ta.style.display = (op.scrollTop > control.ui.offsetTop + control.ui.offsetHeight || op.scrollTop + op.clientHeight < control.ui.offsetTop + control.ui.offsetHeight) ? 'none' : '';
-                    rt.ta.style.top = (r.bottom + 2 + (wnd.scrollY||wnd.pageYOffset) + (rt.ta_t||0)) + 'px';
-                    rt.ta.style.left = (r.left + (wnd.scrollX||wnd.pageXOffset) + (rt.ta_l||0)) + 'px';
-                })();
-                for(var e = control.ui; e; e = e.parentElement) e.addEventListener('scroll', scrollFollow);
-                var i = setInterval(function() {
-                    doc.activeElement != control.ui && !rt.resizeOngoing && ! rt.ta.contains(doc.activeElement) && control.closePopup();
-                }, 30);
-                control.closePopup = function() {
-                    for(var e = control.ui; e; e = e.parentElement) uiUtils.removeEventListener(e, 'scroll', scrollFollow);
-                    uiUtils.removeEventListener(self.getPopupActiveElement(control), 'keydown', escUnf);
-                    clearInterval(i);
-                    self.onClosePopup(control);
-                    uiUtils.removeNode(rt.ta);
-                    delete rt.ta;
+        }]);
+
+        return Modal;
+    }(Core.Form);
+});
+
+define('components/editbox-popup', ['dfe-core', 'components/editbox', 'components/textarea'], function (Core, Editbox, Textarea) {
+    var EditboxPopup = function (_Editbox3) {
+        _inherits(EditboxPopup, _Editbox3);
+
+        function EditboxPopup(node) {
+            _classCallCheck(this, EditboxPopup);
+
+            var _this56 = _possibleConstructorReturn(this, (EditboxPopup.__proto__ || Object.getPrototypeOf(EditboxPopup)).call(this, node));
+
+            var editBoxKeyDownEvent = _this56.events.onKeyDown;
+            _this56.popup = Core.createNode(node, { component: Textarea, set: function set(_, value) {
+                    return _this56.store(_this56.setMapper(value));
+                } }, node.unboundModel);
+            _this56.ref = null;
+            _this56.focusInterval = null;
+            _this56.popupAttributes = {};
+            _this56.scrollFollow = function () {
+                return _this56.renderPopup();
+            };
+            _this56.memorizedDims = '';
+            _this56.events = _extends({}, _this56.events, {
+                onKeyDown: function onKeyDown(e) {
+                    return _this56.popupEvent(e), editBoxKeyDownEvent(e);
+                },
+                onFocus: function onFocus() {
+                    return _this56.renderPopup(true);
                 }
-                uiUtils.addEventListener(self.getPopupActiveElement(control), 'keydown', (escUnf = function(e) { 
-                    e.key == 'Escape' && !e.defaultPrevented && (control.ui.focus(), control.closePopup());
-                }));
-            }    
-        },
-        createPopup: function(control) {
-            var rt = this.runtime(control), doc = control.ui.ownerDocument, attrs = control.model.attrs, handle, self = this;
-            rt.ta = doc.createElement('div'); 
-            rt.ta.appendChild(this.getPopupUi(control));
-            rt.ta.appendChild(handle = document.createElement('span'));
-            doc.getElementsByTagName('body')[0].appendChild(rt.ta);
-            this.setPopupAttributes(control, attrs.ta||{}, control.error);
-            handle.setAttribute('class', 'ui-resizeable-handle-br');
-            handle.addEventListener('mousedown', function(ie) {
-                rt.resizeOngoing = 1;
-                var ox = ie.screenX, oy = ie.screenY, w = rt.ta.offsetWidth, h = rt.ta.offsetHeight, move, up;
-                document.addEventListener('mousemove', move = function(me) {
-                    self.onResize(control);
-                    rt.ta.style.width = rt.ta_w = (w + me.screenX - ox) + 'px';
-                    rt.ta.style.height = rt.ta_h = (h + me.screenY - oy) + 'px';
-                    me.preventDefault(), window.getSelection().removeAllRanges();
-                });
-                document.addEventListener('mouseup', up = function(me) {
-                    rt.resizeOngoing = 0;
-                    uiUtils.removeEventListener(document, 'mousemove', move);
-                    uiUtils.removeEventListener(document, 'mouseup', up);
-                    self.getPopupActiveElement(control).focus();
-                });
             });
+            return _this56;
+        }
+
+        _createClass(EditboxPopup, [{
+            key: 'render',
+            value: function render(value, error, attributes, children) {
+                var _this57 = this;
+
+                var popupAttributes = attributes.ta,
+                    _ref2 = attributes.ref,
+                    rest = _objectWithoutProperties(attributes, ['ta', 'ref']);
+
+                this.popupAttributes = popupAttributes;
+                this.popupData = this.getMapper(value);
+                this.popupError = error;
+                this.renderPopup();
+                return _get(EditboxPopup.prototype.__proto__ || Object.getPrototypeOf(EditboxPopup.prototype), 'render', this).call(this, value, error, _extends({ ref: function ref(dom) {
+                        return _this57.ref = dom, _ref2 && _ref2(dom);
+                    } }, rest), children);
+            }
+        }, {
+            key: 'renderPopup',
+            value: function renderPopup(show) {
+                var _this58 = this;
+
+                var popup = this.popup,
+                    active = this.popupContainer && this.popupContainer.parentNode;
+                if (active || show) {
+                    popup.shouldRender = true;
+                    popup.setDom({ type: 'div' }, this.ref.ownerDocument.body, null);
+                    popup.render(this.popupData, this.popupError, this.mapPopupAttributes());
+                    if (!active) {
+                        for (var _element = this.ref.parentElement; _element; _element = _element.parentElement) {
+                            _element.addEventListener('scroll', this.scrollFollow);
+                        }
+                        this.focusInterval = setInterval(function () {
+                            _this58.ref.ownerDocument.activeElement !== _this58.ref && !_this58.resizeOngoing && !_this58.popupContainer.contains(_this58.ref.ownerDocument.activeElement) && _this58.hidePopup();
+                        }, 30);
+                    }
+                }
+            }
+        }, {
+            key: 'hidePopup',
+            value: function hidePopup() {
+                clearInterval(this.focusInterval);
+                this.popup.setDom({ type: 'div' }, null, null);
+                for (var _element2 = this.ref.parentElement; _element2; _element2 = _element2.parentElement) {
+                    _element2.removeEventListener('scroll', this.scrollFollow);
+                }
+            }
+        }, {
+            key: 'popupEvent',
+            value: function popupEvent(e) {
+                if (e.key === 'Esc' || e.key === 'Escape') {
+                    this.hidePopup();
+                }
+                if (e.key === 'Enter') {
+                    this.renderPopup(true);
+                }
+                if (e.key === 'Tab' && this.popupContainer && this.popupContainer.parentNode) {
+                    (e.target === this.ref ? this.popupContainer.firstChild : this.ref).focus();
+                    e.preventDefault();
+                }
+            }
+        }, {
+            key: 'mapPopupAttributes',
+            value: function mapPopupAttributes() {
+                var _this59 = this;
+
+                var _popupAttributes = this.popupAttributes,
+                    offsetTop = _popupAttributes.offsetTop,
+                    offsetLeft = _popupAttributes.offsetLeft,
+                    style = _popupAttributes.style,
+                    editorClass = _popupAttributes.editorClass,
+                    rest = _objectWithoutProperties(_popupAttributes, ['offsetTop', 'offsetLeft', 'style', 'editorClass']);
+
+                var r = this.ref.getBoundingClientRect(),
+                    op = this.ref.offsetParent,
+                    wnd = this.ref.ownerDocument.defaultView || window;
+                var display = op.scrollTop > this.ref.offsetTop + this.ref.offsetHeight || op.scrollTop + op.clientHeight < this.ref.offsetTop + this.ref.offsetHeight ? 'none' : '';
+                var top = r.bottom + 2 + (wnd.scrollY || wnd.pageYOffset) + (offsetTop || 0) + 'px';
+                var left = r.left + (wnd.scrollX || wnd.pageXOffset) + (offsetLeft || 0) + 'px';
+                return {
+                    class: editorClass,
+                    events: { onKeyDown: function onKeyDown(e) {
+                            return _this59.popupEvent(e);
+                        } },
+                    ref: function ref(dom) {
+                        return _this59.setupPopup(dom.parentNode);
+                    },
+                    attributeMapper: function attributeMapper() {
+                        return _extends({}, rest, { style: (style ? style + ';' : '') + 'display:' + display + ';top:' + top + ';left:' + left + ';' + _this59.memorizedDims });
+                    }
+                };
+            }
+        }, {
+            key: 'setupPopup',
+            value: function setupPopup(div) {
+                var _this60 = this;
+
+                this.popupContainer = div;
+                var document = this.ref.ownerDocument,
+                    window = document.defaultView || window;
+                var rect = div.getBoundingClientRect();
+                var width = rect.right - rect.left;
+                var height = rect.bottom - rect.top;
+                var handle = document.createElement('span');
+                div.appendChild(handle);
+                handle.setAttribute('class', 'ui-resizeable-handle-br');
+                handle.addEventListener('mousedown', function (e) {
+                    _this60.resizeOngoing = true;
+                    var ox = e.screenX,
+                        oy = e.screenY,
+                        move = void 0,
+                        _up = void 0;
+                    document.addEventListener('mousemove', move = function move(e) {
+                        div.style.width = width + e.screenX - ox + 'px';
+                        div.style.height = height + e.screenY - oy + 'px';
+                        e.preventDefault(), window.getSelection().removeAllRanges();
+                        _this60.onResize();
+                    });
+                    document.addEventListener('mouseup', _up = function up() {
+                        _this60.resizeOngoing = false;
+                        div.querySelector("textarea, input").focus();
+                        document.removeEventListener('mousemove', move);
+                        document.removeEventListener('mouseup', _up);
+                        rect = div.getBoundingClientRect(), width = rect.right - rect.left, height = rect.bottom - rect.top;
+                        _this60.memorizedDims = 'width:' + width + 'px;height:' + height + 'px';
+                    });
+                });
+            }
+        }, {
+            key: 'onResize',
+            value: function onResize() {}
+        }, {
+            key: 'getMapper',
+            value: function getMapper(value) {
+                return value;
+            }
+        }, {
+            key: 'setMapper',
+            value: function setMapper(value) {
+                return value;
+            }
+        }]);
+
+        return EditboxPopup;
+    }(Editbox);
+
+    return EditboxPopup;
+});
+
+/* TODO: 
+define('components/typeahead', ['components/component', 'ui/utils', 'ui/jquery', 'ui/jquery-typeahead'], function(Component, uiUtils, jQuery) {
+	function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
+    return _extend({
+        cname: 'typeahead',
+        defaultOPTS: { source : {}, minLength: 1, maxItem: 8, maxItemPerGroup: 6, order: "asc", hint: true, searchOnFocus: true, debug: false, display: ['value','description'], template: '{{value}}: {{description}}', emptyTemplate: 'no result for {{query}}' },
+        render: function (nodes, control, data, errs, attrs, events) {
+            var rt = this.runtime(control), prevValue = '', self = this, s;
+            if(!control.ui) {
+                (control.ui = document.createElement('div'))._dfe_ = control;
+                control.ui.innerHTML = '<div class="typeahead__field"><span class="typeahead__query"><input type="search" autocomplete="off"/></span></div>';
+                control.ui.setAttribute('class', 'typeahead__container');
+                self.setEvents(control.ui, control, data, errs, attrs);
+                rt.node = control.ui.firstChild.firstChild.firstChild;
+                rt.memorizedItem = {};
+                opts = _extend( attrs && attrs.options, self.defaultOPTS );
+                opts.callback = { onClickAfter: function (node, a, item, event) { control.component.store(control, rt.memorizedItem = item) } }
+                jQuery(rt.node).typeahead( opts );
+                nodes && nodes[0].appendChild(control.ui);
+            }
+
+            if( data && data.status != 'loading' ) {
+                jQuery(rt.node).prop('disabled', false);
+                jQuery(rt.node).typeahead('hideloading');
+                jQuery(rt.node).typeahead( { source : { data : typeof attrs.filter == 'function' ? attrs.filter(data.items) : data.items} }, 'reload' );
+                if(!data.found) {
+                    if(data.items.length > 0) {
+                        control.component.store(control, rt.memorizedItem = {});
+                        jQuery(rt.node).typeahead('clean');
+                    } else {
+                        jQuery(rt.node).prop('disabled', true).val('No results found for given criteria');
+                    }
+                } else {
+                    var match = true; for(v in data.value) match = match && rt.memorizedItem[v] == data.found[v];
+                    match || (rt.memorizedItem = data.found);
+                    rt.node.value = rt.memorizedItem[attrs.display || 'description'];     //jQuery(rt.node).typeahead('close');
+                }
+            } else 
+                jQuery(rt.node).typeahead('showloading');
         },
-        setPopupAttributes: function(control, attrs, errs) {
-            var rt = this.runtime(control);
-            if(rt.ta) {
-                var st = rt.ta.style, w = st.width||rt.ta_w, h = st.height||rt.ta_h, t = st.top, l = st.left;
-                rt.ta_l = attrs.offsetLeft, rt.ta_t = attrs.offsetTop; 
-                attrs['class'] = (attrs['class']||'') + (errs && attrs.eclass ? ' ' + attrs.eclass : '');
-                this.setAttributesUI(rt.ta, errs, attrs);
-                w && (st.width = w), h && (st.height = h), t && (st.top = t), l && (st.left = l);
+        emptyUI: function(control) {
+            if(control.ui) {
+                jQuery(this.runtime(control).node).typeahead( 'destroy' );
+                Component.emptyUI(control);
             }
         }
-    }, CEditbox, _base())
+    }, Component, Component.base())
 })
+
 */
 
-define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/c-radiolist", "components/c-editbox", "components/c-dropdown", "components/c-editbox-$", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/c-checkbox"], function (require, Core, cmn, _fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
+define("dfe-field-helper", ['dfe-common'], function (cmn) {
+    return {
+        simple: function simple(field, _val, attrs) {
+            var hasVal = Array.isArray(_val);hasVal || (attrs = _val);attrs || (attrs = {});
+            return _extends({
+                get: function get(model) {
+                    return model.get(field);
+                },
+                set: function set(model, value) {
+                    return model.set(field, value);
+                },
+                val: function val(model) {
+                    return hasVal ? !_val.some(function (func) {
+                        return func.call(model.$node.form, model, model.get(field).toString(), field, attrs) === false;
+                    }) : model.required(field);
+                }
+            }, attrs);
+        },
+        date: function date(field, _val2, attrs) {
+            var hasVal = Array.isArray(_val2);hasVal || (attrs = _val2);attrs || (attrs = {});
+            return _extends({
+                format: 'MM/DD/YYYY',
+                transform: '67890134',
+                get: function get(model) {
+                    return model.get(field);
+                },
+                set: function set(model, value) {
+                    return model.set(field, value);
+                },
+                val: function val(model) {
+                    var value = cmn.ARFtoDate(model.get(field));
+                    return value instanceof Date ? !(hasVal && _val2.some(function (func) {
+                        return func.call(model.$node.form, model, value, field, attrs) === false;
+                    })) : model.error(hasVal ? _val2[0] : 'Invalid format');
+                }
+            }, attrs);
+        },
+        choice: function choice(field, items, attrs) {
+            return _extends({
+                get: function get(model) {
+                    return { value: model.get(field), items: items };
+                },
+                set: function set(model, value) {
+                    return model.set(field, value);
+                },
+                val: function val(model) {
+                    return model.required(field);
+                },
+                "default": []
+            }, attrs);
+        },
+        ajaxChoice: function ajaxChoice(field, opts, attrs) {
+            return _extends({
+                get: function get(model) {
+                    return opts.query ? cmn.ajaxFeed(model, cmn.extend(opts, { value: model.get(field) })) : cmn.ajaxFeed(model, { query: opts, value: model.get(field) });
+                },
+                set: function set(model, value) {
+                    return model.set(field, value);
+                },
+                "default": []
+            }, attrs);
+        },
+        choiceItems: function choiceItems(arg) {
+            return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object' ? Object.getOwnPropertyNames(arg).map(function (key) {
+                return { value: arg[key], description: key };
+            }) : [];
+        }
+    };
+});
+
+define("forms/corecomm/quote.cmau.car", ["require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/labeled-radiolist", "components/labeled-editbox", "components/labeled-dropdown", "components/labeled-editbox-money", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/labeled-checkbox"], function (require, Core, cmn, _fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, Labeled, Container, InlineRows, LabeledCheckbox) {
     var Form = Core.Form;
 
     var carDefaults = {
@@ -2986,6 +3162,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
         DumpingOpInd: "N",
         vinoverride: "N",
         hasvin: "Y",
+        vinvalid: "N",
         custom: "N",
         UseClassInd1: "N",
         UseClassInd2: "N",
@@ -3045,7 +3222,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
     }(LabeledEditbox);
 
     function vehDetailsDisabled($$) {
-        return $$('.hasvin') == 'Y' && ($$('.vinnumber') == 0 || $$('.vinoverride') != 'Y');
+        return $$.get('.hasvin') == 'Y' && ($$.get('.vinnumber') == 0 || $$.get('.vinoverride') != 'Y');
     }
 
     var VehDetailsChoice = function (_Form) {
@@ -3072,7 +3249,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                     val: config.validation,
                     atr: function atr($$) {
                         return {
-                            first: vehDetailsDisabled($$) || $$('.custom') == 'Y'
+                            first: vehDetailsDisabled($$) || $$.get('.custom') == 'Y'
                         };
                     }
                 }, Form.field(Editbox, {
@@ -3092,7 +3269,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                                 action: config.action
                             })
                         }, {
-                            disabled: vehDetailsDisabled($$) || $$('.custom') == 'Y',
+                            disabled: vehDetailsDisabled($$) || $$.get('.custom') == 'Y',
                             hideError: true
                         });
                     }
@@ -3120,8 +3297,8 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         return 'Apply to all ' + (config.type ? typeMap[config.type].btn || typeMap[config.type].name : 'Vehicles');
                     },
                     set: function set($$, value) {
-                        return $$('...location.car').forEach(function (car) {
-                            return config.type && car.data.vehicletype != config.type || car.set(config.field, $$(config.field));
+                        return $$.get('...location.car').forEach(function (car) {
+                            return config.type && car.data.vehicletype != config.type || car.set(config.field, $$.get(config.field));
                         });
                     },
                     atr: function atr() {
@@ -3140,43 +3317,31 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
         function QuoteCmauCarForm(node) {
             _classCallCheck(this, QuoteCmauCarForm);
 
-            var _this57 = _possibleConstructorReturn(this, (QuoteCmauCarForm.__proto__ || Object.getPrototypeOf(QuoteCmauCarForm)).call(this, node));
+            var _this64 = _possibleConstructorReturn(this, (QuoteCmauCarForm.__proto__ || Object.getPrototypeOf(QuoteCmauCarForm)).call(this, node));
 
             node.unboundModel.get('policy.cmau.location').forEach(function (loc) {
                 return loc.defaultSubset('.car', carDefaults).forEach(function (car) {
                     return car.get('.hasvin') == 'Y' && QuoteCmauCarForm.vehProcessVin(car);
                 });
             });
-            return _this57;
+            return _this64;
         }
 
         _createClass(QuoteCmauCarForm, null, [{
             key: 'fields',
             value: function fields() {
-                return Form.field(Container, "root", {
-                    get: function get($$) {
-                        return $$('policy.cmau');
-                    }
-                }, [Form.field(TabS, "locs", {
-                    get: function get($$) {
-                        return $$('.location');
-                    },
-                    val: function val($$) {
-                        return $$.required('.location');
-                    },
+                return Form.field(TabS, "locs", {
                     atr: function atr() {
-                        return {
+                        return _fields.simple('policy.cmau.location', {
                             haclass: 'tab-item-active',
-                            focusnew: 1,
-                            headField: 'loc-hdr',
+                            focusnew: true,
                             rowclass$header: 'tab-header',
-                            rowclass: 'tab-body',
-                            rowstyle: 'display: block; width: 900px;'
-                        };
+                            style: 'width: 900px;'
+                        });
                     }
-                }, [Form.field(DivButton, "loc-hdr", {
+                }, [Form.field(DivButton, "header", {
                     get: function get($$) {
-                        return ('<a style="color: #444">Location #' + ($$.index(2) + 1) + '</a><br/>' + $$('.city') + ' ' + $$('.state') + ' ' + $$('.zip') + '-' + $$('.zipaddon')).replace(/-$/, '');
+                        return ('<a style="color: #444">Location #' + ($$.index(2) + 1) + '</a><br/>' + $$.get('.city') + ' ' + $$.get('.state') + ' ' + $$.get('.zip') + '-' + $$.get('.zipaddon')).replace(/-$/, '');
                     },
                     atr: function atr($$) {
                         return {
@@ -3213,29 +3378,16 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         style: "position: absolute; right: 5px; top: 5px"
                     }]
                 })]), Form.field(TabS, "cars", {
-                    get: function get($$) {
-                        return $$('.car');
-                    },
-                    val: function val($$) {
-                        return $$.required('.car');
-                    },
                     atr: function atr() {
-                        return {
+                        return _fields.simple('.car', {
                             haclass: 'tab-item-active',
-                            focusnew: 1,
-                            headField: 'car-hdr',
-                            style: 'width: 100%;',
-                            rowclass$header: 'tab-header',
-                            rowclass: 'tab-body',
-                            rowstyle: 'padding: 0px; overflow: hidden;'
-                        };
-                    },
-                    layout: [{
-                        style: "width: 100%; "
-                    }]
-                }, [Form.field(DivButton, "car-hdr", {
+                            focusnew: true,
+                            rowclass$header: 'tab-header'
+                        });
+                    }
+                }, [Form.field(DivButton, "header", {
                     get: function get($$) {
-                        return $$('..state') + ' - Vehicle #' + ($$.index() + 1) + '<br/>' + $$('.ModelYr') + ' ' + $$('.make');
+                        return $$.get('..state') + ' - Vehicle #' + ($$.index() + 1) + '<br/>' + $$.get('.ModelYr') + ' ' + $$.get('.make');
                     },
                     atr: function atr($$) {
                         return {
@@ -3250,7 +3402,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                     }]
                 }), Form.field(Table, "info", {
                     atr: function atr($$) {
-                        var skip = $$('.hasvin') != 'Y' || $$('.vinvalid') == 'Y' || $$('.vinnumber') == 0 ? ['override'] : [];
+                        var skip = $$.get('.hasvin') != 'Y' || $$.get('.vinvalid') == 'Y' || $$.get('.vinnumber') == 0 ? ['override'] : [];
                         vehDetailsDisabled($$) && skip.push('custom');
                         return {
                             singleColumn: true,
@@ -3274,7 +3426,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         $$.set('.hasvin', value), 'Y' == value && QuoteCmauCarForm.vehProcessVin($$);
                     },
                     get: function get($$) {
-                        return $$('.hasvin');
+                        return $$.get('.hasvin');
                     },
                     atr: function atr() {
                         return {
@@ -3283,22 +3435,22 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         };
                     }
                 }), Form.field(InlineRows, { get: function get($$) {
-                        return $$('.hasvin') == 'Y' ? [$$] : [];
+                        return $$.get('.hasvin') == 'Y' ? [$$] : [];
                     } }, Form.field(VinNumber, "vin", {
                     get: function get($$) {
-                        return { vin: $$('.vinnumber'), vinvalid: $$('.vinvalid') };
+                        return { vin: $$.get('.vinnumber'), vinvalid: $$.get('.vinvalid') };
                     },
                     set: function set($$, value) {
                         $$.set('.vinnumber', value);
                         QuoteCmauCarForm.vehProcessVin($$);
                     },
                     val: function val($$) {
-                        return $$('.vinoverride') == 'Y' || $$.required('.vinnumber') && $$.required('.vinnumber', /[a-zA-Z0-9]{17}/, 'Invalid VIN format') && ($$('.vinvalid') == 'Y' || $$.error('Vin not found'));
+                        return $$.get('.vinoverride') == 'Y' || $$.required('.vinnumber') && $$.required('.vinnumber', /[a-zA-Z0-9]{17}/, 'Invalid VIN format') && ($$.get('.vinvalid') == 'Y' || $$.error('Vin not found'));
                     },
                     atr: function atr($$) {
                         return {
                             spellcheck: 'false',
-                            disabled: $$('.hasvin') != 'Y',
+                            disabled: $$.get('.hasvin') != 'Y',
                             style: 'width: 150px; text-transform: uppercase; display: block;',
                             pattern: /[a-zA-Z0-9]{1,17}/,
                             text: 'Vihicle Identification Number (VIN)'
@@ -3307,19 +3459,19 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                 })), Form.field(LabeledRadiolist, "override", {
                     atr: function atr() {
                         return _fields.simple('.vinoverride', [], {
-                            cstyle: 'padding-left: 10px;',
                             orientation: 'horizontal',
                             text: 'Override VIN?'
                         });
-                    }
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 }), Form.field(LabeledRadiolist, "custom", {
                     atr: function atr() {
                         return _fields.simple('.custom', [], {
-                            cstyle: 'padding-left: 10px;',
                             orientation: 'horizontal',
                             text: 'Vehicle Year, Make and/or Model is not available in dropdown'
                         });
-                    }
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 }), Form.field(LabeledDropdown, "type-choice", {
                     atr: function atr($$) {
                         return _fields.choice('.vehicletype', Object.keys(typeMap).map(function (k) {
@@ -3345,7 +3497,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         action: 'getYearOptions',
                         ajaxOptions: function ajaxOptions($$) {
                             return {
-                                vehicleType: $$('.vehicletype')
+                                vehicleType: $$.get('.vehicletype')
                             };
                         }
                     }
@@ -3360,8 +3512,8 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         action: 'getMakeOptions',
                         ajaxOptions: function ajaxOptions($$) {
                             return {
-                                vehicleType: $$('.vehicletype'),
-                                vehicleYear: $$('.ModelYr')
+                                vehicleType: $$.get('.vehicletype'),
+                                vehicleYear: $$.get('.ModelYr')
                             };
                         }
                     }
@@ -3376,9 +3528,9 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         action: 'getModelOptions',
                         ajaxOptions: function ajaxOptions($$) {
                             return {
-                                vehicleType: $$('.vehicletype'),
-                                vehicleYear: $$('.ModelYr'),
-                                vehicleMake: $$('.make')
+                                vehicleType: $$.get('.vehicletype'),
+                                vehicleYear: $$.get('.ModelYr'),
+                                vehicleMake: $$.get('.make')
                             };
                         }
                     }
@@ -3387,13 +3539,13 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         return _fields.simple('.vehicleocostnew', {
                             disabled: vehDetailsDisabled($$),
                             style: 'width: 150px;',
-                            formatting: '$9,999,999',
+                            format: '$9,999,999',
                             text: 'Original Cost New'
                         });
                     }
                 })]), Form.field(Table, "private", {
                     get: function get($$) {
-                        return $$('.vehicletype') == 'car' ? [$$] : [];
+                        return $$.get('.vehicletype') == 'car' ? [$$] : [];
                     },
                     atr: function atr() {
                         return {
@@ -3417,18 +3569,20 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         return _fields.choice('.VehUseCd', ['Furnished for Non-Business Use', 'All Other'], { text: 'Usage' });
                     }
                 })]), Form.field(InlineRows, "nonbus", { get: function get($$) {
-                        return $$('.VehUseCd') == 'Furnished for Non-Business Use' ? [$$] : [];
+                        return $$.get('.VehUseCd') == 'Furnished for Non-Business Use' ? [$$] : [];
                     } }, [Form.field(ApplyToAllField, "field-38", { config: { type: 'car', field: '.OperExp' } }, [Form.field(LabeledDropdown, {
                     atr: function atr() {
-                        return _fields.choice('.OperExp', ['No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs'], { text: 'Operator Experience', cstyle: 'padding-left: 10px' });
-                    }
+                        return _fields.choice('.OperExp', ['No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs'], { text: 'Operator Experience' });
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 })]), Form.field(ApplyToAllField, "field-42", { config: { type: 'car', field: '.OperUse' } }, [Form.field(LabeledDropdown, {
                     atr: function atr() {
-                        return _fields.choice('.OperUse', ['Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles'], { text: 'Operator Use', cstyle: 'padding-left: 10px' });
-                    }
+                        return _fields.choice('.OperUse', ['Not driven to work or school', 'To of from work less than 15 miles', 'To or from work 15 or more miles'], { text: 'Operator Use' });
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 })])])]), Form.field(Table, "truck", {
                     get: function get($$) {
-                        return $$('.vehicletype') == 'truck' ? [$$] : [];
+                        return $$.get('.vehicletype') == 'truck' ? [$$] : [];
                     },
                     atr: function atr($$) {
                         return {
@@ -3452,7 +3606,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         return _fields.choice('.VehicleClass', ['Light Truck 10,000 lbs GVW or less', 'Medium Truck 10,001 to 20,000 lbs GVW', 'Heavy Truck 20,001 to 45,000 lbs GVW', 'Extra-Heavy Truck over 45,000 lbs GVW', 'Heavy Truck-Tractor 45,000 lbs GCW or less', 'Extra-Heavy Truck-Tractor over 45,000 lbs GCW', 'Trailer Types'], { text: 'Vehicle Class' });
                     }
                 })]), Form.field(InlineRows, "tt-switch", { get: function get($$) {
-                        return $$('.VehicleClass') == 'Trailer Types' ? [$$] : [];
+                        return $$.get('.VehicleClass') == 'Trailer Types' ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-55", { config: { type: 'truck', field: '.TrailerType' } }, Form.field(LabeledDropdown, {
                     atr: function atr() {
                         return _fields.choice('.TrailerType', ['Semitrailers', 'Trailers', 'Service or Utility Trailer (0-200 lbs. Load Capacity)'], { text: 'Trailer Type' });
@@ -3482,14 +3636,14 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         return _fields.ajaxChoice('.SecondaryClassType', {
                             method: 'CMAUVehicleScriptHelper',
                             action: 'getSecondaryClassTypeOptions',
-                            secondaryClass: $$('.SecondaryClass')
+                            secondaryClass: $$.get('.SecondaryClass')
                         }, {
                             style: 'width: fit-content', text: 'Secondary Class Type'
                         });
                     }
                 }))]), Form.field(Table, "golf", {
                     get: function get($$) {
-                        return $$('.vehicletype') == 'golf' ? [$$] : [];
+                        return $$.get('.vehicletype') == 'golf' ? [$$] : [];
                     },
                     atr: function atr() {
                         return {
@@ -3522,7 +3676,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                     }
                 }))]), Form.field(Table, "mobile", {
                     get: function get($$) {
-                        return $$('.vehicletype') == 'mobile' ? [$$] : [];
+                        return $$.get('.vehicletype') == 'mobile' ? [$$] : [];
                     },
                     atr: function atr($$) {
                         return {
@@ -3546,7 +3700,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         return _fields.choice('.MobileHomeType', ['Trailer Equipped As Living Quarters', 'Pickup Trucks Used Solely To Transport Camper Bodies', 'Motor Homes Self-Propelled Equipped As Living Quarters'], { style: 'width: fit-content', text: 'Type' });
                     }
                 })), Form.field(InlineRows, "size-switch", { get: function get($$) {
-                        return $$('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [$$] : [];
+                        return $$.get('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-138", { config: { type: 'mobile', field: '.MotorHomeSize' } }, Form.field(LabeledDropdown, {
                     atr: function atr() {
                         return _fields.choice('.MotorHomeSize', ['Up To 22 feet', 'More Than 22 feet'], { style: 'width: fit-content', text: 'Length' });
@@ -3579,7 +3733,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                             query: {
                                 method: 'CMAUVehicleScriptHelper',
                                 action: 'getCompDedOptions',
-                                vehicleType: $$('.vehicletype')
+                                vehicleType: $$.get('.vehicletype')
                             },
                             mapper: function mapper(o) {
                                 return { value: o.value, description: o.text };
@@ -3592,7 +3746,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                             query: {
                                 method: 'CMAUVehicleScriptHelper',
                                 action: 'getCollDedOptions',
-                                vehicleType: $$('.vehicletype')
+                                vehicleType: $$.get('.vehicletype')
                             },
                             mapper: function mapper(o) {
                                 return { value: o.value, description: o.text };
@@ -3600,54 +3754,59 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         }, { text: 'Coll. Ded' });
                     }
                 })), Form.field(InlineRows, "val-switch", { get: function get($$) {
-                        return ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) ? [$$] : [];
+                        return ($$.get('.coverages.col.ded') + $$.get('.coverages.otc.ded')).toString().match(/\d|Full/) ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-88", { config: { field: '.ValuationMethod' } }, Form.field(LabeledDropdown, {
                     atr: function atr($$) {
                         return _fields.ajaxChoice('.ValuationMethod', {
                             method: 'CMAUVehicleScriptHelper',
                             action: 'getValuationMethodOptions',
-                            vehicleType: $$('.vehicletype')
+                            vehicleType: $$.get('.vehicletype')
                         }, { text: 'Valuation' });
                     }
                 }))), Form.field(InlineRows, "amt-switch", { get: function get($$) {
-                        return ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) && $$('.ValuationMethod') == 'Stated Amount' ? [$$] : [];
+                        return ($$.get('.coverages.col.ded') + $$.get('.coverages.otc.ded')).toString().match(/\d|Full/) && $$.get('.ValuationMethod') == 'Stated Amount' ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-92", { config: { field: '.StatedAmt' } }, Form.field(LabeledEditboxMoney, {
                     atr: function atr() {
-                        return _fields.simple('.StatedAmt', { formatting: '$9,999,999', text: 'Stated Amount', cstyle: 'padding-left: 10px;', style: 'width: 100px' });
-                    }
+                        return _fields.simple('.StatedAmt', { format: '$9,999,999', text: 'Stated Amount', style: 'width: 100px' });
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 }))), Form.field(InlineRows, "pdonly-switch", { get: function get($$) {
-                        return $$('.PhysDmgInd') == 'Y' || $$('..state') != 'KS' ? [] : [$$];
+                        return $$.get('.PhysDmgInd') == 'Y' || $$.get('..state') != 'KS' ? [] : [$$];
                     } }, Form.field(ApplyToAllField, "field-96", { config: { field: '.coverages.pip.IncludeInd' } }, Form.field(LabeledCheckbox, {
                     atr: function atr() {
                         return _fields.simple('.coverages.pip.IncludeInd', [], { text: 'Personal Injury Protection Coverage' });
                     }
                 })), Form.field(InlineRows, "pip-switch", { get: function get($$) {
-                        return $$('.coverages.pip.IncludeInd') == 'Y' ? [$$] : [];
+                        return $$.get('.coverages.pip.IncludeInd') == 'Y' ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-100", { config: { field: '.coverages.pip.addedpipoption' } }, Form.field(LabeledDropdown, {
                     atr: function atr() {
-                        return _fields.choice('.coverages.pip.addedpipoption', ['Option 1', 'Option 2'], { cstyle: 'padding-left: 10px', style: 'width: fit-content', text: 'Additional Personal Injury Protection' });
-                    }
+                        return _fields.choice('.coverages.pip.addedpipoption', ['Option 1', 'Option 2'], { style: 'width: fit-content', text: 'Additional Personal Injury Protection' });
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 })), Form.field(ApplyToAllField, "field-103", { config: { field: '.coverages.pip.broadpipnum' } }, Form.field(LabeledEditbox, {
                     atr: function atr() {
-                        return _fields.simple('.coverages.pip.broadpipnum', { pattern: '[0-9]{1,5}', cstyle: 'padding-left: 10px', style: 'width: 80px', text: 'Number of Individuals for Broadened PIP' });
-                    }
+                        return _fields.simple('.coverages.pip.broadpipnum', { pattern: '[0-9]{1,5}', style: 'width: 80px', text: 'Number of Individuals for Broadened PIP' });
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 })), Form.field(InlineRows, "added-pip", { get: function get($$) {
-                        return +$$('.coverages.pip.broadpipnum') > 0 ? [$$] : [];
+                        return +$$.get('.coverages.pip.broadpipnum') > 0 ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-145", { config: { field: '.coverages.pip.addedbroadpipnum' } }, Form.field(LabeledEditbox, {
                     atr: function atr() {
-                        return _fields.simple('.coverages.pip.addedbroadpipnum', { pattern: '[0-9]{1,5}', cstyle: 'padding-left: 10px', style: 'width: 80px', text: 'Number of Named Individuals for Additional Broadened PIP' });
-                    }
+                        return _fields.simple('.coverages.pip.addedbroadpipnum', { pattern: '[0-9]{1,5}', style: 'width: 80px', text: 'Number of Named Individuals for Additional Broadened PIP' });
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 })), Form.field(InlineRows, "added-pip-s", { get: function get($$) {
-                        return +$$('.coverages.pip.addedbroadpipnum') ? [$$] : [];
+                        return +$$.get('.coverages.pip.addedbroadpipnum') ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-149", { config: { field: '.coverages.pip.addedbpipoptioncd' } }, Form.field(LabeledDropdown, {
                     atr: function atr() {
-                        return _fields.choice('.coverages.pip.addedbpipoptioncd', ['Option 1', 'Option 2'], { cstyle: 'padding-left: 10px', style: 'width: fit-content', text: 'Additional Broadened Personal Injury Protection' });
-                    }
+                        return _fields.choice('.coverages.pip.addedbpipoptioncd', ['Option 1', 'Option 2'], { style: 'width: fit-content', text: 'Additional Broadened Personal Injury Protection' });
+                    },
+                    layout: [{ style: 'padding-left: 16px;' }]
                 }))))))]), Form.field(Table, "opt-covs", {
                     atr: function atr($$) {
                         return {
                             class: 'dfe-table col-3-centred tab-cols-4-3-3',
-                            skip: $$('..state') == 'KS' ? ['field-111', 'field-114'] : ['field-113'],
+                            skip: $$.get('..state') == 'KS' ? ['field-111', 'field-114'] : ['field-113'],
                             singleColumn: true
                         };
                     },
@@ -3663,7 +3822,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         class: "inline-section-header"
                     }]
                 }), Form.field(InlineRows, "towing-switch", { get: function get($$) {
-                        return $$('.vehicletype') == 'car' && $$('.coverages.otc.ded').toString().match(/\d|Full/) ? [$$] : [];
+                        return $$.get('.vehicletype') == 'car' && $$.get('.coverages.otc.ded').toString().match(/\d|Full/) ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-118", { config: { field: '.coverages.towlabor.towlabor' } }, Form.field(LabeledDropdown, {
                     atr: function atr() {
                         return _fields.choice('.coverages.towlabor.towlabor', _fields.choiceItems({
@@ -3694,7 +3853,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         return _fields.simple('.losspayee.namedinsuredInd', [], { text: 'Additional Named Insured' });
                     }
                 })), Form.field(InlineRows, "field-120", { get: function get($$) {
-                        return $$('.losspayee.namedinsuredInd') == 'Y' ? [$$] : [];
+                        return $$.get('.losspayee.namedinsuredInd') == 'Y' ? [$$] : [];
                     } }, Form.field(ApplyToAllField, "field-121", { config: { field: '.losspayee.namedInsured.Name' } }, Form.field(LabeledEditbox, {
                     atr: function atr() {
                         return _fields.simple('.losspayee.namedInsured.Name', [], { cstyle: 'padding-left: 10px;', html: '<b style="color: red">*</b>Name' });
@@ -3702,12 +3861,13 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                 }))))]), Form.field(Div, "car-ctrl", {
                     atr: function atr($$) {
                         return {
-                            skip: $$('..car').length > 1 ? [] : ['remove-car'],
+                            skip: $$.get('..car').length > 1 ? [] : ['remove-car'],
                             style: 'padding: 5px; text-align: right; background: lightgray;'
                         };
                     },
                     layout: [{
-                        style: "padding: 2px 0px"
+                        class: "inline-section-header",
+                        style: "display: inline-block; width: 100%; box-sizing: border-box;"
                     }]
                 }, [Form.field(Button, "clone-car", {
                     get: function get() {
@@ -3722,7 +3882,7 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         };
                     },
                     layout: [{
-                        style: "display: inline-block"
+                        style: "display: inline-block; float: right;"
                     }]
                 }), Form.field(Button, "remove-car", {
                     get: function get() {
@@ -3737,9 +3897,9 @@ define("forms/corecomm/quote.cmau.car",["require", "dfe-core", "dfe-common", "df
                         };
                     },
                     layout: [{
-                        style: "display: inline-block"
+                        style: "display: inline-block; float: right;"
                     }]
-                })])])])]);
+                })])])]);
             }
         }, {
             key: 'vehProcessVin',

@@ -3,7 +3,7 @@ define([ "dfe-core", "forms/dashboard/detailsgrid", "forms/dashboard/common", "d
     return class StatusGridForm extends Form{
         static fields(_, config) {
             return Form.field(Table, "filtered", {
-                get: $$ => $$('.quotes'),
+                get: $$ => $$.get('.quotes'),
                 atr: $$ => ({
                     class: 'dashboard-table',
                     style: 'width: 100%;',
@@ -15,15 +15,15 @@ define([ "dfe-core", "forms/dashboard/detailsgrid", "forms/dashboard/common", "d
                     style: 'display: flex;'
                 })
             }, [ Form.field(Html, "field-18", {
-                get: $$ => shapes.cssShape($$, $$('.expanded') == 'Y' ? 'css-button-minus' : 'css-button-plus'),
+                get: $$ => shapes.cssShape($$, $$.get('.expanded') == 'Y' ? 'css-button-minus' : 'css-button-plus'),
                 atr: $$ => ({
                     style: 'width: 12px; height: 12px;',
                     events: {
-                        onClick: () => $$.set('.expanded', $$('.expanded') == 'Y' ? 'N' : 'Y')
+                        onClick: () => $$.set('.expanded', $$.get('.expanded') == 'Y' ? 'N' : 'Y')
                     }
                 })
             }), Form.field(Label, "field-14", {
-                get: $$ => $$('.status') + ' (' + $$('.rows').filter(config.rowFilterMaker($$)).length + ')',
+                get: $$ => $$.get('.status') + ' (' + $$.get('.rows').filter(config.rowFilterMaker($$)).length + ')',
                 layout: [ {
                     style: "padding: 3px; white-space: nowrap;"
                 } ]
@@ -37,7 +37,7 @@ define([ "dfe-core", "forms/dashboard/detailsgrid", "forms/dashboard/common", "d
                 class: "header",
                 get: $$ => 'Details'
             }), 
-            Form.field(Either, "rwrap", { atr: $$ => ({ first: $$('.expanded') != 'Y' }) }, 
+            Form.field(Either, "rwrap", { atr: $$ => ({ first: $$.get('.expanded') != 'Y' }) }, 
                 Form.field(Label, "field-21", {
                     get: $$ => '...',
                     layout: [ { style: 'display:block; text-align: center;' } ]

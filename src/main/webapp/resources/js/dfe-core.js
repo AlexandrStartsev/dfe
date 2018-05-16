@@ -307,10 +307,9 @@ define('dfe-core', function() {
             key === 'listener' || keys.push(key);
         }
         return function(proxy, target, listener) {
-            for(var i = keys.length - 1; i >=0; i-- ) 
-                target[keys[i]] = proxy[keys[i]];
-            target.listener = listener;
-            return target;
+            //Object.assign(target, JsonProxy.prototype, proxy, {listener: listener}); //keys.forEach( k => target[k] = proxy[k] );
+            //target.listener = listener;
+            return Object.assign(target, JsonProxy.prototype, proxy, {listener: listener});
         }
     })()
     
@@ -719,7 +718,6 @@ define('dfe-core', function() {
             }
             prevNode && (prevNode.$nextNode = null);
             lastRenderStructure.forEach( lst => lst.used || lst.childNode || lst.dom.parentElement.removeChild(lst.dom) );
-            //lst.used || ( lst.childNode ? attachedChildren.has(lst.childNode) || lst.childNode.setDom(null, null, null) : lst.dom.parentElement.removeChild(lst.dom) )
             return renderStructure;
         }
         setDom( elementInfo, parentDom, prevDom ) {
@@ -826,7 +824,7 @@ define('dfe-core', function() {
             if( this.rootProxy && this.formClass ) {
                 parentElement && (parentElement._dfe_runtime = this);
                 let node = this.addNode( null, this.rootProxy, new Field( this.formClass, completeNames( this.formClass.fields([], null) ) ) );
-                node.setDom({ type: 'div', childNode: node }, parentElement, null);
+                node.setDom({ type: 'div' }, parentElement, null);
 	            this.processor = setInterval(() => this.processInterceptors(), 50);
                 this.processInterceptors();
             }
@@ -852,7 +850,7 @@ define('dfe-core', function() {
             while(this.schedule.length) this.schedule.shift()(this);
         }
         addNode(parent, modelProxy, field) {
-            let unbound = wrapProxy(modelProxy, path => unbound.get(path), this.listener);
+            let unbound = modelProxy.withListener(this.listener); //Object.assign(path => unbound.get(path), JsonProxy.prototype, modelProxy, {listener: this.listener});
             let node = new Node(parent, field, unbound, this);
             node.notify(this.initAction);
             this.nodes.push(node);
@@ -862,7 +860,7 @@ define('dfe-core', function() {
         prep$$(node, unbound) { 
             let runtime = this;
             let listener = this.listener.For(node);
-            let model = wrapProxy(unbound, path => model.get(path), listener);
+            let model = unbound.withListener(listener); //Object.assign(path => model.get(path), JsonProxy.prototype, unbound, {listener: listener});
             let field = node.field;
             node.model = model;
             model.unbound = unbound;
@@ -1033,7 +1031,7 @@ define('dfe-core', function() {
         startRuntime: Runtime.startRuntime,
         createElement: createElement,
         nodeFromElement: DOM.nodeFromElement,
-        RenderNode: Node,
+        createNode: (...args) => new Node(...args),
         reconcileDOMAttributes: DOM.reconcileAttributes,
         Component: Component
     }

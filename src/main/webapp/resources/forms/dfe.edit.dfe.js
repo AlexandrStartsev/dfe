@@ -15,7 +15,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 class: "header",
                 get: () => '+',
                 set: function($$, value) {
-                    var co = $$('childrenOf'), ppx = this.allFields($$).filter(function(px) {
+                    var co = $$.get('childrenOf'), ppx = this.allFields($$).filter(function(px) {
                         return co == 0 || px.get('.name') == co;
                     }).shift();
                     var d = ppx.append('.children', {
@@ -38,7 +38,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_dropdown("childrenOf", {
                 class: "header",
-                get: $$ => ({ value: $$('childrenOf'),
+                get: $$ => ({ value: $$.get('childrenOf'),
                         items: [ {
                             value: [],
                             description: 'All'
@@ -59,7 +59,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }), __c_checkbox("subChildren", {
                 class: "header",
                 get: $$ => ({
-                        checked: $$('subChildren'),
+                        checked: $$.get('subChildren'),
                         text: ''
                     }),
                 set: ($$, value) => $$.set('subChildren', value),
@@ -76,7 +76,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }), __c_dropdown("hierarchyOf", {
                 class: "header",
                 get: $$ => ({
-                        value: $$('hierarchyOf'),
+                        value: $$.get('hierarchyOf'),
                         items: [ {
                             value: [],
                             description: 'All'
@@ -123,13 +123,13 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }), __c_button("load - js", {
                 class: "header",
                 get: () => 'from JS',
-                set: $$ => this.loadJS($$, $$('pp_output')),
+                set: $$ => this.loadJS($$, $$.get('pp_output')),
                 pos: [ {
                     colstyle: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
             }), __c_editbox_code("pp_output", {
                 class: "header",
-                get: $$ => $$('pp_output'),
+                get: $$ => $$.get('pp_output'),
                 set: ($$, value) => $$.set('pp_output', value),
                 atr: () => ({
                         class: 'focus-front',
@@ -168,7 +168,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }), __c_div_c("dfe_row", {
                 get: $$ => this.allFields($$),
                 atr: function($$) {
-                    var a = $$('childrenOf'), b = $$('hierarchyOf'), c = $$('subChildren'), f = this.filterRow, ntp = new Map();
+                    var a = $$.get('childrenOf'), b = $$.get('hierarchyOf'), c = $$.get('subChildren'), f = this.filterRow, ntp = new Map();
                     this.allFields($$).forEach(function(d) {
                         ntp.set(d.get('.name'), d);
                     });
@@ -274,21 +274,21 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                             }
                         },
                         trigger: 'change',
-                        style: $$('..component') == 0 ? 'visibility:hidden;' : '',
+                        style: $$.get('..component') == 0 ? 'visibility:hidden;' : '',
                         class: 'editor-pos-fld'
                     }),
                 pos: [ {
                     colclass: "div-flex-col editbox-col --hover-visible"
                 } ]
             }), __c_editbox("name_field", {
-                get: $$ => $$('.name'),
+                get: $$ => $$.get('.name'),
                 set: ($$, value) => this.changeName($$, value),
                 pos: [ {
                     colclass: "div-flex-col"
                 } ]
             }), __c_dropdown("parent_field", {
                 get: $$ => ({
-                        value: $$('..name'),
+                        value: $$.get('..name'),
                         items: this.allFields($$).filter(function(px) {
                             return px.get('.component').isContainer && px.get('.name') != $$.get('.name');
                         }).map(function(px) {
@@ -296,13 +296,13 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                         }).sort()
                     }),
                 set: ($$, value) => this.changeParent($$, value),
-                atr: $$ => ({ style: $$('..component') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
+                atr: $$ => ({ style: $$.get('..component') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
                 pos: [ {
                     colclass: "div-flex-col"
                 } ]
             }), __c_dropdown("type_field", {
                 get: $$ => ({
-                        value: $$('.component').cname,
+                        value: $$.get('.component').cname,
                         items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'dfe-runtime', 'dfe-table', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'form', 'html', 'label', 'label-i', 'multioption', /*'placeholder',*/ 'radiolist', 'switch', 'tab-d', 'tab-s', 'textarea', 'typeahead' ]
                     }),
                 set: ($$, value)  => this.changeType($$, value),
@@ -311,13 +311,13 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_editbox_code("get_field", {
                 get: function($$) {
-                    if ($$('.get') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$('.get'));
+                    if ($$.get('.get') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$.get('.get'));
                 },
                 set: function($$, value) {
                     $$.listener.set($$.data, 'get', this.textToCode($$.runtime, value));
                     $$.listener.notify($$.data, 'component');
                 },
-                val: $$ => $$('.get') == this.compilationerror && $$.error('Compilation error'),
+                val: $$ => $$.get('.get') == this.compilationerror && $$.error('Compilation error'),
                 atr: () => ({
                         style: 'margin: 0px',
                         spellcheck: 'false',
@@ -337,13 +337,13 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_editbox_code("set_field", {
                 get: function($$) {
-                    if ($$('.set') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$('.set'));
+                    if ($$.get('.set') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$.get('.set'));
                 },
                 set: function($$, value) {
                     $$.listener.set($$.data, 'set', this.textToCode($$.runtime, value));
                     $$.listener.notify($$.data, 'component');
                 },
-                val: $$ => $$('.set') == this.compilationerror && $$.error('Compilation error'),
+                val: $$ => $$.get('.set') == this.compilationerror && $$.error('Compilation error'),
                 atr: () => ({
                         style: 'margin: 0px',
                         spellcheck: 'false',
@@ -363,13 +363,13 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_editbox_code("val_field", {
                 get: function($$) {
-                    if ($$('.val') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$('.val'));
+                    if ($$.get('.val') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$.get('.val'));
                 },
                 set: function($$, value) {
                     $$.listener.set($$.data, 'val', this.textToCode($$.runtime, value));
                     $$.listener.notify($$.data, 'component');
                 },
-                val: $$ => $$('.val') == this.compilationerror && $$.error('Compilation error'),
+                val: $$ => $$.get('.val') == this.compilationerror && $$.error('Compilation error'),
                 atr: () => ({
                         style: 'margin: 0px',
                         spellcheck: 'false',
@@ -389,13 +389,13 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_editbox_code("attr_field", {
                 get: function($$) {
-                    if ($$('.atr') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$('.atr'));
+                    if ($$.get('.atr') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$.get('.atr'));
                 },
                 set: function($$, value) {
                     $$.listener.set($$.data, 'atr', this.textToCode($$.runtime, value));
                     $$.listener.notify($$.data, 'component');
                 },
-                val: $$ => $$('.atr') == this.compilationerror && $$.error('Compilation error'),
+                val: $$ => $$.get('.atr') == this.compilationerror && $$.error('Compilation error'),
                 atr: () => ({
                         style: 'margin: 0px',
                         spellcheck: 'false',
@@ -418,7 +418,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 set: $$ => $$.detach(),
                 atr: $$ => ({
                         class: 'div-button',
-                        style: 'padding: 2px 5px; min-height: initial;' + ($$('..component') == 0 ? 'visibility:hidden;' : '')
+                        style: 'padding: 2px 5px; min-height: initial;' + ($$.get('..component') == 0 ? 'visibility:hidden;' : '')
                     }),
                 pos: [ {
                     colclass: "div-flex-col editbox-col",
@@ -426,7 +426,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_dropdown("class_field", {
                 get: $$ => ({
-                        value: $$('.class'),
+                        value: $$.get('.class'),
                         items: [ '', 'header', 'footer' ]
                     }),
                 set: function($$, value) {
@@ -434,13 +434,13 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                     $$.listener.notify($$.get('..').data, 'children');
                 },
                 atr: $$ => ({
-                        style: $$('..component') == 0 ? 'visibility:hidden;' : ''
+                        style: $$.get('..component') == 0 ? 'visibility:hidden;' : ''
                     }),
                 pos: [ {
                     colclass: "div-flex-col editbox-col"
                 } ]
             }), __c_div("layout_spec_ctrl", {
-                get: $$ => [ $$('.pos')[+$$('.pos_idx')] ],
+                get: $$ => [ $$.get('.pos')[+$$.get('.pos_idx')] ],
                 atr: $$ => ({
                         style: 'padding:0px 1px 0px 1px; display: flex; flex-direction: row;',
                         skip: [ this.getContainerLayout($$) == 'tpos' ? 'dpos_ctrl' : 'tpos_ctrl' ]
@@ -448,10 +448,10 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }, [ __c_button("layout_spec_arrows_left", {
                 class: "header",
                 get: () => '<',
-                set: $$ => $$.set('.pos_idx', +$$('.pos_idx') - 1),
+                set: $$ => $$.set('.pos_idx', +$$.get('.pos_idx') - 1),
                 atr: $$ => ({
-                        disabled: $$('.pos_idx') == 0,
-                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$('.pos_idx') == 0 ? '' : 'font-weight: bold;') + ' color: black;'
+                        disabled: $$.get('.pos_idx') == 0,
+                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$.get('.pos_idx') == 0 ? '' : 'font-weight: bold;') + ' color: black;'
                     }),
                 pos: [ {
                     colstyle: "display: inline; margin-top: 2px;"
@@ -459,10 +459,10 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }), __c_button("layout_spec_arrows_right", {
                 class: "header",
                 get: $$ => '>',
-                set: $$ => $$.set('.pos_idx', +$$('.pos_idx') + 1),
+                set: $$ => $$.set('.pos_idx', +$$.get('.pos_idx') + 1),
                 atr: $$ => ({
-                        disabled: $$('.pos_idx') == $$('.pos').length - 1,
-                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$('.pos_idx') == $$('.pos').length - 1 ? '' : 'font-weight: bold;') + ' color: black;'
+                        disabled: $$.get('.pos_idx') == $$.get('.pos').length - 1,
+                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$.get('.pos_idx') == $$.get('.pos').length - 1 ? '' : 'font-weight: bold;') + ' color: black;'
                     }),
                 pos: [ {
                     colstyle: "display: inline; margin-top: 2px;"
@@ -482,7 +482,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_dropdown("tpos_field_w", {
                 get: $$ => ({
-                        value: $$('.w'),
+                        value: $$.get('.w'),
                         items: [ '', 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
                     }),
                 set: ($$, value) => this.changePos($$, '.w', value),
@@ -496,7 +496,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_dropdown("tpos_field_h", {
                 get: $$ => ({
-                        value: $$('.h'),
+                        value: $$.get('.h'),
                         items: [ '', 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
                     }),
                 set: ($$, value) => this.changePos($$, '.h', value),
@@ -505,7 +505,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 } ]
             }), __c_checkbox("tpos_field_n", {
                 get: $$ => ({
-                        checked: $$('.n'),
+                        checked: $$.get('.n'),
                         text: '<'
                     }),
                 set: ($$, value) => this.changePos($$, '.n', value),
@@ -516,7 +516,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                     colclass: "div-flex-col-embedded"
                 } ]
             }), __c_editbox("tpos_field_s", {
-                get: $$ => $$('.s'),
+                get: $$ => $$.get('.s'),
                 set: ($$, value) => this.changePos($$, '.s', value),
                 atr: () => ({
                         style: 'width: 100px'
@@ -527,7 +527,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }) ]), __c_div("dpos_ctrl", {
                 get: $$ => [ $$ ],
                 atr: $$ => ({
-                        style: $$('...component') == 0 ? 'visibility: hidden' : '',
+                        style: $$.get('...component') == 0 ? 'visibility: hidden' : '',
                         class: 'div-flex-row'
                     }),
                 pos: [ {
@@ -539,7 +539,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                     colclass: "div-flex-col-embedded"
                 } ]
             }), __c_editbox("dpos_colclass", {
-                get: $$ => $$('.colclass'),
+                get: $$ => $$.get('.colclass'),
                 set: ($$, value) => this.changePos($$, '.colclass', value),
                 atr: () => ({
                         style: 'width: 100px'
@@ -553,7 +553,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                     colclass: "div-flex-col-embedded"
                 } ]
             }), __c_editbox("dpos_colstyl", {
-                get: $$ => $$('.colstyle'),
+                get: $$ => $$.get('.colstyle'),
                 set: ($$, value) => this.changePos($$, '.colstyle', value),
                 atr: () => ({
                         style: 'width: 113px'

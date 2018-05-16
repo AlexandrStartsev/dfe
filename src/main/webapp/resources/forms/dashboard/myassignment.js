@@ -19,7 +19,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                     style: 'width: 100%'
                 })
             }, [ Form.field(Table, "filtr", {
-                get: $$ => $$('filterCollapsed') == 'Y' ? [] : $$('criteria'),
+                get: $$ => $$.get('filterCollapsed') == 'Y' ? [] : $$.get('criteria'),
                 atr: () => ({
                     class: 'dashboard-table'
                 })
@@ -30,10 +30,10 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                     colSpan: "4"
                 } ]
             }, [ Form.field(Html, "field-49", {
-                get: $$ => shapes.cssShape($$, $$('filterCollapsed') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
+                get: $$ => shapes.cssShape($$, $$.get('filterCollapsed') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
                 atr: $$ => ({
                     events: {
-                        onClick: () => $$.set('filterCollapsed', $$('filterCollapsed') == 'Y' ? 'N' : 'Y')
+                        onClick: () => $$.set('filterCollapsed', $$.get('filterCollapsed') == 'Y' ? 'N' : 'Y')
                     }
                 }),
                 layout: [ {
@@ -48,7 +48,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             Form.field(LabeledEditbox, "field-4", {
                 set: function($$, value) {
                     $$.set('.effFrom', value);
-                    let to = cmn.ARFtoDate($$('.effTo')), fr = cmn.ARFtoDate(value);
+                    let to = cmn.ARFtoDate($$.get('.effTo')), fr = cmn.ARFtoDate(value);
                     fr instanceof Date && to instanceof Date && (fr > to || to - fr.setDate(fr.getDate() + 90) > 0) && $$.set('.effTo', cmn.yyyymmdd(fr));
                 },
                 atr: () => fields.date('.effFrom', {
@@ -60,7 +60,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }), Form.field(LabeledEditbox, "field-6", {
                 set: function($$, value) {
                     $$.set('.effTo', value);
-                    let fr = cmn.ARFtoDate($$('.effFrom')), to = cmn.ARFtoDate(value);
+                    let fr = cmn.ARFtoDate($$.get('.effFrom')), to = cmn.ARFtoDate(value);
                     fr instanceof Date && to instanceof Date && (to < fr || to.setDate(to.getDate() - 90) - fr > 0) && $$.set('.effFrom', cmn.yyyymmdd(to));
                 },
                 atr: () => fields.date('.effTo', {
@@ -72,9 +72,9 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }), Form.field(LabeledDropdown, "field-8", {
                 get: function($$) {
                     var uniq = new Set();
-                    $$('my.quotes.rows.companyCode').forEach(c => uniq.add(c));
+                    $$.get('my.quotes.rows.companyCode').forEach(c => uniq.add(c));
                     return {
-                        value: $$('.companyCode'),
+                        value: $$.get('.companyCode'),
                         items: [ {
                             value: '',
                             description: 'All'
@@ -92,7 +92,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 } ]
             }), Form.field(LabeledDropdown, "field-10", {
                 get: $$ => ({
-                    value: $$('.newRenewal'),
+                    value: $$.get('.newRenewal'),
                     items: [ {
                         value: '',
                         description: 'All'
@@ -109,7 +109,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 } ]
             }), Form.field(LabeledDropdown, "field-12", {
                 get: $$ => ({
-                    value: $$('.optional'),
+                    value: $$.get('.optional'),
                     items: [ {
                         value: '',
                         description: 'None'
@@ -146,12 +146,12 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 } ]
             }), Form.field(Editbox, "field-19", {
                 atr: $$ => fields.simple('.optionalValue', [], {
-                    pattern: MyAssignmentForm.optPattern($$('optional')),
-                    disabled: $$('.optional') == 0
+                    pattern: MyAssignmentForm.optPattern($$.get('optional')),
+                    disabled: $$.get('.optional') == 0
                 })
             }), Form.field(Button, "field-3", {
                 get: $$ => 'Expand/Collapse All',
-                set: $$ => $$.set('my.quotes.expanded', $$('my.quotes.expanded').filter(v => v == 'Y') == 0 ? 'Y' : 'N'),
+                set: $$ => $$.set('my.quotes.expanded', $$.get('my.quotes.expanded').filter(v => v == 'Y') == 0 ? 'Y' : 'N'),
                 layout: [ {
                     newRow: true
                 } ]
@@ -175,7 +175,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 } ]
             }, [ Form.field(Div, "loader", {
             	get: function($$) {
-            		let effFrom = $$('criteria.effFrom'), effTo = $$('criteria.effTo');
+            		let effFrom = $$.get('criteria.effFrom'), effTo = $$.get('criteria.effTo');
                     cmn.ARFtoDate(effFrom) instanceof Date && cmn.ARFtoDate(effTo) instanceof Date && this.loadDateRange($$.unbound, effFrom, effTo);
                     return [ $$ ];
             	}, 
@@ -186,7 +186,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 get: $$ => shapes.cssShape($$, 'css-loading-anim-circle'),
                 atr: $$ => ({
                     class: 'loading-overlay',
-                    style: `display: ${$$('.loading') == 0 ? 'none' : ''}`
+                    style: `display: ${$$.get('.loading') == 0 ? 'none' : ''}`
                 })
             }), Form.field(StatusGridForm, "report", {
                 config: {

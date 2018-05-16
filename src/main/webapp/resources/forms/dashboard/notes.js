@@ -4,7 +4,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "ui/shapes", "dfe-fiel
         static fields() {
             return (
                 Form.field(Div, "root", {
-                    get: $$ => $$('.note'),
+                    get: $$ => $$.get('.note'),
                     atr: () => ({
                         order: (n1, n2) => n2.index() - n1.index()
                     })
@@ -14,7 +14,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "ui/shapes", "dfe-fiel
                         atr: $$ => ({
                             events: {
                                 onClick: () => $$.append('.note', {
-                                    user: $$('currentUser'),
+                                    user: $$.get('currentUser'),
                                     datetime: NotesForm.now(),
                                     isnew: 1
                                 })
@@ -26,7 +26,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "ui/shapes", "dfe-fiel
                     }), 
                     Form.field(Label, "field-1", {
                         atr: $$ => ({
-                            html: `by <b>${$$('.user')}</b> on <i>${NotesForm.formatAsDate($$('.datetime'))}</i>`
+                            html: `by <b>${$$.get('.user')}</b> on <i>${NotesForm.formatAsDate($$.get('.datetime'))}</i>`
                         }),
                         layout: [ {
                             style: "padding-left:20px; display: block;"
@@ -35,7 +35,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "ui/shapes", "dfe-fiel
                     Form.field(Textarea, "field-2", {
                         atr: $$ => fields.simple('.subject', [], {
                             class: 'note-edit-ta',
-                            disabled: $$('.isnew') == 0
+                            disabled: $$.get('.isnew') == 0
                         }),
                         layout: [ {
                             style: "display: block; width: calc(100% - 8px)"

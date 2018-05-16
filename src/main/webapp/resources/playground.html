@@ -20,7 +20,7 @@
                 }
             })
             var model = new Promise(function(resolve, reject) {
-                require(['../test/test-arf-2', 'dfe-core', 'ui/utils' ], function(json, core) {
+                require(['../test/test-100-cars', 'dfe-core', 'ui/utils' ], function(json, core) {
                     window.Core = core;
                     resolve(json);
                 })
@@ -29,7 +29,7 @@
             function getES5(doUglify) {
                 require(['babel', 'uglify', 'ui/jquery'], function(babel, uglify) {
                     let formName = "forms/" + document.getElementById("dfe").getAttribute("dfe-form") + ".js"
-                    Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get(formName)]).then( // "transform-react-jsx",   , "react"
+                    Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get("js/dfe-field-helper.js"), $.get(formName)]).then( // "transform-react-jsx",   , "react"
                     function(a) {
                         var s = babel.transform(a.join('\n\n\n'), {  plugins: [ "transform-object-rest-spread", "transform-object-assign"],  presets: ["es2015"] }).code;
                         if( doUglify ) {
@@ -74,11 +74,13 @@
     </head>
             
     <body> 
-        <div style="position: relative; height:200px; width: 200px; overflow: scroll">
-        <br><br>
-        <span id='dfe' dfe-form='test' dfe-model='window.model' dfe-edit-target ></span>
-        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-        </div>
+        <input type="button" onclick="document.querySelector('[dfe-form]')._dfe_runtime.enforceValidation()" value="Simulate validation"/>
+               
+        <!--<div style="position: relative; height:200px; width: 200px; overflow: scroll">
+        <br><br> -->
+        <span id='dfe' dfe-form='corecomm/quote.cmau.car' dfe-model='window.model' dfe-edit-target ></span>
+        <!-- <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        </div> -->
         <br>
         <br>
         <br>

@@ -34,19 +34,19 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div-button
                     style: 'display: table; background-color: white; width: 1500px; position: relative'
                 })
             }, [ Form.field(TabD, "a", {
-                get: $$ => [{caption: 'My Dashboard', field: 'myassignment'}].concat( $$('features.teamManager') == 0 ? [] : {caption: 'Team(s) Detail', field: 'team'} ).concat([{ caption: 'Diaries', field: 'diaries' }, { caption: 'Reports', field: 'reports' }]),
+                get: $$ => [{caption: 'My Dashboard', field: 'myassignment'}].concat( $$.get('features.teamManager') == 0 ? [] : {caption: 'Team(s) Detail', field: 'team'} ).concat([{ caption: 'Diaries', field: 'diaries' }, { caption: 'Reports', field: 'reports' }]),
                 set: ($$, px) => $$.set('currentTab', px.get('.field')),
                 atr: $$ => ({
                     haclass: 'tab-item-active',
                     rowstyle$header: 'display: flex; align-items: flex-end;',
                     rowstyle$footer: 'border: 1px solid #888; border-radius: 0px 5px 5px 5px; padding: 2px; min-height: 320px;',
                     activeTab: function(px) {
-                        let at = $$('currentTab').toString() || 'myassignment';
+                        let at = $$.get('currentTab').toString() || 'myassignment';
                         return px ? px.get('.field') == at : at;
                     }
                 })
             }, [ Form.field(DivButton, "header", {
-                    get: $$ => $$('.caption'),
+                    get: $$ => $$.get('.caption'),
                     layout: [ {
                         class: "dashboard-tab-item"
                     } ]

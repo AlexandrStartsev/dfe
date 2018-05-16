@@ -57,7 +57,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
     }
     
     function vehDetailsDisabled($$) {
-        return $$('.hasvin') == 'Y' && ($$('.vinnumber') == 0 || $$('.vinoverride') != 'Y');
+        return $$.get('.hasvin') == 'Y' && ($$.get('.vinnumber') == 0 || $$.get('.vinoverride') != 'Y');
     }
     
     class VehDetailsChoice extends Form {
@@ -71,7 +71,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
             }, Form.field(Either, {
                 val: config.validation,
                 atr: $$ => ({ 
-                    first: vehDetailsDisabled($$) || $$('.custom') == 'Y' 
+                    first: vehDetailsDisabled($$) || $$.get('.custom') == 'Y' 
                 })
             }, Form.field(Editbox, { 
                 atr: $$ => fields.simple(config.field, {
@@ -88,7 +88,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                         action: config.action
                     }
                 }, {
-                    disabled: vehDetailsDisabled($$) || $$('.custom') == 'Y',
+                    disabled: vehDetailsDisabled($$) || $$.get('.custom') == 'Y',
                     hideError: true
                 }) 
             })))
@@ -99,7 +99,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
         static fields(children, config) {
             return [ ...children, Form.field(Button, { 
                 get: () => 'Apply to all ' + (config.type ? typeMap[config.type].btn || typeMap[config.type].name : 'Vehicles'), 
-                set: ($$, value) => $$('...location.car').forEach(car => config.type && car.data.vehicletype != config.type || car.set(config.field, $$(config.field))),
+                set: ($$, value) => $$.get('...location.car').forEach(car => config.type && car.data.vehicletype != config.type || car.set(config.field, $$.get(config.field))),
                 atr: () => ({ class: 'link-button'})
             })]
         }
@@ -119,7 +119,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     style: 'width: 900px;'
                 })
             }, [ Form.field(DivButton, "header", {
-                get: $$ => `<a style="color: #444">Location #${$$.index(2) + 1}</a><br/>${$$('.city')} ${$$('.state')} ${$$('.zip')}-${$$('.zipaddon')}`.replace(/-$/, ''),
+                get: $$ => `<a style="color: #444">Location #${$$.index(2) + 1}</a><br/>${$$.get('.city')} ${$$.get('.state')} ${$$.get('.zip')}-${$$.get('.zipaddon')}`.replace(/-$/, ''),
                 atr: $$ => ({
                     class: 'div-button',
                     errorwatch: { target: 'peers', accept: () => 'error' }
@@ -149,7 +149,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     rowclass$header: 'tab-header'
                 })
             }, [ Form.field(DivButton, "header", {
-                get: $$ => `${$$('..state')} - Vehicle #${$$.index() + 1}<br/>${$$('.ModelYr')} ${$$('.make')}`,
+                get: $$ => `${$$.get('..state')} - Vehicle #${$$.index() + 1}<br/>${$$.get('.ModelYr')} ${$$.get('.make')}`,
                 atr: $$ => ({
                     class: 'div-button',
                     errorwatch: { target: 'peers', accept: () => 'error' }
@@ -160,7 +160,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
             }),  
                 Form.field(Table, "info", {
                 atr: function($$) {
-                    let skip = $$('.hasvin') != 'Y' || $$('.vinvalid') == 'Y' || $$('.vinnumber') == 0 ? [ 'override' ] : [];
+                    let skip = $$.get('.hasvin') != 'Y' || $$.get('.vinvalid') == 'Y' || $$.get('.vinnumber') == 0 ? [ 'override' ] : [];
                     vehDetailsDisabled($$) && skip.push('custom');
                     return {
                         singleColumn: true,
@@ -179,22 +179,22 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 } ]
             }), Form.field(LabeledRadiolist, "field-9", {
             	set: ($$, value) => { $$.set('.hasvin', value), 'Y' == value && QuoteCmauCarForm.vehProcessVin($$) },
-            	get: $$ => $$('.hasvin'),
+            	get: $$ => $$.get('.hasvin'),
                 atr: () => ({
                     orientation: 'horizontal',
                     text: 'Do you have the VIN?'
                 })
-            }), Form.field(InlineRows, { get: $$ => $$('.hasvin') == 'Y' ? [$$] : [] },
+            }), Form.field(InlineRows, { get: $$ => $$.get('.hasvin') == 'Y' ? [$$] : [] },
                 Form.field(VinNumber, "vin", {
-                    get: $$ => ({ vin: $$('.vinnumber'), vinvalid: $$('.vinvalid') }),
+                    get: $$ => ({ vin: $$.get('.vinnumber'), vinvalid: $$.get('.vinvalid') }),
                     set: function($$, value) {
                         $$.set('.vinnumber', value);
                         QuoteCmauCarForm.vehProcessVin($$);
                     },
-                    val: $$ => $$('.vinoverride') == 'Y' || $$.required('.vinnumber') && $$.required('.vinnumber', /[a-zA-Z0-9]{17}/, 'Invalid VIN format') && ($$('.vinvalid') == 'Y' || $$.error('Vin not found')),
+                    val: $$ => $$.get('.vinoverride') == 'Y' || $$.required('.vinnumber') && $$.required('.vinnumber', /[a-zA-Z0-9]{17}/, 'Invalid VIN format') && ($$.get('.vinvalid') == 'Y' || $$.error('Vin not found')),
                     atr: $$ => ({
                         spellcheck: 'false',
-                        disabled: $$('.hasvin') != 'Y',
+                        disabled: $$.get('.hasvin') != 'Y',
                         style: 'width: 150px; text-transform: uppercase; display: block;',
                         pattern: /[a-zA-Z0-9]{1,17}/,
                         text: 'Vihicle Identification Number (VIN)',
@@ -230,7 +230,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     label: 'Vehicle Year',
                     action: 'getYearOptions',
                     ajaxOptions: $$ => ({
-                        vehicleType: $$('.vehicletype')
+                        vehicleType: $$.get('.vehicletype')
                     })
                 }
             }), Form.field(VehDetailsChoice, "make-option", {
@@ -241,8 +241,8 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     label: 'Vehicle Make',
                     action: 'getMakeOptions',
                     ajaxOptions: $$ => ({
-                        vehicleType: $$('.vehicletype'),
-                        vehicleYear: $$('.ModelYr')
+                        vehicleType: $$.get('.vehicletype'),
+                        vehicleYear: $$.get('.ModelYr')
                     })
                 }
             }), Form.field(VehDetailsChoice, "model-option", {
@@ -253,9 +253,9 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     label: 'Vehicle Model',
                     action: 'getModelOptions',
                     ajaxOptions: $$ => ({
-                        vehicleType: $$('.vehicletype'),
-                        vehicleYear: $$('.ModelYr'),
-                        vehicleMake: $$('.make')
+                        vehicleType: $$.get('.vehicletype'),
+                        vehicleYear: $$.get('.ModelYr'),
+                        vehicleMake: $$.get('.make')
                     })
                 }
             }),
@@ -267,7 +267,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     text: 'Original Cost New'
                 })
             }) ]), Form.field(Table, "private", {
-                get: $$ => $$('.vehicletype') == 'car' ? [ $$ ] : [],
+                get: $$ => $$.get('.vehicletype') == 'car' ? [ $$ ] : [],
                 atr: () => ({
                     class: 'dfe-table col-3-centred tab-cols-2-5-3',
                     singleColumn: true
@@ -285,7 +285,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 Form.field(LabeledDropdown, {
                     atr: () => fields.choice('.VehUseCd',  [ 'Furnished for Non-Business Use', 'All Other' ], { text: 'Usage' })
                 })
-            ]), Form.field(InlineRows, "nonbus", { get: $$ => $$('.VehUseCd') == 'Furnished for Non-Business Use' ? [ $$ ] : [] }, [
+            ]), Form.field(InlineRows, "nonbus", { get: $$ => $$.get('.VehUseCd') == 'Furnished for Non-Business Use' ? [ $$ ] : [] }, [
                     Form.field(ApplyToAllField, "field-38", { config: {type: 'car', field: '.OperExp'} }, [
                         Form.field(LabeledDropdown, {
                             atr: () => fields.choice('.OperExp',  [ 'No operator licensed less than 5 years', 'Licensed less than 5 yrs not owner or principal operator', 'Owner or principal operator licensed less than 5 yrs' ], { text: 'Operator Experience' }),
@@ -299,7 +299,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                         })
                     ]) ]) ]), 
             Form.field(Table, "truck", {
-                get: $$ => $$('.vehicletype') == 'truck' ? [ $$ ] : [],
+                get: $$ => $$.get('.vehicletype') == 'truck' ? [ $$ ] : [],
                 atr: $$ => ({
                     class: 'dfe-table col-va-middle col-3-centred tab-cols-3-4-3',
                     singleColumn: true,
@@ -319,7 +319,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                         atr: () => fields.choice('.VehicleClass',  [ 'Light Truck 10,000 lbs GVW or less', 'Medium Truck 10,001 to 20,000 lbs GVW', 'Heavy Truck 20,001 to 45,000 lbs GVW', 'Extra-Heavy Truck over 45,000 lbs GVW', 'Heavy Truck-Tractor 45,000 lbs GCW or less', 'Extra-Heavy Truck-Tractor over 45,000 lbs GCW', 'Trailer Types' ], { text: 'Vehicle Class' })
                     })
                 ]),
-                Form.field(InlineRows, "tt-switch", { get: $$ => $$('.VehicleClass') == 'Trailer Types' ? [ $$ ] : [] }, 
+                Form.field(InlineRows, "tt-switch", { get: $$ => $$.get('.VehicleClass') == 'Trailer Types' ? [ $$ ] : [] }, 
                     Form.field(ApplyToAllField, "field-55", { config: {type: 'truck', field: '.TrailerType'} }, 
                         Form.field(LabeledDropdown, {
                             atr: () => fields.choice('.TrailerType',  [ 'Semitrailers', 'Trailers', 'Service or Utility Trailer (0-200 lbs. Load Capacity)' ], { text: 'Trailer Type' })
@@ -356,14 +356,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                         atr: $$ => fields.ajaxChoice('.SecondaryClassType', {
                             method: 'CMAUVehicleScriptHelper',
                             action: 'getSecondaryClassTypeOptions',
-                            secondaryClass: $$('.SecondaryClass')
+                            secondaryClass: $$.get('.SecondaryClass')
                         }, { 
                             style: 'width: fit-content', text: 'Secondary Class Type' 
                         })
                     })
                 )
             ]), Form.field(Table, "golf", {
-                get: $$ => $$('.vehicletype') == 'golf' ? [ $$ ] : [],
+                get: $$ => $$.get('.vehicletype') == 'golf' ? [ $$ ] : [],
                 atr: () => ({
                     class: 'dfe-table col-3-centred tab-cols-4-3-3',
                     singleColumn: true
@@ -394,7 +394,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     })
                 ) ]), 
             Form.field(Table, "mobile", {
-                get: $$ => $$('.vehicletype') == 'mobile' ? [ $$ ] : [],
+                get: $$ => $$.get('.vehicletype') == 'mobile' ? [ $$ ] : [],
                 atr: $$ => ({
                     class: 'dfe-table col-3-centred tab-cols-2-5-3',
                     singleColumn: true
@@ -414,7 +414,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                         atr: () => fields.choice('.MobileHomeType', [ 'Trailer Equipped As Living Quarters', 'Pickup Trucks Used Solely To Transport Camper Bodies', 'Motor Homes Self-Propelled Equipped As Living Quarters' ], { style: 'width: fit-content', text: 'Type' })
                     })
                 ),
-                Form.field(InlineRows, "size-switch", { get: $$ => $$('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [ $$ ] : [] }, 
+                Form.field(InlineRows, "size-switch", { get: $$ => $$.get('.MobileHomeType') == 'Motor Homes Self-Propelled Equipped As Living Quarters' ? [ $$ ] : [] }, 
                     Form.field(ApplyToAllField, "field-138", { config: {type: 'mobile', field: '.MotorHomeSize'} }, 
                         Form.field(LabeledDropdown, {
                             atr: () => fields.choice('.MotorHomeSize', [ 'Up To 22 feet', 'More Than 22 feet' ], { style: 'width: fit-content', text: 'Length' })
@@ -447,7 +447,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                             query: {
                                 method: 'CMAUVehicleScriptHelper',
                                 action: 'getCompDedOptions',
-                                vehicleType: $$('.vehicletype')
+                                vehicleType: $$.get('.vehicletype')
                             },
                             mapper: o => ({ value: o.value, description: o.text })
                         }, { text: 'Comp. Ded' })
@@ -459,24 +459,24 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                             query: {
                                 method: 'CMAUVehicleScriptHelper',
                                 action: 'getCollDedOptions',
-                                vehicleType: $$('.vehicletype')
+                                vehicleType: $$.get('.vehicletype')
                             },
                             mapper: o => ({ value: o.value, description: o.text })
                         }, { text: 'Coll. Ded' })
                     })
                 ),
-                Form.field(InlineRows, "val-switch", { get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) ? [ $$ ] : [] }, 
+                Form.field(InlineRows, "val-switch", { get: $$ => ($$.get('.coverages.col.ded') + $$.get('.coverages.otc.ded')).toString().match(/\d|Full/) ? [ $$ ] : [] }, 
                     Form.field(ApplyToAllField, "field-88", { config: { field: '.ValuationMethod'} }, 
                         Form.field(LabeledDropdown, {
                             atr: $$ => fields.ajaxChoice('.ValuationMethod', {
                                 method: 'CMAUVehicleScriptHelper',
                                 action: 'getValuationMethodOptions',
-                                vehicleType: $$('.vehicletype')
+                                vehicleType: $$.get('.vehicletype')
                             }, { text: 'Valuation' })
                         })
                     )
                 ),
-                Form.field(InlineRows, "amt-switch", { get: $$ => ($$('.coverages.col.ded') + $$('.coverages.otc.ded')).toString().match(/\d|Full/) && $$('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [] }, 
+                Form.field(InlineRows, "amt-switch", { get: $$ => ($$.get('.coverages.col.ded') + $$.get('.coverages.otc.ded')).toString().match(/\d|Full/) && $$.get('.ValuationMethod') == 'Stated Amount' ? [ $$ ] : [] }, 
                     Form.field(ApplyToAllField, "field-92", { config: { field: '.StatedAmt'} }, 
                         Form.field(LabeledEditboxMoney, {
                             atr: () => fields.simple('.StatedAmt', { format: '$9,999,999', text: 'Stated Amount', style: 'width: 100px' }),
@@ -484,13 +484,13 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                         })
                     )
                 ),
-                Form.field(InlineRows, "pdonly-switch", { get: $$ => $$('.PhysDmgInd') == 'Y' || $$('..state') != 'KS' ? [] : [ $$ ] }, 
+                Form.field(InlineRows, "pdonly-switch", { get: $$ => $$.get('.PhysDmgInd') == 'Y' || $$.get('..state') != 'KS' ? [] : [ $$ ] }, 
                     Form.field(ApplyToAllField, "field-96", { config: { field: '.coverages.pip.IncludeInd'} }, 
                         Form.field(LabeledCheckbox, {
                             atr: () => fields.simple('.coverages.pip.IncludeInd',  [], { text: 'Personal Injury Protection Coverage' })
                         })
                     ),
-                    Form.field(InlineRows, "pip-switch", { get: $$ => $$('.coverages.pip.IncludeInd') == 'Y' ? [ $$ ] : [] }, 
+                    Form.field(InlineRows, "pip-switch", { get: $$ => $$.get('.coverages.pip.IncludeInd') == 'Y' ? [ $$ ] : [] }, 
                         Form.field(ApplyToAllField, "field-100", { config: { field: '.coverages.pip.addedpipoption' } }, 
                             Form.field(LabeledDropdown, {
                                 atr: () => fields.choice('.coverages.pip.addedpipoption', [ 'Option 1', 'Option 2' ], { style: 'width: fit-content', text: 'Additional Personal Injury Protection' }),
@@ -503,14 +503,14 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                                 layout: [{style: 'padding-left: 16px;'}]
                             })
                         ),
-                        Form.field(InlineRows, "added-pip", { get: $$ => +$$('.coverages.pip.broadpipnum') > 0 ? [ $$ ] : [] }, 
+                        Form.field(InlineRows, "added-pip", { get: $$ => +$$.get('.coverages.pip.broadpipnum') > 0 ? [ $$ ] : [] }, 
                             Form.field(ApplyToAllField, "field-145", { config: { field: '.coverages.pip.addedbroadpipnum' } }, 
                                 Form.field(LabeledEditbox, {
                                     atr: () => fields.simple('.coverages.pip.addedbroadpipnum', { pattern: '[0-9]{1,5}', style: 'width: 80px', text: 'Number of Named Individuals for Additional Broadened PIP' }),
                                     layout: [{style: 'padding-left: 16px;'}]
                                 })
                             ), 
-                            Form.field(InlineRows, "added-pip-s", { get: $$ => +$$('.coverages.pip.addedbroadpipnum') ? [ $$ ] : [] }, 
+                            Form.field(InlineRows, "added-pip-s", { get: $$ => +$$.get('.coverages.pip.addedbroadpipnum') ? [ $$ ] : [] }, 
                                 Form.field(ApplyToAllField, "field-149", { config: { field: '.coverages.pip.addedbpipoptioncd' } }, 
                                     Form.field(LabeledDropdown, {
                                         atr: () => fields.choice('.coverages.pip.addedbpipoptioncd', [ 'Option 1', 'Option 2' ], { style: 'width: fit-content', text: 'Additional Broadened Personal Injury Protection' }),
@@ -524,7 +524,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
             ]), Form.field(Table, "opt-covs", {
                 atr: $$ => ({
                     class: `dfe-table col-3-centred tab-cols-4-3-3`,
-                    skip: $$('..state') == 'KS' ? [ 'field-111', 'field-114' ] : [ 'field-113' ],
+                    skip: $$.get('..state') == 'KS' ? [ 'field-111', 'field-114' ] : [ 'field-113' ],
                     singleColumn: true
                 }),
                 layout: [ {
@@ -536,7 +536,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     colSpan: "3",
                     class: "inline-section-header"
                 } ]
-            }), Form.field(InlineRows, "towing-switch", { get: $$ => $$('.vehicletype') == 'car' && $$('.coverages.otc.ded').toString().match(/\d|Full/) ? [ $$ ] : [] }, 
+            }), Form.field(InlineRows, "towing-switch", { get: $$ => $$.get('.vehicletype') == 'car' && $$.get('.coverages.otc.ded').toString().match(/\d|Full/) ? [ $$ ] : [] }, 
                     Form.field(ApplyToAllField, "field-118", { config: { field: '.coverages.towlabor.towlabor' } }, 
                         Form.field(LabeledDropdown, {
                             atr: () => fields.choice('.coverages.towlabor.towlabor', fields.choiceItems({
@@ -574,7 +574,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                             atr: () => fields.simple('.losspayee.namedinsuredInd',  [], { text: 'Additional Named Insured' })
                         })
                     ),
-                    Form.field(InlineRows, "field-120", { get: $$ => $$('.losspayee.namedinsuredInd') == 'Y' ? [ $$ ] : [] },
+                    Form.field(InlineRows, "field-120", { get: $$ => $$.get('.losspayee.namedinsuredInd') == 'Y' ? [ $$ ] : [] },
                         Form.field(ApplyToAllField, "field-121", { config: { field: '.losspayee.namedInsured.Name'} }, 
                             Form.field(LabeledEditbox, {
                                 atr: () => fields.simple('.losspayee.namedInsured.Name',  [], { cstyle: 'padding-left: 10px;', html: '<b style="color: red">*</b>Name' })
@@ -584,29 +584,30 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 )
            ]), Form.field(Div, "car-ctrl", {
                 atr: $$ => ({
-                    skip: $$('..car').length > 1 ? [] : [ 'remove-car' ],
+                    skip: $$.get('..car').length > 1 ? [] : [ 'remove-car' ],
                     style: 'padding: 5px; text-align: right; background: lightgray;'
                 }),
-                layout: [ {
-                    style: "padding: 2px 0px"
+                layout: [ { 
+                    class: "inline-section-header", 
+                    style: "display: inline-block; width: 100%; box-sizing: border-box;"
                 } ]
             }, [ Form.field(Button, "clone-car", {
                 get: () => 'Clone Vehicle',
                 set: $$ => $$.clone(),
-                atr: () => ({
+                atr: () => ({ 
                     style: 'padding: 1px 10px; margin: 0px 5px'
                 }),
                 layout: [ {
-                    style: "display: inline-block"
+                    style: "display: inline-block; float: right;"
                 } ]
             }), Form.field(Button, "remove-car", {
                 get: () => 'Remove Vehicle',
                 set: $$ => $$.detach(),
-                atr: () => ({
-                    style: 'padding: 1px 10px; margin: 0px 5px'
+                atr: () => ({ 
+                    style: 'padding: 1px 10px; margin: 0px 5px' 
                 }),
-                layout: [ {
-                    style: "display: inline-block"
+                layout: [ { 
+                    style: "display: inline-block; float: right;" 
                 } ]
             }) ])  ]) ]);
         }

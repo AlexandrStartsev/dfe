@@ -17,7 +17,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                     name: 'ratingTableEpirationsHtmlForm'
                 })
             }, [ Form.field(Table, "field-1", {
-                get: $$ => $$('expirations'),
+                get: $$ => $$.get('expirations'),
                 atr: () => ({
                     class: 'expirations-table'
                 })
@@ -36,7 +36,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
             }), Form.field(Dropdown, "field-2", {
                 get: function($$) {
                     let desc, descs = {};
-                    let companies = $$('companies').map(row => row.data).map(company => ({
+                    let companies = $$.get('companies').map(row => row.data).map(company => ({
                         value: company.companyCode,
                         description: (desc = company.stateCode + ' - ' + company.companyShortName, descs[desc] = descs[desc] ? 2 : 1, 
                         desc)
@@ -45,7 +45,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                         description: company.description + (descs[company.description] == 2 ? ' (' + company.value + ')' : '')
                     })).sort((c1, c2) => c1.description.localeCompare(c2.description));
                     return {
-                        value: $$('.companyCode'),
+                        value: $$.get('.companyCode'),
                         items: [ {
                             value: '',
                             description: 'Please select...'
@@ -56,7 +56,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                 val: $$ => $$.required('.companyCode'),
                 atr: $$ => ({
                     style: 'width: 200px',
-                    ...$$('.edit') == 'Y' ? {
+                    ...$$.get('.edit') == 'Y' ? {
                         name: 'compCd'
                     } : {
                         disabled: true
@@ -65,7 +65,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
             }), Form.field(Editbox, "field-7", {
                 atr: $$ => fields.date('.expirationDate', {
                     type: 'datepicker',
-                    ...$$('.edit') == 'Y' ? {
+                    ...$$.get('.edit') == 'Y' ? {
                         name: 'expDt'
                     } : {
                         disabled: true
@@ -74,20 +74,20 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
             }), Form.field(Editbox, "field-8", {
                 atr: $$ => fields.simple('.comment', {
                     style: 'width: 400px',
-                    disabled: $$('.edit') != 'Y'
+                    disabled: $$.get('.edit') != 'Y'
                 })
             }), Form.field(Button,"field-9", {
-                get: $$ => $$('.edit') == 'Y' ? 'Add' : 'Remove',
+                get: $$ => $$.get('.edit') == 'Y' ? 'Add' : 'Remove',
                 set: ($$, value) => {
                     //let runtime = $$.runtime, form = runtime.findControls("form").shift();
                     let form = document.querySelector('[name="ratingTableEpirationsHtmlForm"]');
                     let formNode = Core.nodeFromElement(form);
                     let runtime = formNode.runtime;
-                    if ($$('.edit') == 'Y') {
+                    if ($$.get('.edit') == 'Y') {
                         runtime.findChildren(formNode).forEach(node => node.notify({action: 'validate'}));
-                        $$('..').set({
+                        $$.get('..').set({
                             action: 'add',
-                            cmnt: $$('.comment')
+                            cmnt: $$.get('.comment')
                         });
                         runtime.schedule.push(() => formNode.erroringChildren.size || form.submit());
                     } else {
@@ -112,9 +112,9 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                             close: close,
                             buttons: {
                                 OK: () => {
-                                    $$('..').set({
+                                    $$.get('..').set({
                                         action: 'update',
-                                        id: $$('.expirationId'),
+                                        id: $$.get('.expirationId'),
                                         cmnt: edit.val()
                                     });
                                     runtime.schedule.push(() => form.submit());
@@ -134,19 +134,19 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                     style: "text-align: center"
                 } ]
             }) ]), Form.field(Editbox, "action", {
-                get: $$ => $$('action'),
+                get: $$ => $$.get('action'),
                 atr: () => ({
                     name: 'action',
                     type: 'hidden'
                 })
             }), Form.field(Editbox, "id", {
-                get: $$ => $$('id'),
+                get: $$ => $$.get('id'),
                 atr: () => ({
                     name: 'id',
                     type: 'hidden'
                 })
             }), Form.field(Editbox, "cmnt", {
-                get: $$ => $$('cmnt'),
+                get: $$ => $$.get('cmnt'),
                 atr: () => ({
                     name: 'cmnt',
                     type: 'hidden'
@@ -155,7 +155,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
             Form.field(Html, "field-10", {
                 get: () => '<h3>Change Log:</h3>'
             }), Form.field(Table, "field-11", {
-                get: $$ => $$('changelog'),
+                get: $$ => $$.get('changelog'),
                 atr: $$ => ({
                     class: 'changelog-table',
                     style: 'width: 90%'
@@ -179,29 +179,29 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                 class: "header",
                 get: $$ => 'Action'
             }), Form.field(Label, "field-12", {
-                get: $$ => $$('.entryDate').replace(/^0|(\/)0/g, '$1'),
+                get: $$ => $$.get('.entryDate').replace(/^0|(\/)0/g, '$1'),
                 layout: [ {
                     style: "text-align: center"
                 } ]
             }), Form.field(Label, "field-19", {
-                get: $$ => $$('.userName')
+                get: $$ => $$.get('.userName')
             }), Form.field(Label, "field-20", {
                 get: $$ => {
-                    let code = $$('.companyCode');
-                    return $$('companies').map(c => c.data).filter(c => c.companyCode === code).map(c => c.stateCode + ' - ' + c.companyShortName).pop() || code;
+                    let code = $$.get('.companyCode');
+                    return $$.get('companies').map(c => c.data).filter(c => c.companyCode === code).map(c => c.stateCode + ' - ' + c.companyShortName).pop() || code;
                 }
             }), Form.field(Label, "field-21", {
-                get: $$ => $$('.expirationDate').replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1'),
+                get: $$ => $$.get('.expirationDate').replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1'),
                 layout: [ {
                     style: "text-align: center"
                 } ]
             }), Form.field(Label, "field-22", {
-                get: $$ => $$('.comment'),
+                get: $$ => $$.get('.comment'),
                 layout: [ {
                     style: "width: 300px"
                 } ]
             }), Form.field(Label, "field-23", {
-                get: $$ => $$('.action'),
+                get: $$ => $$.get('.action'),
                 layout: [ {
                     style: "text-align: center"
                 } ]

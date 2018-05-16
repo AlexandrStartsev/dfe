@@ -28,7 +28,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                     style: 'width: 100%'
                 })
             }, [ Form.field(Table, "filtr", {
-                get: $$ => $$('filterCollapsed') == 'Y' ? [] : $$('criteria'),
+                get: $$ => $$.get('filterCollapsed') == 'Y' ? [] : $$.get('criteria'),
                 atr: () => ({
                     class: 'dashboard-table'
                 })
@@ -38,10 +38,10 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                     colSpan: "4"
                 } ]
             }, [ Form.field(Html,"field-49", {
-                get: $$ => shapes.cssShape($$, $$('filterCollapsed') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
+                get: $$ => shapes.cssShape($$, $$.get('filterCollapsed') == 'Y' ? 'css-button-plus' : 'css-button-minus'),
                 atr: $$ => ({
                     events: {
-                        onClick: () => $$.set('filterCollapsed', $$('filterCollapsed') == 'Y' ? 'N' : 'Y')
+                        onClick: () => $$.set('filterCollapsed', $$.get('filterCollapsed') == 'Y' ? 'N' : 'Y')
                     }
                 }),
                 layout: [ {
@@ -55,7 +55,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }) ]), Form.field(LabeledEditbox,"field-4", {
                 set: function($$, value) {
                     $$.set('.effFrom', value);
-                    let to = cmn.ARFtoDate($$('.effTo')), fr = cmn.ARFtoDate(value);
+                    let to = cmn.ARFtoDate($$.get('.effTo')), fr = cmn.ARFtoDate(value);
                     fr instanceof Date && to instanceof Date && (fr > to || to - fr.setDate(fr.getDate() + 90) > 0) && $$.set('.effTo', cmn.yyyymmdd(fr));
                 },
                 atr: () => fields.date('.effFrom', {
@@ -67,7 +67,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }), Form.field(LabeledEditbox,"field-6", {
                 set: function($$, value) {
                     $$.set('.effTo', value);
-                    let fr = cmn.ARFtoDate($$('.effFrom')), to = cmn.ARFtoDate(value);
+                    let fr = cmn.ARFtoDate($$.get('.effFrom')), to = cmn.ARFtoDate(value);
                     fr instanceof Date && to instanceof Date && (to < fr || to.setDate(to.getDate() - 90) - fr > 0) && $$.set('.effFrom', cmn.yyyymmdd(to));
                 },
                 atr: () => fields.date('.effTo', {
@@ -84,16 +84,16 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }, [ Form.field(LabeledDropdown,"field-8", {
                 get: function($$) {
                     return {
-                        value: $$('.teamFilter'),
+                        value: $$.get('.teamFilter'),
                         items: [ {
                             value: '',
                             description: 'All'
-                        } ].concat($$('team').filter(team => team.get('.quotes.rows').length).map(team => team.get('.name')))
+                        } ].concat($$.get('team').filter(team => team.get('.quotes.rows').length).map(team => team.get('.name')))
                     };
                 },
                 set: ($$, value) => {
                 	$$.set({teamFilter: value, userFilter: ''});
-                	let team = $$('team').filter(team => team.get('.name') == value).shift();
+                	let team = $$.get('team').filter(team => team.get('.name') == value).shift();
                 	team && team.set('.expanded', 'Y')
                 },
                 atr: () => ({
@@ -102,13 +102,13 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }), Form.field(LabeledDropdown,"field-10", {
                 get: function($$) {
                     this.userIdToTeam.then(map => {
-                        let users = [], teamFilter = $$('.teamFilter').toString();
-                        map.forEach((def, userId) => (teamFilter == 0 || def.groups.indexOf(teamFilter) >= 0) && $$('team.quotes.rows.userId').indexOf(userId) != -1 && users.push({
+                        let users = [], teamFilter = $$.get('.teamFilter').toString();
+                        map.forEach((def, userId) => (teamFilter == 0 || def.groups.indexOf(teamFilter) >= 0) && $$.get('team.quotes.rows.userId').indexOf(userId) != -1 && users.push({
                             value: userId,
                             description: def.fullname
                         }));
                         $$.result({
-                            value: $$('.userFilter'),
+                            value: $$.get('.userFilter'),
                             items: [ {
                                 value: '',
                                 description: 'All'
@@ -140,7 +140,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                             description: def.fullname
                         }));
                         $$.result({
-                            value: $$('userReassign'),
+                            value: $$.get('userReassign'),
                             items: users
                         });
                     });
@@ -158,11 +158,11 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 },
                 atr: $$ => ({
                     style: 'float: right',
-                    disabled: !TeamForm.isMassRolloverAllowed($$) || $$('team.quotes.rows.reassign').indexOf('Y') == -1
+                    disabled: !TeamForm.isMassRolloverAllowed($$) || $$.get('team.quotes.rows.reassign').indexOf('Y') == -1
                 })
             }) ]), Form.field(Div,"loader", {
                 get: function($$) {
-                    let effFrom = $$('criteria.effFrom'), effTo = $$('criteria.effTo');
+                    let effFrom = $$.get('criteria.effFrom'), effTo = $$.get('criteria.effTo');
                     cmn.ARFtoDate(effFrom) instanceof Date && cmn.ARFtoDate(effTo) instanceof Date && this.loadTeams($$.unbound, effFrom, effTo);
                     return [ $$ ];
                 },
@@ -177,12 +177,12 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 get: $$ => shapes.cssShape($$, 'css-loading-anim-circle'),
                 atr: $$ => ({
                     class: 'loading-overlay',
-                    style: `display: ${$$('team.loading') == 0 ? 'none' : ''}`
+                    style: `display: ${$$.get('team.loading') == 0 ? 'none' : ''}`
                 })
             }), Form.field(Table, "teams", {
-                get: $$ => $$('team'),
+                get: $$ => $$.get('team'),
                 atr: function($$) {
-                    let _team = $$('criteria.teamFilter').toString(), _user = $$('criteria.userFilter').toString();
+                    let _team = $$.get('criteria.teamFilter').toString(), _user = $$.get('criteria.userFilter').toString();
                     return {
                         class: 'dashboard-table team-table',
                         style: 'width: 100%',
@@ -208,19 +208,19 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                     style: 'display: flex;'
                 })
             }, [ Form.field(Html,"field-7", {
-                get: $$ => shapes.cssShape($$, $$('.expanded') == 'Y' ? 'css-button-minus' : 'css-button-plus'),
+                get: $$ => shapes.cssShape($$, $$.get('.expanded') == 'Y' ? 'css-button-minus' : 'css-button-plus'),
                 atr: $$ => ({
                     style: 'width: 12px; height: 12px;',
                     events: {
-                        onClick: () => $$.set('.expanded', $$('.expanded') == 'Y' ? 'N' : 'Y')
+                        onClick: () => $$.set('.expanded', $$.get('.expanded') == 'Y' ? 'N' : 'Y')
                     }
                 })
             }), Form.field(Label,"field-9", {
-                get: $$ => $$('.name'),
+                get: $$ => $$.get('.name'),
                 layout: [ {
                     style: "padding: 3px; white-space: nowrap"
                 } ]
-            }) ]), Form.field(Either, "rwrap", { atr: $$ => ({ first: $$('.expanded') != 'Y' }) }, 
+            }) ]), Form.field(Either, "rwrap", { atr: $$ => ({ first: $$.get('.expanded') != 'Y' }) }, 
                 Form.field(Label,"field-21", {
                     get: $$ => '...',
                     layout: [ { style: 'display:block; text-align: center;' } ]
@@ -279,7 +279,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
         			effectiveDate: row.get(".effectiveDate").toString().replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1')
         		}
             }))
-            let effFrom = $$('criteria.effFrom'), effTo = $$('criteria.effTo'), reload = cmn.ARFtoDate(effFrom) instanceof Date && cmn.ARFtoDate(effTo) instanceof Date;
+            let effFrom = $$.get('criteria.effFrom'), effTo = $$.get('criteria.effTo'), reload = cmn.ARFtoDate(effFrom) instanceof Date && cmn.ARFtoDate(effTo) instanceof Date;
             reload ? $$.set('team.loading', 1) : alert('request has been submitted. Please correct date range to update grid results');
             jq.post('/services/SubmittedApplicationService/Applications/Update', JSON.stringify(requests), 'json').done(() => 
             	reload && this.loadTeams($$, effFrom, effTo)
@@ -290,7 +290,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             return $$ => userId == 0 || $$.get('.userId') == userId;
         }
         static isMassRolloverAllowed($$) {
-            return $$('features.massRollover') != 0;
+            return $$.get('features.massRollover') != 0;
         }
     }
     

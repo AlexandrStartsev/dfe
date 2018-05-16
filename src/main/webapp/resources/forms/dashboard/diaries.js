@@ -10,7 +10,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
         }
         static fields() {
             return Form.field(Div, "root", {
-                get: $$ => $$('diary'),
+                get: $$ => $$.get('diary'),
                 atr: $$ => ({
                     style: 'width: 100%; padding-top: 2px'
                 })
@@ -20,7 +20,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
                 	return [$$]
                 }
             }, [ Form.field(Table, "diaries", {
-                get: $$ => $$('.rows'),
+                get: $$ => $$.get('.rows'),
                 atr: $$ => ({
                     class: 'dashboard-table diaries-table',
                     order: dashboardCommon.makeSortFunction($$)
@@ -60,28 +60,28 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
                 class: "header",
                 get: $$ => 'Task Link'
             }), Form.field(Label, "actionDate", {
-                get: $$ => $$('.actionDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
+                get: $$ => $$.get('.actionDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
             }), Form.field(Label, "appNumber", {
                 atr: $$ => ({
-                    html: `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$('.appNumber')}">${$$('.appNumber')}</a>`
+                    html: `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$.get('.appNumber')}">${$$.get('.appNumber')}</a>`
                 })
             }), Form.field(Label, "accountName", {
-                get: $$ => $$('.accountName')
+                get: $$ => $$.get('.accountName')
             }), Form.field(Label, "diarySubject", {
-                get: $$ => $$('.diarySubject')
+                get: $$ => $$.get('.diarySubject')
             }), Form.field(Label, "notes", {
-                get: $$ => $$('.notes')
+                get: $$ => $$.get('.notes')
             }), Form.field(Label, "createdByUser", {
-                get: $$ => $$('.createdByUser')
+                get: $$ => $$.get('.createdByUser')
             }), Form.field(Label, "creationDate", {
-                get: $$ => $$('.creationDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
+                get: $$ => $$.get('.creationDate').replace(/(\d{4})(\d{2})(\d{2})/,'$2/$3/$1')
             }), Form.field(Label, "taskId", {
                 atr: function($$) {
                     return {
                         label: 'Edit',
                         style: 'text-decoration: underline; cursor: pointer;',
                         events: {
-                            onClick: () => this.openTask($$('.taskId'), () => this.loadDiaries($$('..')))
+                            onClick: () => this.openTask($$.get('.taskId'), () => this.loadDiaries($$.get('..')))
                         }
                     }
                 }

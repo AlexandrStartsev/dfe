@@ -6,7 +6,7 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
     let DetailsGridForm = class extends Form {
         static fields(_, config) {
             return Form.field(Table, "rbody", {
-                get: $$ => $$('.rows'),
+                get: $$ => $$.get('.rows'),
                 atr: $$ => ({
                     filter: config.rowFilterMaker($$),
                     skip: config.skipColumns,
@@ -51,24 +51,24 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
                 get: $$ => 'Re-Assign'
             }), Form.field(Label, "quoteid", {
                 atr: $$ => ({
-                    html: `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$('.quoteid')}">${$$('.quoteid')}</a>`
+                    html: `<a style="color: #59afe1" href="/DelegateWorkflow.do?workflowName=ShowWorkersCompApplication&quoteId=${$$.get('.quoteid')}">${$$.get('.quoteid')}</a>`
                 })
             }), Form.field(Label, "accountName", {
-                get: $$ => $$('.accountName')
+                get: $$ => $$.get('.accountName')
             }), Form.field(Label, "companyCode", {
-                get: $$ => $$('.companyCode')
+                get: $$ => $$.get('.companyCode')
             }), Form.field(Label, "producerCode", {
-                get: $$ => $$('.producerCode')
+                get: $$ => $$.get('.producerCode')
             }), Form.field(Label, "effectiveDate", {
-                get: $$ => $$('.effectiveDate').toString().replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1')
+                get: $$ => $$.get('.effectiveDate').toString().replace(/(\d{4})(\d{2})(\d{2})/, '$2/$3/$1')
             }), Form.field(Label, "writtenPremium", {
-                get: $$ => $$('.writtenPremium').toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')
+                get: $$ => $$.get('.writtenPremium').toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')
             }), Form.field(Label, "govClass", {
-                get: $$ => $$('.govClass')
+                get: $$ => $$.get('.govClass')
             }), Form.field(Label, "grade", {
-                get: $$ => $$('.grade')
+                get: $$ => $$.get('.grade')
             }), Form.field(Label, "newRenewal", {
-                get: $$ => $$('.newRenewal')
+                get: $$ => $$.get('.newRenewal')
             }), Form.field(Html, "notes", {
                 get: $$ => shapes.svgShape($$, 'svg-icon-file-text'),
                 atr: $$ => ({
@@ -78,9 +78,9 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
                     }
                 })
             }), Form.field(Label, "userId", {
-            	get: $$ => $$('.userId')
+            	get: $$ => $$.get('.userId')
             }), Form.field(Checkbox, "reassign", {
-            	get: $$ => $$('.reassign'),
+            	get: $$ => $$.get('.reassign'),
             	set: ($$, value) => $$.set('.reassign', value)
             }) ])
         }
@@ -89,7 +89,7 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
             return row.get('.note').filter(n => n.get('.user') == user && n.get('.subject') != 0).pop();
         }
         static showNotes($$) {
-            let qid = $$('.quoteid'), map = noteRt, rt = map.get(qid);
+            let qid = $$.get('.quoteid'), map = noteRt, rt = map.get(qid);
             if (!rt) {
                 map.set(qid, rt = Core.startRuntime({
                     form: NotesForm,
@@ -129,8 +129,8 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
                 p && (p != t && !jq.contains(p, t) || e.target.tagName === 'DIV') && c.remove();
                 if ( e.target.tagName !== 'DIV' && node && c.parent().length === 0 && node.form instanceof DetailsGridForm ) {
                     let $$ = node.model, text = '', fld = node.field.name;
-                    if (fld == 'producerCode') text = $$('.producerName');
-                    if (fld == 'govClass') text = $$('.govCCDescription');
+                    if (fld == 'producerCode') text = $$.get('.producerName');
+                    if (fld == 'govClass') text = $$.get('.govCCDescription');
                     if (fld == 'notes') ($$ = DetailsGridForm.firstUserNote($$)) && (text = $$.get('.subject'));
                     text && jq('<label>').appendTo(jq('<div>').appendTo(jq(t)).attr({
                         class: 'dashboard-quotes-popup'

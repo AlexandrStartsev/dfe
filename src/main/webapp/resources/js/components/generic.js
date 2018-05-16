@@ -36,7 +36,7 @@ define('components/span', ['dfe-core', 'components/base'], function(Core, BaseCo
                     child => sub.push( Core.createElement('span', child) ) 
                 ) 
             )
-            return wrap === false ? [sub] : Core.createElement('span', attributes, sub);
+            return wrap ? Core.createElement('span', attributes, sub) : [sub];
         }
     }
 })
@@ -53,7 +53,7 @@ define('components/div', ['dfe-core', 'components/base'], function(Core, BaseCom
                     child => sub.push( Core.createElement('div', child) ) 
                 ) 
             )
-            return wrap === false ? [sub] : Core.createElement('div', rest, sub);
+            return wrap ? Core.createElement('div', rest, sub) : [sub];
         }
     }
 })
@@ -511,7 +511,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                                     })))
                                 } else {
                                     row.key === this.activeTab && body.push( Core.createElement('div', child) ); //body.children.push( Core.createElement('div', child) );
-                                    //body.children.push( Core.createElement('div', child, layout => row.key === this.activeTab ? layout : ({...layout, style: 'display: none'}) ) );
+                                    //body.push( Core.createElement('div', child, layout => row.key === this.activeTab ? layout : ({...layout, style: 'display: none'}) ) );
                                 }
                             }
                         )
@@ -798,12 +798,41 @@ define('components/labeled-radiolist', ['dfe-core', 'components/radiolist', 'com
     }
 })
 
+define('components/modal', ['dfe-core', 'components/div'], function(Core, Div){
+    return class Modal extends Core.Form {
+        constructor(node){
+            super(node);
+            this.root = null;
+        }
+        render(data, error, attribures, children) {
+            let root = null;
+            children.forEach(map => map.forEach(child => root || (root = child)));
+            if(this.root !== root) {
+                this.root && this.root.setDom(null, null, null);
+                if(root !== null) {
+                    root.setDom({type: 'div', attributeMapper: layout => ({...layout, ...attribures})}, document.body, null);
+                }
+                this.root = root;
+            }
+            return []
+        }
+        static fields(children, config) {
+            return (
+                Core.Form.field(Div, {
+                    atr: () => ({wrap: false}), 
+                    layout: [ { style: 'position: absolute; left: 300px; top: 300px; border: 2px solid #bbb; border-radius: 3px; padding: 5px;' } ] 
+                }, children )
+            )
+        }
+    }
+})
+
 define('components/editbox-popup', ['dfe-core', 'components/editbox', 'components/textarea'], function(Core, Editbox, Textarea) {
     class EditboxPopup extends Editbox {
         constructor(node) {
             super(node);
             let editBoxKeyDownEvent = this.events.onKeyDown;
-            this.popup = new Core.RenderNode( node, { component: Textarea, set: (_, value) => this.store(this.setMapper(value)) }, node.unboundModel );
+            this.popup = Core.createNode( node, { component: Textarea, set: (_, value) => this.store(this.setMapper(value)) }, node.unboundModel );
             this.ref = null;
             this.focusInterval = null;
             this.popupAttributes = {};
