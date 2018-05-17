@@ -789,7 +789,8 @@ define('dfe-core', function() {
     }
     
 	class Runtime {
-        constructor(listener) {
+        constructor(config, listener) {
+            this.config = config || {};
             this.schedule = [];
             this.listener = (listener || new DfeListener()).For(); 
             this.nodes = [];
@@ -823,7 +824,7 @@ define('dfe-core', function() {
             this.initAction = {action: initAction||'init'};
             if( this.rootProxy && this.formClass ) {
                 parentElement && (parentElement._dfe_runtime = this);
-                let node = this.addNode( null, this.rootProxy, new Field( this.formClass, completeNames( this.formClass.fields([], null) ) ) );
+                let node = this.addNode( null, this.rootProxy, new Field( this.formClass, { config: this.config }, completeNames( this.formClass.fields([], null) ) ) );
                 node.setDom({ type: 'div' }, parentElement, null);
 	            this.processor = setInterval(() => this.processInterceptors(), 50);
                 this.processInterceptors();
@@ -1015,12 +1016,11 @@ define('dfe-core', function() {
         findNodes(fields, modelProxy) {
             return this.nodes.filter( node => array.indexOf(node.field.name) !== -1 && (!modelProxy || node.model.data == modelProxy.data ) );
         }	
-        static startRuntime(arg) {
-            var m = arg.model, j = m instanceof JsonProxy || typeof m.shadow == 'function', listener = j && m.listener || arg.listener ||new DfeListener(), runtime = new Runtime(listener);
-            for(var v in arg.params) runtime[v] = arg.params[v];
-            j ? runtime.rootProxy = m.withListener(runtime.listener.For()) : runtime.setModel(m);
-            runtime.setDfeForm(arg.form).restart(arg.node, arg.initAction);
-            arg.ready && arg.ready(runtime, dfe, arg.model);
+        static startRuntime(args) {
+            let {model: model, form: form, node: node, listener: listener, config: config, initAction: initAction, ready: ready} = args;
+            let runtime = new Runtime(config, model instanceof JsonProxy && model.listener);
+            typeof ready === 'function' && runtime.schedule.push( ready.bind(null, runtime, args) )
+            runtime.setModel(model).setDfeForm(form).restart(node, initAction);
             return runtime;
         } 
 	}

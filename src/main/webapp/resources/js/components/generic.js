@@ -993,7 +993,7 @@ define('components/typeahead', ['components/component', 'ui/utils', 'ui/jquery',
 
 */
 
-define([ 'module',
+define("components/generic", [ 'module',
             'components/base',
             'components/button',
             'components/checkbox',

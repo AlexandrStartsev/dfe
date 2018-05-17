@@ -25,38 +25,37 @@ define('forms/test',[ "dfe-core",
         "components/editbox-popup",         
         "components/modal",
         "components/div-r",
-        "components/editbox-code" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+        "components/editbox-code-popup" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
             Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea,// ChildRuntime, 
-            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup, Modal, Div, EditboxCode ) {
+            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup, Modal, Div, EditboxCodePopup ) {
     let Form = Core.Form;
     
-    return class TestForm extends Core.Form {
+    /*return class TestForm extends Core.Form {
         static fields() {
             return [
-                Form.field(Textarea, { get: $$ => $$.get('testCode'), set: ($$, value) => $$.set('testCode', value), atr: () => ({ style: 'width: 200px; height: 100px'}) }),
-                Form.field(EditboxCode, { 
-                    get: $$ => $$.get('testCode'), 
-                    set: ($$, value) => $$.set('testCode', value), 
-                    atr: () => ({ 
-                        style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',
-                        lang: 'javascript',
-                        func: {
-                            template: '($$, value) => {}'
+                //Form.field(Textarea, { get: $$ => $$.get('testCode'), set: ($$, value) => $$.set('testCode', value), atr: () => ({ style: 'width: 200px; height: 100px'}) }),
+                Form.field(EditboxCodePopup, "field-3", { 
+                    atr: () => fields.simple('testCode', {
+                        func: {},
+                        ta: {
+                            style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',
+                            offsetLeft: 10,
+                            class: 'popup-editor-wrapper',
+                            editorClass: 'edit-popup-textarea'
                         }
                     }) 
                 }),
-                Form.field(Textarea, { get: $$ => $$.get('testCode2'), set: ($$, value) => $$.set('testCode2', value), atr: () => ({ style: 'width: 200px; height: 100px'}) }),
-                Form.field(EditboxCode, { 
-                    get: $$ => $$.get('testCode2'), 
-                    set: ($$, value) => $$.set('testCode2', value), 
-                    atr: () => ({ 
-                        style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',
-                        lang: 'javascript',
-                        func: {
-                            template: '($$, value) => {}'
+                //Form.field(Textarea, { get: $$ => $$.get('testCode2'), set: ($$, value) => $$.set('testCode2', value), atr: () => ({ style: 'width: 200px; height: 100px'}) }),
+                Form.field(EditboxCodePopup, "field-5", { 
+                    atr: () => fields.simple('testCode2', {
+                        ta: {
+                            style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',
+                            offsetLeft: 10,
+                            class: 'popup-editor-wrapper',
+                            editorClass: 'edit-popup-textarea'
                         }
                     }) 
-                }),
+                })
             ]
         }
     }
@@ -66,7 +65,7 @@ define('forms/test',[ "dfe-core",
             return [
                 Form.field(Container, "field-1", [
                     Form.field(Container, "field-2", [
-                        Form.field(EditboxPopup, "field-3", { 
+                        Form.field(EditboxCodePopup, "field-3", { 
                             atr: () => fields.simple('.vinnumber', {
                                 ta: {
                                     style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',
@@ -86,9 +85,9 @@ define('forms/test',[ "dfe-core",
                 )
             ]
         }
-    }
+    }*/
     
-    /*return class TestForm extends Core.Form {
+    return class TestForm extends Core.Form {
         static fields() {
             return [
                 Form.field(TabS, { get: $$ => $$.get('policy.cmau.location.car'), atr: () => ({ rowstyle$header: 'display: flex'}) }, [
@@ -99,7 +98,7 @@ define('forms/test',[ "dfe-core",
                 ])
             ]
         }
-    }*/
+    }
     
    /* return class TestForm extends Core.Form {
         static fields() {

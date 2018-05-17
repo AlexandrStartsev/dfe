@@ -1,8 +1,19 @@
-defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r" ], function(require, uglify, babel, cmn, __c_button, __c_label, __c_dropdown, __c_checkbox, __c_editbox_code, __c_editbox, __c_div_button, __c_div, __c_div_c, __c_div_r) {
-    return new class {
-        constructor() {
-            this.dfe = __c_div_r("root", {
-                get: $$ => [ $$ ],
+define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r", "components/generic" ], function(Core, require, uglify, babel, cmn, Button, Label, Dropdown, Checkbox, EditboxCodePopup, Editbox, DivButton, Div, DivC, DivR, generic) {
+    let Form = Core.Form;
+    let compilationError = function($$) { $$.error('compilation error') };
+    
+    return class Editor extends Form {
+        constructor(node) {
+            super(node);
+            
+            /*try {
+                $$.set('pp_output', this.runtimeToJs($$.data));
+            } catch (e) {
+                console.warn('failed to process form model: ' + e);
+            }*/
+        }
+        static fields() {
+            return Form.field(DivR,"root", {
                 atr: () => ({
                     class: 'div-flex',
                     rowclass: 'div-flex-row',
@@ -11,38 +22,38 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                     rowclass$footer: 'div-flex-row',
                     rowstyle$footer: 'flex-wrap: wrap; width: 800px;'
                 })
-            }, [ __c_button("add_dfe", {
+            }, [ Form.field(Button, "add_dfe", {
                 class: "header",
                 get: () => '+',
                 set: function($$, value) {
-                    var co = $$.get('childrenOf'), ppx = this.allFields($$).filter(function(px) {
+                    var co = $$.get('childrenOf'), ppx = Editor.allFields($$).filter(function(px) {
                         return co == 0 || px.get('.name') == co;
                     }).shift();
                     var d = ppx.append('.children', {
                         name: this.generateName($$),
                         get: this.textToCode($$.runtime, '$$ => [$$]'),
                         children: [],
-                        pos: [ {} ]
+                        layout: [ {} ]
                     })[0].data;
                     d.component = require('components/editbox');
                     d.form = $$.runtime.target_runtime.form;
                 },
-                pos: [ {
-                    colstyle: "display: inline; height: min-content;"
+                layout: [ {
+                    style: "display: inline; height: min-content;"
                 } ]
-            }), __c_label("l1", {
+            }), Form.field(Label, "l1", {
                 class: "header",
                 get: () => 'Show only children of: ',
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; "
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; "
                 } ]
-            }), __c_dropdown("childrenOf", {
+            }), Form.field(Dropdown, "childrenOf", {
                 class: "header",
                 get: $$ => ({ value: $$.get('childrenOf'),
                         items: [ {
                             value: [],
                             description: 'All'
-                        } ].concat(this.allFields($$).filter(function(px) {
+                        } ].concat(Editor.allFields($$).filter(function(px) {
                             return px.get('.children') != 0;
                         }).map(function(px) {
                             return px.get('.name');
@@ -53,10 +64,10 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                         }))
                     }),
                 set: ($$, value) => $$.set({ hierarchyOf: [], childrenOf: value}),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; "
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; "
                 } ]
-            }), __c_checkbox("subChildren", {
+            }), Form.field(Checkbox, "subChildren", {
                 class: "header",
                 get: $$ => ({
                         checked: $$.get('subChildren'),
@@ -64,42 +75,33 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                     }),
                 set: ($$, value) => $$.set('subChildren', value),
                 atr: () => ({ style: 'display: inline' }),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; "
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; "
                 } ]
-            }), __c_label("l2", {
+            }), Form.field(Label, "l2", {
                 class: "header",
                 get: () => 'Show hierarchy: ',
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; "
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; "
                 } ]
-            }), __c_dropdown("hierarchyOf", {
+            }), Form.field(Dropdown, "hierarchyOf", {
                 class: "header",
                 get: $$ => ({
                         value: $$.get('hierarchyOf'),
-                        items: [ {
-                            value: [],
-                            description: 'All'
-                        } ].concat(this.allFields($$).map(function(px) {
-                            return px.get('.name');
-                        }).sort().map(function(s) {
-                            return {
-                                value: s
-                            };
-                        }))
+                        items: [ { value: [], description: 'All' } ].concat(Editor.allFields($$).map(px => px.get('.name')).sort())
                     }),
                 set: ($$, value) => $$.set({ childrenOf: [], hierarchyOf: value }),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; "
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; "
                 } ]
-            }), __c_button("JS", {
+            }), Form.field(Button, "JS", {
                 class: "header",
                 get: () => 'to JS',
                 set: $$ => $$.set('pp_output', this.runtimeToJs($$.data)),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; height: min-content;"
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
-            }), __c_button("JS - min", {
+            }), Form.field(Button, "JS - min", {
                 class: "header",
                 get: () => 'to JS(min)',
                 set: function($$, value) {
@@ -113,21 +115,19 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                     s.figure_out_scope();
                     s.compute_char_frequency();
                     s.mangle_names();
-                    $$.set('pp_output', s.print_to_string({
-                        ie8: true
-                    }));
+                    $$.set('pp_output', s.print_to_string({ ie8: true }));
                 },
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; height: min-content;"
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
-            }), __c_button("load - js", {
+            }), Form.field(Button, "load - js", {
                 class: "header",
                 get: () => 'from JS',
                 set: $$ => this.loadJS($$, $$.get('pp_output')),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; height: min-content;"
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
-            }), __c_editbox_code("pp_output", {
+            }), Form.field(EditboxCodePopup, "pp_output", {
                 class: "header",
                 get: $$ => $$.get('pp_output'),
                 set: ($$, value) => $$.set('pp_output', value),
@@ -141,41 +141,37 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                             class: 'popup-editor-wrapper'
                         }
                     }),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; "
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; "
                 } ]
-            }), __c_button("validate", {
+            }), Form.field(Button, "validate", {
                 class: "header",
                 get: () => 'Simulate validation',
-                set: $$ => this.validateTarget($$),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; height: min-content;"
+                //set: $$ => this.validateTarget($$),
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
-            }), __c_button("restart", {
+            }), Form.field(Button, "restart", {
                 class: "header",
                 get: () => 'Restart target',
-                set: $$ => $$.runtime.target_runtime.restart(),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; height: min-content;"
+                //set: $$ => $$.runtime.target_runtime.restart(),
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
-            }), __c_button("push2srv", {
+            }), Form.field(Button, "push2srv", {
                 class: "header",
                 get: () => 'Store in session',
-                set: $$ => this.storeInSession($$),
-                pos: [ {
-                    colstyle: "display: inline; margin-left: 2px; height: min-content;"
+                //set: $$ => this.storeInSession($$),
+                layout: [ {
+                    style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
-            }), __c_div_c("dfe_row", {
-                get: $$ => this.allFields($$),
+            }), Form.field(DivC, "dfe_row", {
+                get: $$ => Editor.allFields($$),
                 atr: function($$) {
-                    var a = $$.get('childrenOf'), b = $$.get('hierarchyOf'), c = $$.get('subChildren'), f = this.filterRow, ntp = new Map();
-                    this.allFields($$).forEach(function(d) {
-                        ntp.set(d.get('.name'), d);
-                    });
+                    let nameToField = new Map();
+                    Editor.allFields($$).forEach(d => nameToField.set(d.get('.name'), d));
                     return {
-                        filter: function(px) {
-                            return f(px, a, b, c, ntp);
-                        },
+                        filter: Editor.filterRow.bind($$.get('childrenOf'), $$.get('hierarchyOf'), $$.get('subChildren'), nameToField),
                         class: 'div-flex-h',
                         style: 'box-sizing: border-box; overflow-y: scroll; height: 400px;',
                         rowclass$header: 'div-alt-color-fc',
@@ -186,138 +182,133 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                         }
                     };
                 },
-                pos: [ {
-                    colclass: "div-flex-col",
-                    colstyle: "margin: 0px; padding: 0px; width: max-content; width: -moz-max-content;"
+                layout: [ {
+                    class: "div-flex-col",
+                    style: "margin: 0px; padding: 0px; width: max-content; width: -moz-max-content;"
                 } ]
-            }, [ __c_label("up_field_h", {
+            }, [ Form.field(Label, "up_field_h", {
                 class: "header",
                 get: () => 'x',
                 atr: () => ({ style: 'visibility:hidden'}),
-                pos: [ {
-                    colclass: "div-flex-col sticky-header",
-                    colstyle: "border-top-left-radius: 3px;"
+                layout: [ {
+                    class: "div-flex-col sticky-header",
+                    style: "border-top-left-radius: 3px;"
                 } ]
-            }), __c_label("name_field_h", {
+            }), Form.field(Label, "name_field_h", {
                 class: "header",
                 get: () => 'Field name',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header"
+                layout: [ {
+                    class: "div-flex-col sticky-header"
                 } ]
-            }), __c_label("parent_field_h", {
+            }), Form.field(Label, "parent_field_h", {
                 class: "header",
                 get: () => 'Parent',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header"
+                layout: [ {
+                    class: "div-flex-col sticky-header"
                 } ]
-            }), __c_label("type_field_h", {
+            }), Form.field(Label, "type_field_h", {
                 class: "header",
                 get: () => 'Type',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header"
+                layout: [ {
+                    class: "div-flex-col sticky-header"
                 } ]
-            }), __c_label("get_field_h", {
+            }), Form.field(Label, "get_field_h", {
                 class: "header",
                 get: () => 'Getter',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header"
+                layout: [ {
+                    class: "div-flex-col sticky-header"
                 } ]
-            }), __c_label("set_field_h", {
+            }), Form.field(Label, "set_field_h", {
                 class: "header",
                 get: () => 'Setter',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header"
+                layout: [ {
+                    class: "div-flex-col sticky-header"
                 } ]
-            }), __c_label("val_field_h", {
+            }), Form.field(Label, "val_field_h", {
                 class: "header",
                 get: () => 'Validation',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header"
+                layout: [ {
+                    class: "div-flex-col sticky-header"
                 } ]
-            }), __c_label("attr_field_h", {
+            }), Form.field(Label, "attr_field_h", {
                 class: "header",
                 get: () => 'Attributes',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header"
+                layout: [ {
+                    class: "div-flex-col sticky-header"
                 } ]
-            }), __c_label("del_field_h", {
+            }), Form.field(Label, "del_field_h", {
                 class: "header",
                 get: () => 'Del.',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header",
-                    colstyle: "margin-bottom: 0px;"
+                layout: [ {
+                    class: "div-flex-col sticky-header",
+                    style: "margin-bottom: 0px;"
                 } ]
-            }), __c_label("class_field_h", {
+            }), Form.field(Label, "class_field_h", {
                 class: "header",
                 get: () => 'Class',
-                pos: [ {
-                    colclass: "div-flex-col sticky-header",
-                    colstyle: "margin-bottom: 0px;"
+                layout: [ {
+                    class: "div-flex-col sticky-header",
+                    style: "margin-bottom: 0px;"
                 } ]
-            }), __c_label("ppos_field_h", {
+            }), Form.field(Label, "ppos_field_h", {
                 class: "header",
                 get: () => 'Layout specific',
                 atr: () => ({
                         style: 'white-space: nowrap;'
                     }),
-                pos: [ {
-                    colclass: "div-flex-col sticky-header",
-                    colstyle: "border-top-right-radius: 3px;margin-bottom: 0px;"
+                layout: [ {
+                    class: "div-flex-col sticky-header",
+                    style: "border-top-right-radius: 3px;margin-bottom: 0px;"
                 } ]
-            }), __c_editbox("field_index", {
+            }), Form.field(Editbox, "field_index", {
                 get: $$ => $$.index().toString(),
                 set: ($$, value) => this.moveField($$, value),
                 atr: $$ => ({
-                        events: {
-                            focus: function(e, c) {
-                                c.ui.setSelectionRange(0, 99);
-                            }
-                        },
-                        trigger: 'change',
-                        style: $$.get('..component') == 0 ? 'visibility:hidden;' : '',
-                        class: 'editor-pos-fld'
-                    }),
-                pos: [ {
-                    colclass: "div-flex-col editbox-col --hover-visible"
+                    /*events: {
+                        focus: function(e, c) {
+                            c.ui.setSelectionRange(0, 99);
+                        }
+                    },*/
+                    trigger: 'change',
+                    //style: $$.get('..component') == 0 ? 'visibility:hidden;' : '',
+                    class: 'editor-pos-fld'
+                }),
+                layout: [ {
+                    class: "div-flex-col editbox-col --hover-visible"
                 } ]
-            }), __c_editbox("name_field", {
+            }), Form.field(Editbox, "name_field", {
                 get: $$ => $$.get('.name'),
                 set: ($$, value) => this.changeName($$, value),
-                pos: [ {
-                    colclass: "div-flex-col"
+                layout: [ {
+                    class: "div-flex-col"
                 } ]
-            }), __c_dropdown("parent_field", {
+            }), Form.field(Dropdown, "parent_field", {
                 get: $$ => ({
-                        value: $$.get('..name'),
-                        items: this.allFields($$).filter(function(px) {
-                            return px.get('.component').isContainer && px.get('.name') != $$.get('.name');
-                        }).map(function(px) {
-                            return px.get('.name');
-                        }).sort()
-                    }),
+                    value: $$.get('..name'),
+                    items: Editor.allFields($$).filter(px => px.get('.name') != $$.get('.name')).map(px => px.get('.name')).sort()
+                }),
                 set: ($$, value) => this.changeParent($$, value),
-                atr: $$ => ({ style: $$.get('..component') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
-                pos: [ {
-                    colclass: "div-flex-col"
+                //atr: $$ => ({ style: $$.get('..component') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
+                layout: [ {
+                    class: "div-flex-col"
                 } ]
-            }), __c_dropdown("type_field", {
+            }), Form.field(Dropdown, "type_field", {
                 get: $$ => ({
-                        value: $$.get('.component').cname,
-                        items: [ '{{unknown}}', 'button', 'c-checkbox', 'c-dropdown', 'c-editbox', 'c-editbox-$', 'c-radiolist', 'checkbox', 'component', 'container', 'dfe-runtime', 'dfe-table', 'div', 'div-button', 'div-button-x', 'div-c', 'div-r', 'dropdown', 'editbox', 'editbox-$', 'editbox-P', 'form', 'html', 'label', 'label-i', 'multioption', /*'placeholder',*/ 'radiolist', 'switch', 'tab-d', 'tab-s', 'textarea', 'typeahead' ]
-                    }),
-                set: ($$, value)  => this.changeType($$, value),
-                pos: [ {
-                    colclass: "div-flex-col editbox-col"
+                    value: $$.get('.component').name,
+                    items: [{value: Core.Component, description: '{{unknown}}'}].concat(Object.keys(generic).map(key => ({value: generic[key], description: key})))
+                }),
+                set: ($$, value) => this.changeType($$, value),
+                layout: [ {
+                    class: "div-flex-col editbox-col"
                 } ]
-            }), __c_editbox_code("get_field", {
-                get: function($$) {
-                    if ($$.get('.get') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$.get('.get'));
-                },
+            }), Form.field(EditboxCodePopup, "get_field", {
+                get: $$ => $$.get('.get_text'),
                 set: function($$, value) {
-                    $$.listener.set($$.data, 'get', this.textToCode($$.runtime, value));
-                    $$.listener.notify($$.data, 'component');
+                    console.warn('TODO');
+                    //$$.set('.get_text', value);
+                    //$$.set('.get', this.textToCode($$.runtime, value));
                 },
-                val: $$ => $$.get('.get') == this.compilationerror && $$.error('Compilation error'),
+                val: $$ => $$.get('.get') == compilationError && $$.error('Compilation error'),
                 atr: () => ({
                         style: 'margin: 0px',
                         spellcheck: 'false',
@@ -332,18 +323,17 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                             eclass: 'popup-code-editor-erroring'
                         }
                     }),
-                pos: [ {
-                    colclass: "div-flex-col"
+                layout: [ {
+                    class: "div-flex-col"
                 } ]
-            }), __c_editbox_code("set_field", {
-                get: function($$) {
-                    if ($$.get('.set') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$.get('.set'));
-                },
+            }), Form.field(EditboxCodePopup, "set_field", {
+                get: $$ => $$.get('.set_text'),
                 set: function($$, value) {
-                    $$.listener.set($$.data, 'set', this.textToCode($$.runtime, value));
-                    $$.listener.notify($$.data, 'component');
+                    console.warn('TODO');
+                    //$$.set('.set_text', value);
+                    //$$.set('.set', this.textToCode($$.runtime, value));
                 },
-                val: $$ => $$.get('.set') == this.compilationerror && $$.error('Compilation error'),
+                val: $$ => $$.get('.set') == compilationError && $$.error('Compilation error'),
                 atr: () => ({
                         style: 'margin: 0px',
                         spellcheck: 'false',
@@ -358,18 +348,17 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                             eclass: 'popup-code-editor-erroring'
                         }
                     }),
-                pos: [ {
-                    colclass: "div-flex-col"
+                layout: [ {
+                    class: "div-flex-col"
                 } ]
-            }), __c_editbox_code("val_field", {
-                get: function($$) {
-                    if ($$.get('.val') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$.get('.val'));
-                },
+            }), Form.field(EditboxCodePopup, "val_field", {
+                get: $$ => $$.get('.val_text'),
                 set: function($$, value) {
-                    $$.listener.set($$.data, 'val', this.textToCode($$.runtime, value));
-                    $$.listener.notify($$.data, 'component');
+                    console.warn('TODO');
+                    //$$.set('.val_text', value);
+                    //$$.set('.val', this.textToCode($$.runtime, value));
                 },
-                val: $$ => $$.get('.val') == this.compilationerror && $$.error('Compilation error'),
+                val: $$ => $$.get('.val') == compilationError && $$.error('Compilation error'),
                 atr: () => ({
                         style: 'margin: 0px',
                         spellcheck: 'false',
@@ -384,18 +373,17 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                             eclass: 'popup-code-editor-erroring'
                         }
                     }),
-                pos: [ {
-                    colclass: "div-flex-col"
+                layout: [ {
+                    class: "div-flex-col"
                 } ]
-            }), __c_editbox_code("attr_field", {
-                get: function($$) {
-                    if ($$.get('.atr') == this.compilationerror) $$.control.data = this.codeToText(this.compilationerror); else return this.codeToText($$.get('.atr'));
-                },
+            }), Form.field(EditboxCodePopup, "attr_field", {
+                get: $$ => $$.get('.atr_text'),
                 set: function($$, value) {
-                    $$.listener.set($$.data, 'atr', this.textToCode($$.runtime, value));
-                    $$.listener.notify($$.data, 'component');
+                    console.warn('TODO');
+                    //$$.set('.atr_text', value);
+                    //$$.set('.atr', this.textToCode($$.runtime, value));
                 },
-                val: $$ => $$.get('.atr') == this.compilationerror && $$.error('Compilation error'),
+                val: $$ => $$.get('.atr') == compilationError && $$.error('Compilation error'),
                 atr: () => ({
                         style: 'margin: 0px',
                         spellcheck: 'false',
@@ -410,21 +398,19 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                             eclass: 'popup-code-editor-erroring'
                         }
                     }),
-                pos: [ {
-                    colclass: "div-flex-col"
-                } ]
-            }), __c_div_button("field_del", {
+                layout: [ { class: "div-flex-col" } ]
+            }), Form.field(DivButton, "field_del", {
                 get: $$ => 'X',
                 set: $$ => $$.detach(),
                 atr: $$ => ({
                         class: 'div-button',
                         style: 'padding: 2px 5px; min-height: initial;' + ($$.get('..component') == 0 ? 'visibility:hidden;' : '')
                     }),
-                pos: [ {
-                    colclass: "div-flex-col editbox-col",
-                    colstyle: "padding: 0px; margin: 0px"
+                layout: [ {
+                    class: "div-flex-col editbox-col",
+                    style: "padding: 0px; margin: 0px"
                 } ]
-            }), __c_dropdown("class_field", {
+            }), Form.field(Dropdown, "class_field", {
                 get: $$ => ({
                         value: $$.get('.class'),
                         items: [ '', 'header', 'footer' ]
@@ -436,16 +422,16 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 atr: $$ => ({
                         style: $$.get('..component') == 0 ? 'visibility:hidden;' : ''
                     }),
-                pos: [ {
-                    colclass: "div-flex-col editbox-col"
+                layout: [ {
+                    class: "div-flex-col editbox-col"
                 } ]
-            }), __c_div("layout_spec_ctrl", {
-                get: $$ => [ $$.get('.pos')[+$$.get('.pos_idx')] ],
+            }), Form.field(Div, "layout_spec_ctrl", {
+                get: $$ => [ $$.get('.layout')[+$$.get('.pos_idx')] ],
                 atr: $$ => ({
                         style: 'padding:0px 1px 0px 1px; display: flex; flex-direction: row;',
                         skip: [ this.getContainerLayout($$) == 'tpos' ? 'dpos_ctrl' : 'tpos_ctrl' ]
                     })
-            }, [ __c_button("layout_spec_arrows_left", {
+            }, [ Form.field(Button, "layout_spec_arrows_left", {
                 class: "header",
                 get: () => '<',
                 set: $$ => $$.set('.pos_idx', +$$.get('.pos_idx') - 1),
@@ -453,117 +439,114 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                         disabled: $$.get('.pos_idx') == 0,
                         style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$.get('.pos_idx') == 0 ? '' : 'font-weight: bold;') + ' color: black;'
                     }),
-                pos: [ {
-                    colstyle: "display: inline; margin-top: 2px;"
+                layout: [ {
+                    style: "display: inline; margin-top: 2px;"
                 } ]
-            }), __c_button("layout_spec_arrows_right", {
+            }), Form.field(Button, "layout_spec_arrows_right", {
                 class: "header",
                 get: $$ => '>',
                 set: $$ => $$.set('.pos_idx', +$$.get('.pos_idx') + 1),
                 atr: $$ => ({
-                        disabled: $$.get('.pos_idx') == $$.get('.pos').length - 1,
-                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$.get('.pos_idx') == $$.get('.pos').length - 1 ? '' : 'font-weight: bold;') + ' color: black;'
+                        disabled: $$.get('.pos_idx') == $$.get('.layout').length - 1,
+                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$.get('.pos_idx') == $$.get('.layout').length - 1 ? '' : 'font-weight: bold;') + ' color: black;'
                     }),
-                pos: [ {
-                    colstyle: "display: inline; margin-top: 2px;"
+                layout: [ {
+                    style: "display: inline; margin-top: 2px;"
                 } ]
-            }), __c_div("tpos_ctrl", {
-                get: $$ => [ $$ ],
+            }), Form.field(Div, "tpos_ctrl", {
                 atr: () => ({
                         class: 'div-flex-row'
                     }),
-                pos: [ {
-                    colclass: "div-flex-col-embedded-1"
+                layout: [ {
+                    class: "div-flex-col-embedded-1"
                 } ]
-            }, [ __c_label("tpos_col_w", {
+            }, [ Form.field(Label, "tpos_col_w", {
                 get: () => 'Width:',
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }), __c_dropdown("tpos_field_w", {
+            }), Form.field(Dropdown, "tpos_field_w", {
                 get: $$ => ({
-                        value: $$.get('.w'),
+                        value: $$.get('.colSpan'),
                         items: [ '', 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
                     }),
-                set: ($$, value) => this.changePos($$, '.w', value),
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                set: ($$, value) => this.changePos($$, '.colSpan', value),
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }), __c_label("tpos_col_h", {
+            }), Form.field(Label, "tpos_col_h", {
                 get: () => 'Height:',
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }), __c_dropdown("tpos_field_h", {
+            }), Form.field(Dropdown, "tpos_field_h", {
                 get: $$ => ({
-                        value: $$.get('.h'),
+                        value: $$.get('.rowSpan'),
                         items: [ '', 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
                     }),
-                set: ($$, value) => this.changePos($$, '.h', value),
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                set: ($$, value) => this.changePos($$, '.rowSpan', value),
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }), __c_checkbox("tpos_field_n", {
+            }), Form.field(Checkbox, "tpos_field_n", {
                 get: $$ => ({
-                        checked: $$.get('.n'),
+                        checked: $$.get('.newRow'),
                         text: '<'
                     }),
-                set: ($$, value) => this.changePos($$, '.n', value),
+                set: ($$, value) => this.changePos($$, '.newRow', value==='Y'),
                 atr: () => ({
                         style: 'display: flex; align-items: center;'
                     }),
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }), __c_editbox("tpos_field_s", {
-                get: $$ => $$.get('.s'),
-                set: ($$, value) => this.changePos($$, '.s', value),
+            }), Form.field(Editbox, "tpos_field_s", {
+                get: $$ => $$.get('.style'),
+                set: ($$, value) => this.changePos($$, '.style', value),
                 atr: () => ({
                         style: 'width: 100px'
                     }),
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }) ]), __c_div("dpos_ctrl", {
-                get: $$ => [ $$ ],
+            }) ]), Form.field(Div, "dpos_ctrl", {
                 atr: $$ => ({
-                        style: $$.get('...component') == 0 ? 'visibility: hidden' : '',
                         class: 'div-flex-row'
                     }),
-                pos: [ {
-                    colclass: "div-flex-col-embedded-1"
+                layout: [ {
+                    class: "div-flex-col-embedded-1"
                 } ]
-            }, [ __c_label("dpos_colclass_l", {
+            }, [ Form.field(Label, "dpos_colclass_l", {
                 get: () => 'Class:',
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }), __c_editbox("dpos_colclass", {
-                get: $$ => $$.get('.colclass'),
-                set: ($$, value) => this.changePos($$, '.colclass', value),
+            }), Form.field(Editbox, "dpos_colclass", {
+                get: $$ => $$.get('.class'),
+                set: ($$, value) => this.changePos($$, '.class', value),
                 atr: () => ({
                         style: 'width: 100px'
                     }),
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }), __c_label("dpos_colstyle_l", {
+            }), Form.field(Label, "dpos_colstyle_l", {
                 get: () => 'Style:',
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
-            }), __c_editbox("dpos_colstyl", {
-                get: $$ => $$.get('.colstyle'),
-                set: ($$, value) => this.changePos($$, '.colstyle', value),
+            }), Form.field(Editbox, "dpos_colstyl", {
+                get: $$ => $$.get('.style'),
+                set: ($$, value) => this.changePos($$, '.style', value),
                 atr: () => ({
                         style: 'width: 113px'
                     }),
-                pos: [ {
-                    colclass: "div-flex-col-embedded"
+                layout: [ {
+                    class: "div-flex-col-embedded"
                 } ]
             }) ]) ]) ]) ]);
         }
-        allFields($$) {
+        static allFields($$) {
             var dfe = $$.get('dfe'), form = dfe[0] && dfe[0].data.form;
             return function tr(lst, out) {
                 lst.forEach(function(i) {
@@ -573,10 +556,59 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 return out;
             }(dfe, []);
         }
-        codeToText(fn) {
+        static codeToText(fn) {
             return fn.toString().replace(/^function[^(]*/, 'function').replace(/\n\/\*``\*\//, '');
         }
-        textToCode(runtime, code) {
+        static filterRow(childrenOf, hierarchyOf, subChildren, ntp, row) {
+            if (childrenOf != 0 && childrenOf != 'All') {
+                while (childrenOf != row.get('.name')) {
+                    if (!(row = row.get('..')) || subChildren != 'Y' && childrenOf != row.get('.name')) return false;
+                }
+            }
+            if (hierarchyOf != 0 && hierarchyOf != 'All') {
+                for (var d = ntp.get(hierarchyOf), n = row.get('.name'); d; d = d.get('..')) if (d.get('.name') == n) return true;
+                return false;
+            }
+            return true;
+        }
+        highlightField(e, control) {
+            console.warn("TODO");
+            /*var rt = control.model.runtime && control.model.runtime.target_runtime;
+            if (!rt) return;
+            var cc, doc = rt.rootControls[0].ui.ownerDocument, clazz = '__marker__', ui, r, sp, hl = 'background: peru;', body = doc.getElementsByTagName('body')[0], mrk = doc.getElementsByClassName(clazz);
+            for (var i = mrk.length; i > 0; i--, mrk[i].parentElement.removeChild(mrk[i])) ;
+            var dom = document.elementFromPoint(e.clientX, e.clientY), c, proxy;
+            while (dom && !dom._dfe_) dom = dom.parentNode;
+            if (dom && (c = dom._dfe_) && (proxy = c.model)) {
+                if (e.type == 'mouseover') {
+                    do {
+                        if (rt.findControls(proxy.get('.name')).filter(function(c) {
+                            if(Array.isArray(c._allParentNodes)) {
+                                var a;
+                                c._allParentNodes.forEach(function(ui){
+                                    if((r = ui.getBoundingClientRect()) && (r.x || r.width)){
+                                        a = true;
+                                        body.appendChild(sp = doc.createElement('span'));
+                                        sp.setAttribute('style', 'position: absolute; z-index: 3000; opacity: 0.5; border-radius: 5px; ' + hl);
+                                        sp.setAttribute('class', '__marker__');
+                                        sp.style.top = r.top - 3 + (doc.defaultView.scrollY || doc.defaultView.window.pageYOffset) + 'px';
+                                        sp.style.left = r.left - 4 + (doc.defaultView.scrollX || doc.defaultView.window.pageXOffset) + 'px';
+                                        sp.style.width = r.width + 10 + 'px';
+                                        sp.style.height = r.height + 6 + 'px';
+                                    }
+                                })
+                                return a;
+                            }
+                        }).length > 0) break;
+                        proxy.get('.name') != 0 && (hl = 'border: dashed; border-color: red;'), proxy = proxy.get('..');
+                    } while (proxy);
+                }
+            }*/
+        }
+        getContainerLayout(proxy) {
+            return proxy.get('..component') == generic.Table ? 'tpos' : 'dpos'; //return proxy.get('..component').layout;
+        }           
+        /*textToCode(runtime, code) {
             var obj = runtime.target_runtime.form, dp = 'var __=1', t = window.opener || window;
             for (var d in obj.dependencies) obj.dependencies[d].match(/components\//) || (dp += ', ' + d + '=target.require("' + obj.dependencies[d] + '")');
             try {
@@ -592,7 +624,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
                 return undefined;
             } catch (e) {
                 console.error('Compilation error [' + e.message + '] for:\n' + code);
-                return this.compilationerror;
+                return compilationError;
             }
         }
         runtimeToJs(obj) {
@@ -668,57 +700,9 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }, function(xhr, s) {
                 xhr.responseText ? displayServerError(xhr.responseText) : displayServerError(JSON.stringify(xhr));
             });
-        }
-        filterRow(row, childrenOf, hierarchyOf, subChildren, ntp) {
-            if (childrenOf != 0 && childrenOf != 'All') {
-                while (childrenOf != row.get('.name')) {
-                    if (!(row = row.get('..')) || subChildren != 'Y' && childrenOf != row.get('.name')) return false;
-                }
-            }
-            if (hierarchyOf != 0 && hierarchyOf != 'All') {
-                for (var d = ntp.get(hierarchyOf), n = row.get('.name'); d; d = d.get('..')) if (d.get('.name') == n) return true;
-                return false;
-            }
-            return true;
-        }
-        getContainerLayout(proxy) {
-            return proxy.get('..component').layout;
-        }
-        highlightField(e, control) {
-            var rt = control.model.runtime && control.model.runtime.target_runtime;
-            if (!rt) return;
-            var cc, doc = rt.rootControls[0].ui.ownerDocument, clazz = '__marker__', ui, r, sp, hl = 'background: peru;', body = doc.getElementsByTagName('body')[0], mrk = doc.getElementsByClassName(clazz);
-            for (var i = mrk.length; i > 0; i--, mrk[i].parentElement.removeChild(mrk[i])) ;
-            var dom = document.elementFromPoint(e.clientX, e.clientY), c, proxy;
-            while (dom && !dom._dfe_) dom = dom.parentNode;
-            if (dom && (c = dom._dfe_) && (proxy = c.model)) {
-                if (e.type == 'mouseover') {
-                    do {
-                        if (rt.findControls(proxy.get('.name')).filter(function(c) {
-                            if(Array.isArray(c._allParentNodes)) {
-                                var a;
-                                c._allParentNodes.forEach(function(ui){
-                                    if((r = ui.getBoundingClientRect()) && (r.x || r.width)){
-                                        a = true;
-                                        body.appendChild(sp = doc.createElement('span'));
-                                        sp.setAttribute('style', 'position: absolute; z-index: 3000; opacity: 0.5; border-radius: 5px; ' + hl);
-                                        sp.setAttribute('class', '__marker__');
-                                        sp.style.top = r.top - 3 + (doc.defaultView.scrollY || doc.defaultView.window.pageYOffset) + 'px';
-                                        sp.style.left = r.left - 4 + (doc.defaultView.scrollX || doc.defaultView.window.pageXOffset) + 'px';
-                                        sp.style.width = r.width + 10 + 'px';
-                                        sp.style.height = r.height + 6 + 'px';
-                                    }
-                                })
-                                return a;
-                            }
-                        }).length > 0) break;
-                        proxy.get('.name') != 0 && (hl = 'border: dashed; border-color: red;'), proxy = proxy.get('..');
-                    } while (proxy);
-                }
-            }
-        }
+        }     
         changeName(px, value) {
-            if (value == 0 || this.allFields(px).filter(function(p) {
+            if (value == 0 || Editor.allFields(px).filter(function(p) {
                 return p.get('.name') == value;
             }) != 0) {
                 px.listener.notify(px.data, 'name', 'm');
@@ -737,7 +721,7 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             }
         }
         changeParent(px, value) {
-            var par = this.allFields(px).filter(function(p) {
+            var par = Editor.allFields(px).filter(function(p) {
                 return p.get('.name') == value;
             }).pop();
             px.detach();
@@ -776,22 +760,11 @@ defineForm([ "require", "uglify", "babel", "dfe-common", "components/button", "c
             });
         }
         generateName(px) {
-            for (var n = this.allFields(px).map(function(p) {
+            for (var n = Editor.allFields(px).map(function(p) {
                 return p.get('.name');
             }), i = 1; n.indexOf('field-' + i) != -1; i++) ;
             return 'field-' + i;
         }
-        onstart($$) {
-            try {
-                $$.set('pp_output', this.runtimeToJs($$.data));
-            } catch (e) {
-                console.warn('failed to process form model: ' + e);
-            }
-        }
-        setup(runtime) {
-            this.compilationerror = function($$) {
-                $$.error('compilation error');
-            };
-        }
-    }();
-});
+        */
+    }
+})

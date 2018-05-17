@@ -42,6 +42,10 @@ require.config({
             'components/text',
             'components/textarea',
             'components/validation-component'
+        ],
+        'components/editbox-code' : [
+            'components/editbox-code', 
+            'components/editbox-code-popup'
         ]
     }
 });
@@ -349,19 +353,16 @@ DFE.nav = function () {
 define(['dfe-core', 'module'], function(core, m) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
     function setupNode(node) {
-		var formName = node.getAttribute('dfe-form'), args = node.getAttribute('dfe-arguments'), model = node.getAttribute('dfe-model'), cur = node._dfe_runtime;
-        if( !cur || cur.formName !== formName ) {
-            model = (typeof model === 'string' && model != 0 ? eval(model) : node.dfeModel) || {};
+		var formName = node.getAttribute('dfe-form'), args = node.getAttribute('dfe-arguments'), model = node.getAttribute('dfe-model');
+        if( node._$formName !== formName ) {
+            node._$formName = formName;
+            node._dfe_runtime && node._dfe_runtime.shutdown();
             args = (typeof args === 'string' && args != 0 ? eval(args) : node.dfeArguments) || {};
+            model = args.model || (typeof model === 'string' && model != 0 ? eval(model) : node.dfeModel) || {};
             var pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
             Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
-                cur = node._dfe_runtime;
                 var dfe = values[0], arf = values[1];
-                if(cur && cur.formName !== formName) {
-                    cur.shutdown();
-                    cur = null;
-                }
-                if(!cur) node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe, params: {formName: formName} }));
+                node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe }));
             })
         }
 	}

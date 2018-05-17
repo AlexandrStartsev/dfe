@@ -20,7 +20,7 @@
                 }
             })
             var model = new Promise(function(resolve, reject) {
-                require(['../test/test-100-cars', 'dfe-core', 'ui/utils' ], function(json, core) {
+                require(['../test/test-arf-2', 'dfe-core', 'ui/utils' ], function(json, core) {
                     window.Core = core;
                     resolve(json);
                 })
@@ -89,8 +89,8 @@
         <script>
             setTimeout(function(){
                 var node = document.getElementById('edit');
-                //node.setAttribute('dfe-form', 'dfe.edit.dfe');
-                //node.setAttribute('dfe-arguments', '(function(r){ return {params: {target_runtime: r}, model: r.form, listener: r.listener} })(document.querySelector("div[dfe-edit-target]")._dfe_runtime)');
+                node.setAttribute('dfe-form', 'dfe.edit.dfe');
+                node.setAttribute('dfe-arguments', '(function(r){ return {config: {targetRuntime: r}, model: r.nodes[0].field} })(document.querySelector("[dfe-edit-target]")._dfe_runtime)');
             }, 1000) 
         </script>
     </body>
