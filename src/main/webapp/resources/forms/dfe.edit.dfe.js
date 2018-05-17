@@ -12,7 +12,11 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 console.warn('failed to process form model: ' + e);
             }*/
         }
-        static fields() {
+        static fields(_, config) {
+            let targetRuntime = config.targetRuntime;
+            let targetDocument = targetRuntime.nodes[0].$parentDom.ownerDocument;
+            let targetWindow = targetDocument.defaultView;
+            
             return Form.field(DivR,"root", {
                 atr: () => ({
                     class: 'div-flex',

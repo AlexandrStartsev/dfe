@@ -824,7 +824,7 @@ define('dfe-core', function() {
             this.initAction = {action: initAction||'init'};
             if( this.rootProxy && this.formClass ) {
                 parentElement && (parentElement._dfe_runtime = this);
-                let node = this.addNode( null, this.rootProxy, new Field( this.formClass, { config: this.config }, completeNames( this.formClass.fields([], null) ) ) );
+                let node = this.addNode( null, this.rootProxy, new Field( this.formClass, completeNames( this.formClass.fields([], this.config) ) ) );
                 node.setDom({ type: 'div' }, parentElement, null);
 	            this.processor = setInterval(() => this.processInterceptors(), 50);
                 this.processInterceptors();
