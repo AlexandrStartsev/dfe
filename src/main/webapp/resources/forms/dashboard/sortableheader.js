@@ -17,9 +17,9 @@ define([ "dfe-core", "ui/utils", "ui/shapes", "components/html", "components/lab
     return class SortableHeader extends Form {
         static fields() {
             return (
-                Form.field(Div, "a",
-                    Form.field(Label, "b", { get: $$ => $$.get('caption') }), 
-                    Form.field(Html, "c", {
+                Form.field(Div, {atr: () => ({wrap: true})},
+                    Form.field(Label, { get: $$ => $$.get('caption') }), 
+                    Form.field(Html, {
                         atr: function($$) { 
                             return {
                                 class: 'arrow-button',

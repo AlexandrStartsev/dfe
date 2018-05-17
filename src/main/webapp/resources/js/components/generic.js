@@ -380,9 +380,9 @@ define('components/editbox-money', ['components/editbox'], function(Editbox) {
 define('components/button', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
     return class Button extends ValidationComponent {
         render(data, error, attributes, children) {
-            let value = data.toString(), {...rest} = attributes;
+            let value = data.toString(), {type: type, ...rest} = attributes;
             return [[
-                Core.createElement('input', { ...this.splitAttributes(rest, error), value: value, type: 'button', onClick: () => this.store(value, 'click') }),
+                Core.createElement('input', { ...this.splitAttributes(rest, error), value: value, type: type||'button', onClick: () => this.store(value, 'click') }),
                 super.render(null, error, rest)
             ]]
         }
@@ -446,7 +446,7 @@ define('components/html-form', ['dfe-core', 'components/div'], function(Core, Di
     return class HtmlForm extends Div {
         render(data, error, attributes, children) {
             let {name: name, id: id, action: action, method: method, target: target, ...rest} = attributes;
-            return Core.createElement('form', { name: name, id: id, action: action, method: method, target: target }, [super.render(data, error, rest, children)]);
+            return Core.createElement('form', { name: name, id: id, action: action, method: method, target: target }, [super.render(data, error, {...rest, wrap: true}, children)]);
         }
     }
 })

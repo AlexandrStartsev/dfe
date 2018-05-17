@@ -31,6 +31,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div-button
         static fields() {
             return Form.field(Div, "root", {
                 atr: () => ({
+                    wrap: true,
                     style: 'display: table; background-color: white; width: 1500px; position: relative'
                 })
             }, [ Form.field(TabD, "a", {

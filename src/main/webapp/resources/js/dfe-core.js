@@ -19,7 +19,7 @@ define('dfe-core', function() {
 	    this.elements = (elements || []);
 	    this.data = data||{};
 	    this.persisted = data;
-        this.data.key || (this.data.key = ++nextKey);
+        this.key = (this.data.key || (this.data.key = ++nextKey));
 	    this.listener = listener;
 	    if(this.parents.length != this.elements.length) throw 'Oops';
 	}          

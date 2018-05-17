@@ -1,6 +1,6 @@
 define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/either" ], function(Core, StatusGridForm, notes, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Either) {
     let Form = Core.Form;
-    let detailGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'effectiveDate', 'writtenPremium', 'userId', 'reassign' ];
+    let detailGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'effectiveDate', 'writtenPremium', 'newRenewal', 'userId', 'reassign' ];
     let detailsGridClass = 'team-rbody-tbl';
     
     class TeamForm extends Form {
@@ -34,6 +34,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 })
             }, [ Form.field(Div,"field-2", {
                 class: "header",
+                atr: () => ({wrap: true}),
                 layout: [ {
                     colSpan: "4"
                 } ]
@@ -81,7 +82,20 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                     newRow: true,
                     colSpan: "4"
                 } ]
-            }, [ Form.field(LabeledDropdown,"field-8", {
+            }, [ Form.field(LabeledDropdown, "field-10", {
+                get: $$ => ({
+                    value: $$.get('.newRenewal'),
+                    items: [ {
+                        value: '',
+                        description: 'All'
+                    }, 'New', 'Renewal' ]
+                }),
+                set: ($$, value) => $$.set('.newRenewal', value),
+                atr: $$ => ({
+                    text: 'New/Renewal:'
+                }),
+                layout: [ { }, { colSpan: "3" } ]
+            }), Form.field(LabeledDropdown,"field-8", {
                 get: function($$) {
                     return {
                         value: $$.get('.teamFilter'),
@@ -98,7 +112,10 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 },
                 atr: () => ({
                     text: 'Team Filter:'
-                })
+                }),
+                layout: [ {
+                    newRow: true
+                } ]
             }), Form.field(LabeledDropdown,"field-10", {
                 get: function($$) {
                     this.userIdToTeam.then(map => {
@@ -167,6 +184,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                     return [ $$ ];
                 },
                 atr: () => ({
+                    wrap: true,
                     style: 'width: 100%; position: relative;'
                 }),
                 layout: [ {
@@ -183,10 +201,11 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 get: $$ => $$.get('team'),
                 atr: function($$) {
                     let _team = $$.get('criteria.teamFilter').toString(), _user = $$.get('criteria.userFilter').toString();
+                    let rowFilter = TeamForm.makeRowFilter($$);
                     return {
                         class: 'dashboard-table team-table',
                         style: 'width: 100%',
-                        filter: team => (_team == 0 || team.get('.name') == _team) && team.get('.quotes.rows.userId').filter(user => _user == 0 || user == _user).length > 0,
+                        filter: team => (_team == 0 || team.get('.name') == _team) && team.get('.quotes.rows').some(rowFilter),
                         skip: _team == 0 ? [] : ['field-3', 'field-5', 'field-11']
                     }
                 },
@@ -205,6 +224,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 get: () => ''
             }), Form.field(Div,"field-11", {
                 atr: $$ => ({
+                    wrap: true,
                     style: 'display: flex;'
                 })
             }, [ Form.field(Html,"field-7", {
@@ -247,18 +267,19 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 px.set('team.loading', 1);
                 jq.get(`/AJAXServlet.srv?method=DashboardScriptHelper&action=genTeamInfo${users}&lob=WORK&eff=${effFrom}&effTo=${effTo}&idKey=${++this.idKey}`, data => {
                     if (!data.idKey || +data.idKey > +this.lastProcessedKey) {
+                        let toLoad = [], retain = new Set();
                         px.set('team.loading');
-                        px.get('team.quotes.rows').forEach(px => px.detach());
                         this.lastProcessedKey = +data.idKey;
                         data && data.status == 'success' && data.result.forEach(row => {
                             map.get(row.userId).proxyGroups.forEach(px => {
-                                let i = px.get('.quotes.status').indexOf(row.statusCode);
-                                let quotes = i == -1 ? px.append('.quotes', {
-                                    status: row.statusCode
-                                }).shift() : px.get('.quotes')[i];
-                                quotes.append('.rows', row);
+                                let quotes = px.get('.quotes').filter(q => q.get('.status') == row.statusCode)[0] || px.append('.quotes', { status: row.statusCode })[0];
+                                let current = quotes.get('.rows').filter( r => r.get('.quoteid') == row.quoteid )[0];
+                                current ? current.set({...row, reassign: []}) : toLoad.push(current = quotes.append('.rows', row)[0]);
+                                retain.add(current.key);
                             });
                         });
+                        px.get('team.quotes.rows').forEach(px => retain.has(px.key) || px.detach());
+                        dashboardCommon.loadDetails(toLoad);
                     }
                 });
             });
@@ -286,8 +307,9 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             )
         }
         static makeRowFilter($$) {
+            let newRenewal = $$.get('criteria.newRenewal').toString();
             let userId = $$.get('criteria.userFilter').toString();
-            return $$ => userId == 0 || $$.get('.userId') == userId;
+            return $$ => (userId == 0 || $$.get('.userId') == userId) && (newRenewal == 0 || $$.get('.newRenewal') == newRenewal);
         }
         static isMassRolloverAllowed($$) {
             return $$.get('features.massRollover') != 0;
@@ -313,40 +335,44 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 justify-content: center;
             }
 
-            .${clazz} td:nth-child(7n+${columns.indexOf('quoteid') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('quoteid') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(7n+${columns.indexOf('accountName') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('accountName') + 1}) {
                 min-width: 400px;
             }
 
-            .${clazz} td:nth-child(7n+${columns.indexOf('companyCode') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('companyCode') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(7n+${columns.indexOf('effectiveDate') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('effectiveDate') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(7n+${columns.indexOf('writtenPremium') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('writtenPremium') + 1}) {
                 text-align: right;
                 position: relative;
             }
 
-            .${clazz} td:nth-child(7n+${columns.indexOf('writtenPremium') + 1})::before {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('writtenPremium') + 1})::before {
                 content: '$';
                 position: absolute;
                 font: 400 12px Arial;
                 left: 15px;
             }
 
-            .${clazz} td:nth-child(7n+${columns.indexOf('userId') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('newRenewal') + 1}) {
+                padding-left: 5px
+            }            
+
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('userId') + 1}) {
                 text-align: left;
                 padding-left: 10px;
             }
 
-            .${clazz} td:nth-child(7n+${columns.indexOf('reassign') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('reassign') + 1}) {
                 text-align: center;
             }
             `, name);

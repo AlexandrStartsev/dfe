@@ -254,12 +254,10 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     } ]
                 }) ]) ), 
             Form.field(Div, "field-35", {
-                atr: () => ({
-                    style: 'background: #dcdcdc; padding: 2px'
-                }),
                 layout: [ {
                     newRow: true,
-                    colSpan: "7"
+                    colSpan: "7",
+                    class: 'inline-section-header'
                 } ]
             }, [ Form.field(Button, "field-24", {
                 get: () => 'Add additional class',

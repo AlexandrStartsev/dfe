@@ -12,6 +12,7 @@ define([ "dfe-core", "forms/dashboard/detailsgrid", "forms/dashboard/common", "d
                 })
             }, [ Form.field(Div, "field-11", {
                 atr: $$ => ({
+                    wrap: true,
                     style: 'display: flex;'
                 })
             }, [ Form.field(Html, "field-18", {
@@ -35,7 +36,8 @@ define([ "dfe-core", "forms/dashboard/detailsgrid", "forms/dashboard/common", "d
                 } ]
             }), Form.field(Label, "field-16", {
                 class: "header",
-                get: $$ => 'Details'
+                get: $$ => 'Details',
+                layout: [{ style: "width: 100%;" }]
             }), 
             Form.field(Either, "rwrap", { atr: $$ => ({ first: $$.get('.expanded') != 'Y' }) }, 
                 Form.field(Label, "field-21", {

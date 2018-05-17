@@ -1,4 +1,4 @@
-define(["ui/shapes", "ui/utils", "module", "ui/jquery", "dfe-common"], function(shapes, uiUtils, module, jq, cmn){
+define(["ui/shapes", "ui/utils", "module", "ui/jquery", "dfe-common"], function(shapes, uiUtils, module, jQuery, cmn){
 	uiUtils.setDfeCustomStyle(`
     	.loading-overlay {
     		align-content: center;
@@ -31,7 +31,8 @@ define(["ui/shapes", "ui/utils", "module", "ui/jquery", "dfe-common"], function(
 	    .wrong-date {
 	        background: antiquewhite;
 	    }	    
-    `, module.id);
+	`, module.id);
+	let detailsCache = new Map();
 	return {
 		makeSortFunction: function($$) {
 			return (function(si, so) { 
@@ -54,6 +55,28 @@ define(["ui/shapes", "ui/utils", "module", "ui/jquery", "dfe-common"], function(
                     $$.set('.sortOrder', field + so.replace(field, ''));
                 } 
     		}
-    	}
+		},
+		loadDetails: function(toLoad, loadNotes) {
+			toLoad = toLoad.filter(px => {
+				let existing = detailsCache.get( px.get('.quoteid') );
+				return existing ? (px.set({...existing, detailsReady: 'Y'}), false) : true
+			})
+			for (let i = 0, j = toLoad.length, chunk = 20; i < j; i += chunk) {
+				let sub = toLoad.slice(i, i + chunk), qs = sub.map(row => 'quoteId=' + row.get('.quoteid')).join('&');
+				jQuery.get(`/AJAXServlet.srv?method=DashboardScriptHelper&action=details&${qs}`, data => {
+					sub.forEach(px => {
+						let quoteId = px.get('.quoteid'), details = data.result[quoteId];
+						detailsCache.set(quoteId, details)
+						px.set({...details, detailsReady: 'Y'});
+					})
+				});
+				loadNotes && jQuery.get(`/AJAXServlet.srv?method=DashboardScriptHelper&action=notes&${qs}`, data => {
+					sub.forEach(r => {
+						let det = data.result[r.get('.quoteid')];
+						det && det.forEach(note => r.append('.note', note));
+					});
+				});
+			}
+		}
 	}	
 })

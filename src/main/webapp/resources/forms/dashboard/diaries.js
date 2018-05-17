@@ -11,9 +11,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
         static fields() {
             return Form.field(Div, "root", {
                 get: $$ => $$.get('diary'),
-                atr: $$ => ({
-                    style: 'width: 100%; padding-top: 2px'
-                })
+                layout: [{style: 'width: 100%; padding-top: 2px'}]
             }, [ Form.field(Div, "loader", {
                 get: function($$) {
                 	this.loadDiaries($$);

@@ -23,6 +23,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
         static fields() {
             return Form.field(Div, "root", {
                 atr: $$ => ({
+                    wrap: true,
                     style: 'width: 100%;'
                 })
             }, [ Form.field(TabS, "field-1", {
@@ -34,6 +35,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
                 })
             }, [ Form.field(Div, "header", {
                 atr: $$ => ({
+                    wrap: true,
                     style: 'display: flex;'
                 }),
                 layout: [ {
@@ -54,10 +56,11 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
                 get: $$ => $$.get('.ReportDesc'),
                 layout: [{class: 'link-button', style: 'margin: 3px'}]
             }) ]),
-                Form.field(Div, {layout: [{class: 'tab-report-content'}]},
+                Form.field(Div, {atr: () => ({wrap: true}), layout: [{class: 'tab-report-content'}]},
                 Form.field(Iframe, "field-3", {
                     get: $$ => $$.get('.ReportLink'),
                     atr: $$ => ({
+                        wrap: true,
                         style: 'width: 100%; height: 100%; border: 1px solid #aaa; border-radius: 5px'
                     })
                 }), 

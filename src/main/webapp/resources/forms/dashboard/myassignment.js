@@ -167,6 +167,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }) ]), Form.field(Div, "myassignment", {
                 get: $$ => $$.defaultSubset('my'),
                 atr: () => ({
+                    wrap: true,
                     style: 'width: 100%; position: relative;'
                 }),
                 layout: [ {
@@ -180,6 +181,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                     return [ $$ ];
             	}, 
             	atr: $$ => ({
+                    wrap: true,
             		style: 'width: 100%;'
             	})
             }, [ Form.field(Html, "loading", {
@@ -216,22 +218,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                             }
                         });
                         px.get('.quotes.rows').forEach(r => matched.has(r.get('.quoteid')) || r.detach());
-                        for (let i = 0, j = toLoad.length, chunk = 20; i < j; i += chunk) {
-                            let sub = toLoad.slice(i, i + chunk), qs = sub.map(row => 'quoteId=' + row.get('.quoteid')).join('&');
-                            jq.get(`/AJAXServlet.srv?method=DashboardScriptHelper&action=details&${qs}`, data => {
-                                sub.forEach(r => {
-                                    let det = data.result[r.get('.quoteid')];
-                                    if (det) for (let k in det) r.set('.' + k, det[k]);
-                                    r.set('.ready', 'Y');
-                                });
-                            });
-                            jq.get(`/AJAXServlet.srv?method=DashboardScriptHelper&action=notes&${qs}`, data => {
-                                sub.forEach(r => {
-                                    let det = data.result[r.get('.quoteid')];
-                                    det && det.forEach(note => r.append('.note', note));
-                                });
-                            });
-                        }
+                        dashboardCommon.loadDetails(toLoad, true);
                     } else curRep.forEach(r => r.detach());
                 }
             });
@@ -268,62 +255,62 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 justify-content: center;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('quoteid') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('quoteid') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('accountName') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('accountName') + 1}) {
                 min-width: 300px;
                 width: 300px;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('companyCode') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('companyCode') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('producerCode') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('producerCode') + 1}) {
                 text-align: center;
                 position: relative;
                 overflow: visible;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('effectiveDate') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('effectiveDate') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('writtenPremium') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('writtenPremium') + 1}) {
                 text-align: right;
                 position: relative;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('writtenPremium') + 1})::before {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('writtenPremium') + 1})::before {
                 content: '$';
                 position: absolute;
                 font: 400 12px Arial;
                 left: 15px;
             }				
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('govClass') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('govClass') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('govClass') + 1}) > .dashboard-quotes-popup > label {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('govClass') + 1}) > .dashboard-quotes-popup > label {
                 left: -110px;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('grade') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('grade') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('newRenewal') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('newRenewal') + 1}) {
                 padding-left: 5px
             }	
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('notes') + 1}) {
                 text-align: center;
             }
 
-            .${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) svg {
+            .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('notes') + 1}) svg {
                 width: 16px;
                 height: 16px;
                 pointer-events: all;

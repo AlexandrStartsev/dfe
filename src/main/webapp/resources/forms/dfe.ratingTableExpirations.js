@@ -9,6 +9,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
         static fields() {
             return Form.field(Div, "root", {
                 atr: () => ({
+                    wrap: true,
                     style: 'display: table; background-color: white; width: 900px; position: relative'
                 })
             }, [ Form.field(HtmlForm,"form", {
@@ -151,7 +152,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                     name: 'cmnt',
                     type: 'hidden'
                 })
-            }) ]), Form.field(Div, "changelog", [
+            }) ]), Form.field(Div, "changelog", {atr: () => ({wrap: true})}, [
             Form.field(Html, "field-10", {
                 get: () => '<h3>Change Log:</h3>'
             }), Form.field(Table, "field-11", {

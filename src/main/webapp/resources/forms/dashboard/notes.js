@@ -6,6 +6,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "ui/shapes", "dfe-fiel
                 Form.field(Div, "root", {
                     get: $$ => $$.get('.note'),
                     atr: () => ({
+                        wrap: true,
                         order: (n1, n2) => n2.index() - n1.index()
                     })
                 },  Form.field(Html, "field-3", {

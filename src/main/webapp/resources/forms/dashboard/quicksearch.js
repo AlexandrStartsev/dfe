@@ -40,7 +40,7 @@ define([ "dfe-core", "components/labeled-dropdown", "components/editbox", "compo
                 set: ($$, value) => $$.set('qs-' + $$.get('qs-crit'), value),
                 atr: $$ => ({
                     pattern: $$.get('qs-crit') == 'policyNumber' ? /.{1,32}/ : /\d{1,12}/,
-                    name: 'com.arrow.tools.reports.app.commercial.workerscomp.SubmittedApplicationsReport.' + $$.get('qs-crit')
+                    name: 'com.arrow.tools.reports.app.commercial.workerscomp.SubmittedApplicationsReport.' + ($$.get('qs-crit').toString() || 'submissionId')
                 }),
                 layout: [ {
                     style: "display: inline; padding: 2px 2px"
