@@ -14,307 +14,341 @@ define('dfe-core', function() {
     let nextKey = 0;
 	
 	//###############################################################################################################################
-	function JsonProxy(data, parents, elements, listener) {
-	    this.parents = (parents || []);
-	    this.elements = (elements || []);
-	    this.data = data||{};
-	    this.persisted = data;
-        this.key = (this.data.key || (this.data.key = ++nextKey));
-	    this.listener = listener;
-	    if(this.parents.length != this.elements.length) throw 'Oops';
-	}          
-	
-	JsonProxy.prototype.toString = function() { return 'JsonProxy{' + this.elements.join('.') + '}' }
-	
-	/* Queries model from value(s) or subset(s) 
-	 * @param {String} path full-path string i.e. 'policy.class.code' or relative path like '.code', '..class.code' etc
-	 * @returns {String|JsonProxy|Array}
-	 */
-	JsonProxy.prototype.get = function (path) {
-	    var sb = 0;
-	    if(!path) return this;
-	    if(path.charAt(0) == '.' ) {
-	        var s = path.substr(1), ret;
-	        if(s.indexOf('.') == -1 && s.length > 0) {
-	            ret = this.data[s];
-	            this.listener && this.listener.depend(this.data, s);
-	            if( ret && Array.isArray(ret) ) { 
-	                var t = ret, p = this.parents.concat(this), e = this.elements.concat(s); ret = [];
-	                t.forEach(function (d) {
-	                    ret.push(new JsonProxy(d, p, e, this.listener));
-	                }, this);
-	            }
-	            return ret || [];
-	        } else {
-	            while(s.charAt(sb) == '.') sb++;
-	            var p = this.elements.slice(0, this.elements.length-sb).join('.');
-	            path = (p == '' ? s.substr(sb) : p + path.substr(sb));
-	        }
-	        if(sb == s.length) return this.parents.concat(this)[this.parents.length - sb];
-	    } 
-	    var p = path.split('.'), pa = this.parents.concat(this);
-	    if(path.length == 0) return [new JsonProxy(pa[0].data, [], [], this.listener)];
-	    var va = [pa[0]], maintained = true;
-	    for(var i = 0; i < p.length && va.length > 0; i++) {
-	       if(maintained && pa.length-sb > i+1 && i < p.length - 1 && this.elements[i] == p[i]) {
-	          va = pa[i+1].data ? [pa[i+1]] : [];
-	       } else {
-	          var nva = [], e, listener = this.listener;
-	          va.forEach(function(px){
-	            if( px.data ) {
-	               if(listener) listener.depend(px.data, p[i]);
-	               if(e = px.data[p[i]]) {
-	                  if(Array.isArray(e)) {
-	                     var pars = px.parents.concat(px), els = p.slice(0, i+1);
-	                     e.forEach(function(d){
-	                        nva.push(typeof d == 'object' ? new JsonProxy(d, pars, els, listener) : d);
-	                     });
-	                  } else {
-	                     nva.push(e);
-	                  }
-	               }
-	            }
-	          });
-	          if(maintained && i == p.length - 1 && nva.length)
-	              return Array.isArray(e) ? nva : nva[0]||[];
-	          maintained = false;
-	          va = nva;
-	       }
-	    }
-	    return va;
-	}
-	 
-	JsonProxy.prototype.shadow = function (path, defaults) {
-	    if(path.length == 0) {
-            return [];
+    class JsonProxy {
+        constructor(data, parents, elements, listener) {
+            this.parents = (parents || []);
+            this.elements = (elements || []);
+            this.data = data||{};
+            this.persisted = data;
+            this.key = (this.data.key || (this.data.key = ++nextKey));
+            this.listener = listener;
+            if(this.parents.length != this.elements.length) throw 'Oops';
         }
-	    if(path.charAt(0) == '.') {
-	        path = this.elements.join('.') + path;
+        toString() {
+            return 'JsonProxy{' + this.elements.join('.') + '}'
         }
-	    let p = path.split('.'), me = this, pa = this.parents.concat(this), ret;
-	    for(let i = 0; i < p.length; i++) {
-	        if(!(pa.length > i + 1 && this.elements[i] == p[i])) {
-	            pa = pa.slice(0, i+1);
-	            for(var j = i + 1; j <= p.length; j++) 
-	                pa = pa.concat(new JsonProxy(undefined, pa, p.slice(0, j), this.listener));
-	            ret = pa.pop();
-	            break ;
-	        }
+        get(path) {
+            var sb = 0;
+            if(!path) return this;
+            if(path.charAt(0) == '.' ) {
+                var s = path.substr(1), ret;
+                if(s.indexOf('.') == -1 && s.length > 0) {
+                    ret = this.data[s];
+                    this.listener && this.listener.depend(this.data, s);
+                    if( ret && Array.isArray(ret) ) { 
+                        var t = ret, p = this.parents.concat(this), e = this.elements.concat(s); ret = [];
+                        t.forEach(function (d) {
+                            ret.push(new JsonProxy(d, p, e, this.listener));
+                        }, this);
+                    }
+                    return ret || [];
+                } else {
+                    while(s.charAt(sb) == '.') sb++;
+                    var p = this.elements.slice(0, this.elements.length-sb).join('.');
+                    path = (p == '' ? s.substr(sb) : p + path.substr(sb));
+                }
+                if(sb == s.length) return this.parents.concat(this)[this.parents.length - sb];
+            } 
+            var p = path.split('.'), pa = this.parents.concat(this);
+            if(path.length == 0) return [new JsonProxy(pa[0].data, [], [], this.listener)];
+            var va = [pa[0]], maintained = true;
+            for(var i = 0; i < p.length && va.length > 0; i++) {
+               if(maintained && pa.length-sb > i+1 && i < p.length - 1 && this.elements[i] == p[i]) {
+                  va = pa[i+1].data ? [pa[i+1]] : [];
+               } else {
+                  var nva = [], e, listener = this.listener;
+                  va.forEach(function(px){
+                    if( px.data ) {
+                       if(listener) listener.depend(px.data, p[i]);
+                       if(e = px.data[p[i]]) {
+                          if(Array.isArray(e)) {
+                             var pars = px.parents.concat(px), els = p.slice(0, i+1);
+                             e.forEach(function(d){
+                                nva.push(typeof d == 'object' ? new JsonProxy(d, pars, els, listener) : d);
+                             });
+                          } else {
+                             nva.push(e);
+                          }
+                       }
+                    }
+                  });
+                  if(maintained && i == p.length - 1 && nva.length)
+                      return Array.isArray(e) ? nva : nva[0]||[];
+                  maintained = false;
+                  va = nva;
+               }
+            }
+            return va;
         }
-        ret = ret || new JsonProxy(undefined, this.parents, p, this.listener);
-	    if(typeof defaults === 'object') {
-            deepCopy( ret.data, defaults instanceof JsonProxy ? defaults.data : defaults );
-        } 
-        if(typeof defaults === 'function' && defaults.data ) {
-            deepCopy( ret.data, defaults.data );
+        
+        shadow(path, defaults) {
+            if(path.length == 0) {
+                return [];
+            }
+            if(path.charAt(0) == '.') {
+                path = this.elements.join('.') + path;
+            }
+            let p = path.split('.'), me = this, pa = this.parents.concat(this), ret;
+            for(let i = 0; i < p.length; i++) {
+                if(!(pa.length > i + 1 && this.elements[i] == p[i])) {
+                    pa = pa.slice(0, i+1);
+                    for(var j = i + 1; j <= p.length; j++) 
+                        pa = pa.concat(new JsonProxy(undefined, pa, p.slice(0, j), this.listener));
+                    ret = pa.pop();
+                    break ;
+                }
+            }
+            ret = ret || new JsonProxy(undefined, this.parents, p, this.listener);
+            if(typeof defaults === 'object') {
+                deepCopy( ret.data, defaults instanceof JsonProxy ? defaults.data : defaults );
+            } 
+            if(typeof defaults === 'function' && defaults.data ) {
+                deepCopy( ret.data, defaults.data );
+            }
+            return [ret];
         }
-	    return [ret];
-	}
-	
-	JsonProxy.prototype.isShadow = function() {
-		return !this.persisted;
-	}
-	
-	JsonProxy.prototype.persist = function () {
-	    if(!this.persisted ) {
-	        var lp = this.parents[this.parents.length - 1], le = this.elements[this.parents.length - 1], arr;
-	        lp.persist();
-	        arr = lp.data[le] || (lp.data[le] = []);
-	        if(arr.indexOf(this.persisted = this.data) == -1) {
-	            arr.push(this.data);
-	            this.listener && this.listener.notify(lp.data, le, 'a', this.data);
-	        }
-	    } 
-	    return this;
-	}
-	 
-	JsonProxy.prototype.append = function (path, defaults) {
-	    var ret = this.shadow(path, defaults);
-	    ret.forEach(function (px) { px.persist(); });
-	    return ret;
-	}
-	
-	JsonProxy.prototype.clone = function () {
-	    var ret = (this.parents.length && this.parents[this.parents.length - 1].append('.' + this.elements[this.elements.length - 1])[0] || new JsonProxy({})).withListener(this.listener);
-	    deepCopy(ret.data, this.data);
-	    return ret;
-	}
-	    
-	JsonProxy.prototype.set = function (path, value) {
-	    if(!path) return ;
-	    if(typeof path == 'object') {
-	    	for(var i in path) this.set('.' + i, path[i]);
-	    	return ;
-	    }
-	    if(Array.isArray(value)) value=value[0];
-	    value || (value = '');
-	    if(typeof value == 'number') value = value.toString();
-	    var listener = this.listener, le, va, maintained = true, sb = 0, sd;
-	    if(path.charAt(0) == '.') {
-	        while(path.charAt(sb+1) == '.') sb++;
-	        path = this.elements.slice(0, this.elements.length-sb).join('.') + path.substr(sb);
-	        while( path.charAt(0) == '.' ) path = path.substr(1);
-	    }
-	    var p = path.split('.'), pa = this.parents.concat(this),
-	    va = [pa[0]];
-	    for(var i = 0; i < p.length - 1 && va.length > 0; i++) {
-	    	if(maintained && pa.length-sb > i+1 && this.elements[i] == p[i]) {
-	    		va = [pa[i+1]];
-	    	} else {
-	    		var nva = [], e;
-	          	va.forEach(function(px){
-	          		if((e = px.data[p[i]]) == undefined) e = [undefined];
-	            	if(!Array.isArray(e)) throw 'Unable to overwrite property with subset';
-	            	e.forEach(function(d){
-	            		nva.push(new JsonProxy(d, px.parents.concat(px), p.slice(0, i+1), listener));
-	            	});
-	          	});
-	          	maintained = false;
-	          	va = nva;
-	       	}
-	       	value.length && va.forEach(function(px) {px.persist()});
-	    }
-	    le = p.pop();
-	    va.forEach(function(px) {
-	    	var v = px.data[le], old = v;
-	    	if(typeof value == 'object') {
-	    		Array.isArray(v) ? px.get('.' + le).forEach(function(px) { px.set(value)}) : px.append('.' + le, value);
-	    	} else {
-	    		if(v == undefined || v==[]) v = '';
-	    		if(typeof v == 'number') v = v.toString();
-	    		if(v != value) {
-	    			if(value.length == 0) {
-	    				delete px.data[le];
-	    				listener && listener.notify(px.data, le, 'r', old); 
-	    			} else {
-	    				px.data[le] = value;
-	    				listener && listener.notify(px.data, le, 'm', old, value.toString());
-	    			}
-		       }
-	    	}
-	    });
-	}
-	
-	JsonProxy.prototype.detach = function() {
-	    if(this.persisted && this.parents.length > 0) {
-	        var p = this.parents[this.parents.length - 1], e = this.elements[this.parents.length - 1];
-	        var arr = p.data[e];
-	        var idx = arr.indexOf(this.data);
-	        if( idx != -1 ) {
-	            arr.splice(idx, 1); 
-	            arr.length || delete p.data[e]; 
-	            this.listener && this.listener.notify(p.data, e, 'd', this.data);
-	        }
-	        delete this.persisted; // = undefined;
-	    }
-	}
-	 
-	JsonProxy.prototype.withListener = function(l) {
-	    var ret = new JsonProxy(this.data, this.parents, this.elements, l);
-	    ret.persisted = this.persisted;
-	    return ret ;
-	}
-	
-	//####################################SUPPORTING FUNCTIONS#######################################################################
-	
-	JsonProxy.indexOf = function(pxA, path, value) {
-	    return Array.isArray(pxA) ? pxA.map(function(a){return a.get(path)}).indexOf(value) :
-	        pxA.get(path).map(function(a){return a.data}).indexOf(pxA.data);
-	}
-	
-	JsonProxy.prototype.index = function(depth) {
-	    depth||(depth=1);
-	    return JsonProxy.indexOf(this, '........'.substr(0, depth+1) + this.elements.slice(this.elements.length-depth, this.elements.length).join('.'));
-	}
-	
-	/* returns first instance of subset or first item. 
-	 * @param {String} path full-path string i.e. 'policy.class' or relative path like '.class'
-	 * @returns {String|JsonProxy} 
-	 */
-	JsonProxy.prototype.first = function (path) { var v  = this.get(path); return (Array.isArray(v) ? v[0] : v)||[]; }
-	
-	/* retrieves existing value from model, if field doesn't exist, default value is assigned to field in model and returned. 
-	 * @param {String} path full-path string i.e. 'policy.class' or relative path like '.class'
-	 * @param {String} _default default value
-	 * @returns {String|Array}
-	 */
-	JsonProxy.prototype.defaultValue = function (path, _default) { var ret = this.get(path); if(ret == 0 && _default) { this.set(path, _default); ret = this.get(path); } return ret; }
-	
-	/* similar to JsonProxy::defaultValue, but for subsets. If subset doesn't exist, instance will be added to a model and returned
-	 * @param {String} path full-path string i.e. 'policy.class.code' or relative path like '.code', '..class.code' etc
-	 * @param {Object} defaults - pre-populated fields only when appended
-	 * @returns {Array} array of JsonProxy objects (with a length of at least 1)
-	 */
-	JsonProxy.prototype.defaultSubset = function (path, defaults) { var ret = this.get(path); if(ret == 0) { this.append(path, defaults); ret = this.get(path); } return ret; }
 
-	/*
-	 * @param {Object|JsonProxy} to - object to merge into current object. notifications will dispatched, dependencies on "to" object fields will not be made
-	 */
-	JsonProxy.prototype.mergeShallow = function(to) {
-		if(to && typeof to.withListener == 'function') 
-			to = to.persisted;
-        if(to == this.persisted) return;
-		if(typeof to != 'object')
-			this.detach();
-		else {
-			this.persist();
-			var k, l = this.listener, dest = this.data;
-			for(var k in dest) to[k] == dest[k] || (l.notify(dest, k, 'm'), dest[k] = to[k]);
-		}
-	}
-    
-    JsonProxy.prototype.hasChild = function(other) {
-        return this.data === other.data || other.parents.some(p => p.data === this.data);
+        isShadow() {
+            return !this.persisted;
+        }
+
+        persist() {
+            if(!this.persisted ) {
+                var lp = this.parents[this.parents.length - 1], le = this.elements[this.parents.length - 1], arr;
+                lp.persist();
+                arr = lp.data[le] || (lp.data[le] = []);
+                if(arr.indexOf(this.persisted = this.data) == -1) {
+                    arr.push(this.data);
+                    this.listener && this.listener.notify(lp.data, le, 'a', this.data);
+                }
+            } 
+            return this;
+        }
+
+        append(path, defaults) {
+            var ret = this.shadow(path, defaults);
+            ret.forEach(function (px) { px.persist(); });
+            return ret;
+        }
+
+        clone() {
+            var ret = (this.parents.length && this.parents[this.parents.length - 1].append('.' + this.elements[this.elements.length - 1])[0] || new JsonProxy({})).withListener(this.listener);
+            deepCopy(ret.data, this.data);
+            return ret;
+        }
+
+        set(path, value) {
+            if(!path) return ;
+            if(typeof path == 'object') {
+                for(var i in path) this.set('.' + i, path[i]);
+                return ;
+            }
+            if(Array.isArray(value)) value=value[0];
+            value || (value = '');
+            if(typeof value == 'number') value = value.toString();
+            var listener = this.listener, le, va, maintained = true, sb = 0, sd;
+            if(path.charAt(0) == '.') {
+                while(path.charAt(sb+1) == '.') sb++;
+                path = this.elements.slice(0, this.elements.length-sb).join('.') + path.substr(sb);
+                while( path.charAt(0) == '.' ) path = path.substr(1);
+            }
+            var p = path.split('.'), pa = this.parents.concat(this),
+            va = [pa[0]];
+            for(var i = 0; i < p.length - 1 && va.length > 0; i++) {
+                if(maintained && pa.length-sb > i+1 && this.elements[i] == p[i]) {
+                    va = [pa[i+1]];
+                } else {
+                    var nva = [], e;
+                    va.forEach(function(px){
+                        if((e = px.data[p[i]]) == undefined) e = [undefined];
+                        if(!Array.isArray(e)) throw 'Unable to overwrite property with subset';
+                        e.forEach(function(d){
+                            nva.push(new JsonProxy(d, px.parents.concat(px), p.slice(0, i+1), listener));
+                        });
+                    });
+                    maintained = false;
+                    va = nva;
+                }
+                value.length && va.forEach(function(px) {px.persist()});
+            }
+            le = p.pop();
+            va.forEach(function(px) {
+                var v = px.data[le], old = v;
+                if(typeof value == 'object') {
+                    Array.isArray(v) ? px.get('.' + le).forEach(function(px) { px.set(value)}) : px.append('.' + le, value);
+                } else {
+                    if(v == undefined || v==[]) v = '';
+                    if(typeof v == 'number') v = v.toString();
+                    if(v != value) {
+                        if(value.length == 0) {
+                            delete px.data[le];
+                            listener && listener.notify(px.data, le, 'r', old); 
+                        } else {
+                            px.data[le] = value;
+                            listener && listener.notify(px.data, le, 'm', old, value.toString());
+                        }
+                   }
+                }
+            });
+        }
+
+        detach() {
+            if(this.persisted && this.parents.length > 0) {
+                var p = this.parents[this.parents.length - 1], e = this.elements[this.parents.length - 1];
+                var arr = p.data[e];
+                var idx = arr.indexOf(this.data);
+                if( idx != -1 ) {
+                    arr.splice(idx, 1); 
+                    arr.length || delete p.data[e]; 
+                    this.listener && this.listener.notify(p.data, e, 'd', this.data);
+                }
+                delete this.persisted; // = undefined;
+            }
+        }
+
+        withListener(l) {
+            var ret = new JsonProxy(this.data, this.parents, this.elements, l);
+            ret.persisted = this.persisted;
+            return ret ;
+        }
+
+        static indexOf(pxA, path, value) {
+            return Array.isArray(pxA) ? pxA.map(function(a){return a.get(path)}).indexOf(value) :
+                pxA.get(path).map(function(a){return a.data}).indexOf(pxA.data);
+        }
+        
+        index(depth) {
+            depth||(depth=1);
+            return JsonProxy.indexOf(this, '........'.substr(0, depth+1) + this.elements.slice(this.elements.length-depth, this.elements.length).join('.'));
+        }
+        
+        first(path) {
+            var v  = this.get(path); return (Array.isArray(v) ? v[0] : v)||[];
+        }
+	
+        defaultValue (path, _default) { 
+            var ret = this.get(path); if(ret == 0 && _default) { this.set(path, _default); ret = this.get(path); } return ret; 
+        }
+
+        defaultSubset(path, defaults) {
+            var ret = this.get(path); if(ret == 0) { this.append(path, defaults); ret = this.get(path); } return ret; 
+        }
+
+        hasChild(other) {
+            return this.data === other.data || other.parents.some(p => p.data === this.data);
+        }
     }
-    
+
     //###############################################################################################################################
-	function DfeListener(dependencyMap, control) {
-	    this.dpMap = dependencyMap || new Map();
-	    this.control = control;
-	}
-	
-	DfeListener.prototype.depend = function(data, element) {
-	    if(this.control) {
-	        var e = this.dpMap.get(data);
-	        e || this.dpMap.set(data, e = new Map());
-	        var l = e.get(element);
-	        l || e.set(element, l = new Set());
-	        if(!l.has(this.control)) {
-	            l.add(this.control);
-	            this.control.dependencies.push({data : data, element : element});
-	        }
-	    }
-	}
-	
-	DfeListener.prototype.For = function(control) {
-		return new DfeListener(this.dpMap, control);
-	}
-	
-	DfeListener.prototype.notify = function(data, element, action, d1) {
-	    var e, s;
-	    (e = this.dpMap.get(data)) && (s = e.get(element)) && s.forEach(function (cc) {
-	        cc.notify({data : data, element : element, action : action, d1 : d1});
-	    });
-	    return true;
-	}
-	
-	DfeListener.prototype.set = function (data, element, value, action) { if(data[element] != value) { data[element] = value; this.notify(data, element, action, value) }; return true; }
-	DfeListener.prototype.get = function (data, element) { this.depend(data, element); return data[element]; }
     
-    let wrapProxy = (function(){
-        let keys = []; 
-        for(let key in new JsonProxy()) {
-            key === 'listener' || keys.push(key);
+	class DfeListener {
+        constructor(dependencyMap, node) {
+            this.dpMap = dependencyMap || new Map();
+            this.node = node;
+            this.dependencies = [];
         }
-        return function(proxy, target, listener) {
-            //Object.assign(target, JsonProxy.prototype, proxy, {listener: listener}); //keys.forEach( k => target[k] = proxy[k] );
-            //target.listener = listener;
-            return Object.assign(target, JsonProxy.prototype, proxy, {listener: listener});
+        
+        undepend() {
+            this.dependencies.forEach(dep => {
+                let eleMap = this.dpMap.get(dep.data);
+                if(eleMap) { 
+                    let ctlSet = eleMap.get(dep.element);
+                    if(ctlSet) {
+                        ctlSet.delete(this.node);
+                        ctlSet.size || eleMap.delete(dep.element);
+                        eleMap.size || this.dpMap.delete(dep.data);
+                    }
+                }
+            })
         }
-    })()
+	
+        depend(data, element) {
+            if(this.node) {
+                var e = this.dpMap.get(data);
+                e || this.dpMap.set(data, e = new Map());
+                var l = e.get(element);
+                l || e.set(element, l = new Set());
+                if(!l.has(this.node)) {
+                    l.add(this.node);
+                    this.dependencies.push({data : data, element : element});
+                }
+            }
+        }
+
+        notify(data, element, action, d1) {
+            let e, s;
+            (e = this.dpMap.get(data)) && (s = e.get(element)) && s.forEach(function (node) {
+                node.notify({data : data, element : element, action : action, d1 : d1});
+            });
+            return true;
+        }
+
+        set(data, element, value, action) { 
+            if(data[element] != value) { data[element] = value; this.notify(data, element, action, value) }; return true; 
+        }
+        get(data, element) { 
+            this.depend(data, element); return data[element]; 
+        }
+    }
     
 	//###############################################################################################################################
     
+    class ProxyModel extends JsonProxy {
+        constructor(proxy, runtime, node) {
+            super(proxy.data, proxy.parents, proxy.elements, new DfeListener(runtime.listener.dpMap, node));
+            this.persisted = proxy.persisted;
+            this.$runtime = runtime;
+            this.$node = node;
+            this.unbound = proxy;
+        }
+        
+        result(data) {
+            this.$node.acceptLogic(data, this.$node.lastError);
+        }
+        
+        error(error, data) {
+            if( typeof data !== 'undefined' ) {
+                this.$node.lastData = data;
+            }
+            if( this.$node.doValidation ) {
+                if( error ) {
+                    this.$node.stickyError = error;
+                    this.$runtime.notifyErroring(this.$node);
+                    this.$node.acceptLogic(this.$node.lastData, error);
+                }
+            }
+            return error;
+        }
+        
+        errorwatch(target, reducer) {
+            let error = '';
+            if(target === 'peers') {
+                this.listener.get(this.$node.parent, 'erroringChildren').forEach(
+                    node => this.hasChild(node.model) && (error = reducer ? reducer(error, node.lastError) : node.lastError)
+                )
+            } else {
+                this.listener.get(target instanceof Node ? target : this.$node, 'erroringChildren').forEach(
+                    node => error = reducer ? reducer(error, node.lastError) : node.lastError
+                )
+            }
+            error && this.$node.acceptLogic(this.$node.lastData, error);
+        }
+        
+        required(name, pattern, message) {
+            var val = this.get(name);
+            Array.isArray(val) && (val = val[0]);
+            if( typeof val === 'undefined' || val.toString().replace(/ /g, '') === '' ) this.error(message || 'Required');
+            else if( pattern === 'date' && !val.toString().match(arfDatePattern) || pattern && pattern !== 'date' && ! val.match(pattern) )
+                     this.error(message || 'Invalid format');
+                 else return true ;
+        }
+        
+        destroy() {
+            this.listener.undepend();
+        }
+    }
+
+    //###############################################################################################################################
 
     let DOMEvents = [
         {name: 'onKeyDown', event: 'keydown'}, 
@@ -578,7 +612,6 @@ define('dfe-core', function() {
                 form: null,
                 field: field,
                 control: null,
-                dependencies : [], 
                 notifications : [],
                 children : new Map(),
                 erroringChildren : new Set(),
@@ -602,6 +635,7 @@ define('dfe-core', function() {
             this.key = field.name + '-' + unboundModel.data.key;
             this.form = control instanceof Form ? control : parent.form;
             this.control = control;
+            this.model = new ProxyModel(unboundModel, runtime, this);
         }
         render(lastData, lastError, lastAttributes) {
             if( this.shouldRender && this.isAttached() ) {
@@ -776,7 +810,9 @@ define('dfe-core', function() {
             let childrenFields = this.field.children;
             if(typeof data !== 'undefined' && !this.evicted) {
                 if(childrenFields.length) {
-                    data = (Array.isArray(data) ? data: typeof data == 'object' ? [data] : []).map(d => typeof d.withListener == 'function' ? d : new JsonProxy(d));
+                    data = (Array.isArray(data) ? data : typeof data === 'object' ? [data] : []).map(
+                        d => d instanceof JsonProxy ? d : new JsonProxy(d)
+                    );
                     this.runtime.reconcileChildren(this, data);
                 }
                 this.lastData = data;
@@ -792,7 +828,7 @@ define('dfe-core', function() {
         constructor(config, listener) {
             this.config = config || {};
             this.schedule = [];
-            this.listener = (listener || new DfeListener()).For(); 
+            this.listener = new DfeListener(listener instanceof DfeListener && listener.dpMap); 
             this.nodes = [];
             this.shouldAnythingRender = false;
             this.pendingLogic = new Set();
@@ -855,54 +891,7 @@ define('dfe-core', function() {
             let node = new Node(parent, field, unbound, this);
             node.notify(this.initAction);
             this.nodes.push(node);
-            this.prep$$(node, unbound);
             return node;
-        }
-        prep$$(node, unbound) { 
-            let runtime = this;
-            let listener = this.listener.For(node);
-            let model = unbound.withListener(listener); //Object.assign(path => model.get(path), JsonProxy.prototype, unbound, {listener: listener});
-            let field = node.field;
-            node.model = model;
-            model.unbound = unbound;
-            unbound.$node = model.$node = node;
-            model.result = function(data) {
-                node.acceptLogic(data, node.lastError);
-            }
-            model.error = function(error, data) {
-                if( typeof data !== 'undefined' ) {
-                    node.lastData = data;
-                }
-                if( node.doValidation ) {
-                    if( error ) {
-                        node.stickyError = error;
-                        runtime.notifyErroring(node);
-                        node.acceptLogic(node.lastData, error);
-                    }
-                }
-                return error;
-            }
-            model.errorwatch = function(target, reducer) {
-                let error = '';
-                if(target === 'peers') {
-                    listener.get(node.parent, 'erroringChildren').forEach(
-                        node => model.hasChild(node.model) && (error = reducer ? reducer(error, node.lastError) : node.lastError)
-                    )
-                } else {
-                    listener.get(target instanceof Node ? target : node, 'erroringChildren').forEach(
-                        node => error = reducer ? reducer(error, node.lastError) : node.lastError
-                    )
-                }
-                error && node.acceptLogic(node.lastData, error);
-            }
-            model.required = function(name, pattern, message) {
-                var val = model.get(name);
-                Array.isArray(val) && (val = val[0]);
-                if( typeof val === 'undefined' || val.toString().replace(/ /g, '') === '' ) model.error(message || 'Required');
-                else if( pattern === 'date' && !val.toString().match(arfDatePattern) || pattern && pattern !== 'date' && ! val.match(pattern) )
-                         model.error(message || 'Invalid format');
-                     else return true ;
-            }
         }
         removeErroring(node) {
             if( node.lastError ) {
@@ -927,18 +916,7 @@ define('dfe-core', function() {
             this.nodes.forEach( (node, index) => {
                 if(node.evicted) {
                     this.removeErroring(node);
-                    let dpMap = this.listener.dpMap;
-                    node.dependencies.forEach(dep => {
-                        let eleMap = dpMap.get(dep.data);
-                        if(eleMap) { 
-                            let ctlSet = eleMap.get(dep.element);
-                            if(ctlSet) {
-                                ctlSet['delete'](node);
-                                ctlSet.size || eleMap['delete'](dep.element);
-                                eleMap.size || dpMap['delete'](dep.data);
-                            }
-                        }
-                    })
+                    node.model.destroy();
                     node.control.destroy();
                 } else {
                     this.nodes[cur++] = this.nodes[index];

@@ -20,7 +20,7 @@
                 }
             })
             var model = new Promise(function(resolve, reject) {
-                require(['../test/test-arf-2', 'dfe-core', 'ui/utils' ], function(json, core) {
+                require(['../test/test-100-cars', 'dfe-core', 'ui/utils' ], function(json, core) {
                     window.Core = core;
                     resolve(json);
                 })
@@ -78,7 +78,7 @@
                
         <!--<div style="position: relative; height:200px; width: 200px; overflow: scroll">
         <br><br> -->
-        <span id='dfe' dfe-form='test' dfe-model='window.model' dfe-edit-target ></span>
+        <span id='dfe' dfe-form='corecomm/quote.cmau.car' dfe-model='window.model' dfe-edit-target ></span>
         <!-- <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
         </div> -->
         <br>
@@ -89,8 +89,8 @@
         <script>
             setTimeout(function(){
                 var node = document.getElementById('edit');
-                node.setAttribute('dfe-form', 'dfe.edit.dfe');
-                node.setAttribute('dfe-arguments', '(function(r){ return {config: {targetRuntime: r}, model: r.nodes[0].field} })(document.querySelector("[dfe-edit-target]")._dfe_runtime)');
+              //  node.setAttribute('dfe-form', 'dfe.edit.dfe');
+             //   node.setAttribute('dfe-arguments', '(function(r){ return {config: {targetRuntime: r}, model: r.nodes[0].field} })(document.querySelector("[dfe-edit-target]")._dfe_runtime)');
             }, 1000) 
         </script>
     </body>
