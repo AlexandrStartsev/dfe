@@ -40,6 +40,7 @@ public class TestClass {
 		try{
 			e.eval("var __AJAX_ROOT__ = 'https://arrowheadexchange.com', __STATIC_ROOT__ = 'classpath:'");
 			e.eval("load('classpath:nashorn-utils.js')");
+			e.eval("load('classpath:ajaxCache.js')");
 			e.eval("load('classpath:test.js')");
 			System.out.println("ok");
 		} catch(Throwable ex) {

@@ -957,12 +957,12 @@ var validateDfe = (function(){
 	        set : function (data, element, value, action) { if(data[element] != value) { data[element] = value; this.notify(data, element, action, value) }; return true; },
 	        For: function(o) { return listener(o); }
 		}
-	}	
+	}
 	var Core = require('dfe-core');
 	return function (jsonModel, formClass, timeLimit) {
 		console.time('Nashorn validation took');
 		var errors = [], runtime = new Core.Runtime(listener()).setDfeForm(formClass).setModel(JSON.parse(jsonModel));
-		var failure = EventLoop.run(function() { runtime.restart(null, 'validate', 5) }, timeLimit*1000, undefined, function() { return !(runtime.shouldAnythingRender || EventLoop.hasPendingNonTimerEvents()) });
+		var failure = EventLoop.run(function() { runtime.restart(null, 'validate', 5) }, timeLimit*1000, undefined, function() { return runtime && !(runtime.shouldAnythingRender || EventLoop.hasPendingNonTimerEvents()) });
 		if( failure instanceof JavaException || failure instanceof Error ) {
             return JSON.stringify({ result : false, data : {field: formClass.name, error: failure.message + "\n" + failure.stack }});
 		} else {
@@ -974,153 +974,22 @@ var validateDfe = (function(){
 	}
 })();
 
-var ajaxCache = (function() {
-	var hook = typeof JavaThreadLocal !== 'undefined' ? new JavaThreadLocal() : { set: function(cb) { this.callback = cb; }, get: function() {return this.callback} };
-    var storage = typeof JavaCacheHandler !== 'undefined' ? JavaCacheHandler.sharedCache('ajaxCache', '1000', '10') : new Map();
-    var extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
-    return {
-    	setCallback: function(callback) {
-    		hook.set(callback);
-    	},
-        clear: function() {
-            storage.clear();
-        },
-        get: function(opt) {
-            if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
-                //var u = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
-                var u = 'https://arrowheadexchange.com/AJAXServlet.srv?';
-                for(var o in opt)
-                    (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
-                        u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';
-                    })
-                opt = u.replace(/\&$/,'');
-            }
-            var url = typeof opt == 'string' ? opt : opt.url, key = url, cb = hook.get();
-            typeof cb === 'function' && cb(key);
-            if(storage.has(key)) {
-                return storage.get(key);
-            } else {
-                var v, xhr = new XMLHttpRequest(), dataType = opt.dataType || 'json', so = typeof opt.data == 'object';
-                var hrds = extend(opt.headers, {'Content-Type' : so ? 'application/json' : 'application/x-www-form-urlencoded'});
-                storage.set(key, v = new Promise(function(resolve, reject){
-                    xhr.open(opt.type || 'GET', so ? url : url + '&cacheKey=' + encodeURIComponent(key));
-                    for(var i in hrds) xhr.setRequestHeader(i, hrds[i]);
-                    dataType == 'json' && xhr.setRequestHeader('Accept', 'application/json');
-                    xhr.onreadystatechange = function() {
-                        if(this.readyState === 4) {
-                            v.done = 1;
-                            if(this.status == 200)
-                                try {
-                                	var r = this.response || this.responseText;
-                                    resolve(v.result = typeof r == 'string' && dataType == 'json' ? JSON.parse(r) : r)
-                                } catch(e) {
-                                	v.done = 2;
-                                    reject(v.result = {xhr: xhr, exception: e});
-                                }
-                            else {
-                            	v.done = 2;
-                                reject(v.result = {xhr: xhr});
-                            }
-                        }
-                    }
-                    xhr.send(so ? extend(opt.data, {cacheKey: key}) : opt.data);
-                }));
-                return v;
-            }
-        },
-        put: function(key, responseString, dataType, statusString, ex) {
-        	var ok = false, v, result;
-            statusString = statusString||'success';
-            try {
-            	if( statusString == 'success' ) {
-            		result = dataType == 'json' ? JSON.parse(responseString) : responseString;
-            		ok = true;
-    			} else {
-    				result = {xhr: {statusText: statusString, responseText : responseString}, exception: ex}
-    			}
-    		} catch(e) { 
-    			result = {xhr: {statusText: statusString, responseText : responseString}, exception: e}; 
-    		}
-            this[ok ? 'putResolved' : 'putRejected'](key, result);
-    		//storage.set(key, (ok ? Promise.resolve : Promise.reject)(result));
-        },
-        putResolved: function(key, result) {
-            storage.set(key, Promise.resolve(result));
-        },
-        putRejected: function(key, error) {
-            storage.set(key, Promise.reject(error));
-        }
-    }
-})()
+var ssr = (function () {
+	var Core = require('dfe-core');
+	var DOM = require('dfe-dom');
 
-/*
-var ajaxCache = (function() {
-    var storage = JavaCacheHandler.sharedCache('ajaxCache', '1000', '60'), extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
-    return {
-        clear: function() {
-            storage.clear();
-        },
-        get: function(opt) {
-            if(typeof opt != 'string' && !opt.url) {
-                var u = '/AJAXServlet.srv?';
-                for(var o in opt)
-                    (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
-                        u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';
-                    })
-                opt = u.replace(/\&$/,'');
-            }
-            var url = typeof opt == 'string' ? opt : opt.url, key = url;
-            if(storage.has(key)) {
-                return storage.get(key);
-            } else {
-                var v, context = {}, dataType = opt.dataType || 'json', so = typeof opt.data == 'object';
-                var hrds = extend(opt.headers, {'Content-Type' : so ? 'application/json' : 'application/x-www-form-urlencoded'});
-                try {
-                	com.arrow.util.experimental.AjaxHandler.handle(context, so ? url : url + '&cacheKey=' + encodeURIComponent(key), opt.type || 'GET', dataType, so ? extend(opt.data, {cacheKey: key}) : opt.data, o.headers);
-        			return this.put(key, context.responseString, dataType, context.statusString);
-        		} catch(e) { 
-        			return this.put(key, context.responseString, dataType, 'error', e); 
-        		}
-            }
-        },
-        put: function(key, responseString, dataType, statusString, ex) {
-            var ok = false, v, result;
-            statusString = statusString||'success';
-            try {
-            	if( statusString == 'success' ) {
-            		result = dataType == 'json' ? JSON.parse(responseString) : responseString;
-            		ok = true;
-    			} else {
-    				result = {xhr: {statusText: statusString, responseText : responseString}, exception: ex}
-    			}
-    		} catch(e) { 
-    			result = {xhr: {statusText: statusString, responseText : responseString}, exception: e}; 
-    		}
-    		storage.set(key, v = { 
-				done: ok ? 1:2, 
-				result: result,
-				then: function(success, error) { ok ? typeof success == 'function' && success(result) : typeof error == 'function' && error(result) },
-				fail: function(error) { this.then(0, error) }
-			});
-            return v;
-        }
-    }
-})();*/
-
-/*
-EventLoop.run(function(){
-	ajaxCache.get({method: 'CMAUVehicleScriptHelper', action: 'getValuationMethodOptions', vehicleType: 'car'}).then(function(data){
-		console.log(data);
-	}, function(error){
-		console.warn(error);
-	})
-	var url = "http://localhost:7001/AJAXServlet.srv?method=CMAUVehicleScriptHelper&action=getValuationMethodOptions&vehicleType=car";
-	var xhr = new XMLHttpRequest();
-	xhr.open("GET", url);
-	xhr.onreadystatechange = function () {
-        if (this.readyState === 4) {
-        	console.log(this.responseText);
-        }
-    };
-    xhr.send(null);
-})*/
+	return function(jsonModel, formClass, timeLimit, waitAjax) {
+		var runtime, node = DOM.createElement('span'), ajaxKeys = new Set(), ajaxPrime = []; 
+		var ajaxCacheCallback = function(key, promise){
+			ajaxKeys.has(key) || (ajaxKeys.add(key), promise.then(function(payload){ ajaxPrime.push({key: key, payload: payload}) }))
+		}
+		EventLoop.run(function() {
+			ajaxCache.setCallback(waitAjax ? ajaxCacheCallback : null);
+			runtime = Core.startRuntime({ model : JSON.parse(jsonModel), node: node, form: formClass });
+		}, timeLimit, undefined, function() {
+			return runtime && !(runtime.shouldAnythingRender || waitAjax && EventLoop.hasPendingNonTimerEvents()) 
+		});
+		// undefined,
+		return '<script>' + ajaxPrime.map(function(o) { return 'ajaxCache.putResolved("' + o.key + '", ' + JSON.stringify(o.payload) + ')' } ).join(";\n") + '</script>\n' + node.serialize([]).join('');
+	}
+})();
