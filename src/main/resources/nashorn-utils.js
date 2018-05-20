@@ -975,22 +975,28 @@ var validateDfe = (function(){
 })();
 
 var ajaxCache = (function() {
-    var storage = JavaCacheHandler.sharedCache('ajaxCache', '1000', '10'), extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
+	var hook = typeof JavaThreadLocal !== 'undefined' ? new JavaThreadLocal() : { set: function(cb) { this.callback = cb; }, get: function() {return this.callback} };
+    var storage = typeof JavaCacheHandler !== 'undefined' ? JavaCacheHandler.sharedCache('ajaxCache', '1000', '10') : new Map();
+    var extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
     return {
+    	setCallback: function(callback) {
+    		hook.set(callback);
+    	},
         clear: function() {
             storage.clear();
         },
         get: function(opt) {
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
                 //var u = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
-                var u = '/AJAXServlet.srv?';
+                var u = 'https://arrowheadexchange.com/AJAXServlet.srv?';
                 for(var o in opt)
                     (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
                         u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';
                     })
                 opt = u.replace(/\&$/,'');
             }
-            var url = typeof opt == 'string' ? opt : opt.url, key = url;
+            var url = typeof opt == 'string' ? opt : opt.url, key = url, cb = hook.get();
+            typeof cb === 'function' && cb(key);
             if(storage.has(key)) {
                 return storage.get(key);
             } else {
@@ -1035,7 +1041,14 @@ var ajaxCache = (function() {
     		} catch(e) { 
     			result = {xhr: {statusText: statusString, responseText : responseString}, exception: e}; 
     		}
-    		storage.set(key, (ok ? Promise.resolve : Promise.reject)(result));
+            this[ok ? 'putResolved' : 'putRejected'](key, result);
+    		//storage.set(key, (ok ? Promise.resolve : Promise.reject)(result));
+        },
+        putResolved: function(key, result) {
+            storage.set(key, Promise.resolve(result));
+        },
+        putRejected: function(key, error) {
+            storage.set(key, Promise.reject(error));
         }
     }
 })()

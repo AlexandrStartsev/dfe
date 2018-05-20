@@ -351,7 +351,7 @@ DFE.nav = function () {
     };
 } ();
 
-define(['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
+define('ui/utils', ['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
     function setupNode(node) {
 		var formName = node.getAttribute('dfe-form'), args = node.getAttribute('dfe-arguments'), model = node.getAttribute('dfe-model');
@@ -414,54 +414,3 @@ define(['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
 		setupNode: setupNode
     }
 });
-
-var ajaxCache = (function() {
-    var storage = new Map(), extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
-    return {
-        clear: function() {
-            storage.clear();
-        },
-        get: function(opt) {
-            if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
-                //var u = //'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
-                var u = 'https://arrowheadexchange.com/AJAXServlet.srv?';
-                for(var o in opt)
-                    (Array.isArray(opt[o])?opt[o]:[opt[o]]).forEach(function(v){
-                        u += encodeURIComponent(o) + '=' + encodeURIComponent(typeof v == 'object' ? JSON.stringify(v) : v) + '&';
-                    })
-                opt = u.replace(/\&$/,'');
-            }
-            var url = typeof opt == 'string' ? opt : opt.url, key = url;
-            if(storage.has(key)) {
-                return storage.get(key);
-            } else {
-                var v, xhr = new XMLHttpRequest(), dataType = opt.dataType || 'json', so = typeof opt.data == 'object';
-                var hrds = extend(opt.headers, {'Content-Type' : so ? 'application/json' : 'application/x-www-form-urlencoded'});
-                storage.set(key, v = new Promise(function(resolve, reject){
-                    xhr.open(opt.type || 'GET', so ? url : url + '&cacheKey=' + encodeURIComponent(key));
-                    for(var i in hrds) xhr.setRequestHeader(i, hrds[i]);
-                    dataType == 'json' && xhr.setRequestHeader('Accept', 'application/json');
-                    xhr.onreadystatechange = function() {
-                        if(this.readyState === 4) {
-                            v.done = 1;
-                            if(this.status == 200)
-                                try {
-                                	var r = this.response || this.responseText;
-                                    resolve(v.result = typeof r == 'string' && dataType == 'json' ? JSON.parse(r) : r)
-                                } catch(e) {
-                                	v.done = 2;
-                                    reject(v.result = {xhr: xhr, exception: e});
-                                }
-                            else {
-                            	v.done = 2;
-                                reject(v.result = {xhr: xhr});
-                            }
-                        }
-                    }
-                    xhr.send(so ? extend(opt.data, {cacheKey: key}) : opt.data);
-                }));
-                return v;
-            }
-        }
-    }
-})()
