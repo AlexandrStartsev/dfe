@@ -9,12 +9,39 @@
 input[type="checkbox"], input[type="radio"] {
     padding: 0px 2px 0px 2px;
 }
-select { max-width: 100%; }
-input { padding-left: 2px; }
+select { 
+    max-width: 100%; 
+    transition: all 0.5s;
+    outline: none;
+}
+
+input { 
+    padding-left: 2px; 
+    transition: all 0.5s;
+    outline: none;
+}
+
 input[type='button'] { 
     padding-left: 5px;
-    padding-right: 5px; 
+    padding-right: 5px;
+    outline: none;
 }
+
+input[type="text"]:not([disabled]):hover, input[type="button"]:not([disabled]):hover, input:not([type]):not([disabled]):hover, select:not([disabled]):hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+    transition: all 0s;
+}
+
+input[type="checkbox"] {
+    background-color: gray;
+}
+
+input[type="checkbox"]:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    transition: all 0s;
+}
+
 label, td, th {
     font-family: 'SourceCodePro-Medium', sans-serif;
     text-decoration: none;
@@ -27,7 +54,8 @@ table.dfe-table {
     width: 100%; 
     overflow: hidden;
     background: white;
-    border-collapse: collapse;
+    /*border-collapse: collapse;*/
+    border-spacing: 0px;
 }
 
 table.dfe-table > tbody > tr:nth-child(odd) {
@@ -58,7 +86,7 @@ th {
 .tab-cols-3-4-3 > tbody > tr > td:nth-child(3n+3) { width: 30%; }
 
 .tab-cols-2-5-3 > tbody > tr > td:not([colspan="3"]):nth-child(3n+1) { width: 20%; border-right: 2px solid white; vertical-align: middle; }
-.tab-cols-2-5-3 > tbody > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 50%; border-right: 2px solid white; }
+.tab-cols-2-5-3 > tbody > tr > td:not([colspan="2"]):nth-child(3n+2) { width: 50%; border-right: 2px solid white;  }
 .tab-cols-2-5-3 > tbody > tr > td:nth-child(3n+3) { width: 30%; }
 
 .tab-cols-5-5 > tbody > tr > td:not([colspan="2"]):nth-child(2n+1) { width: 50%; border-right: 2px solid white; vertical-align: middle; }
@@ -182,11 +210,32 @@ th {
     cursor: pointer;
     outline: none;
     align-self: center;
+    transition: text-shadow 0.25s;
+    box-shadow: 0 0!Important;
 }
 .link-button:active {
     background-color: darkgrey;
     transform: translateY(1px);
 }
+
+.link-button:hover {
+    text-shadow: 0 0 2px;
+    transition: all 0s;
+}
+
+/*label, */.link-button, .non-selectable, .div-button-text, .div-button-error {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+   /* background: transparent; */
+}
+/*.link-button:focus {
+   outline: -webkit-focus-ring-color auto 5px;
+}*/
+
 .div-flex {
     overflow:visible;
     position:relative;
@@ -296,18 +345,7 @@ th {
     border-color: darkgray;
     line-height: 1em;
 }
-/*label, */.link-button, .non-selectable, .div-button-text, .div-button-error {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-   /* background: transparent; */
-}
-.link-button:focus {
-   outline: -webkit-focus-ring-color auto 5px;
-}
+
 .div-button-text {
     
 }
@@ -526,4 +564,14 @@ a.css-qmark::before {
     border-radius: 2px;
     margin-right: 2px;
     border: 1px solid #9a6f39;
+}
+
+/* ====================== animations ========================= */
+@keyframes onstartreveal {
+    0%   { opacity: 0 }
+    100% { opacity: 1 }
+}
+
+.onstart-reveal {
+    animation: onstartreveal 0.5s 1;
 }

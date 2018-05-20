@@ -362,13 +362,10 @@ define('ui/utils', ['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
             model = args.model || (typeof model === 'string' && model != 0 ? eval(model) : node.dfeModel) || {};
             var pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
             Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
-                while(node.firstChild) node.removeChild(node.firstChild);
-                var dfe = values[0], arf = values[1];
+                var dfe = values[0], arf = values[1], fc = node.firstChild, toRemove = [];
+                for(; fc; fc = fc.nextSibling) toRemove.push(fc);
                 node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe }));
-                /*
-                var ssr = dom.createElement('span');
-                node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: ssr, form: dfe }));
-                setTimeout(() => node.innerHTML = ssr.serialize([]).join(''), 200);*/
+                toRemove.forEach(function(child) { node.removeChild(child) });
             })
         }
 	}

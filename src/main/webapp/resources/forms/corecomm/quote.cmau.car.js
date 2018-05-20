@@ -48,10 +48,12 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
         }
     };
     
+    let focusVin = false;
+    
     class VinNumber extends LabeledEditbox {
         render(data, error, attributes) {
-            let structure = super.render(data.vin, error, {...attributes, ref: dom => (dom.focus(), dom.select())});
-            data.vinvalid === 'Y' || data.vin && (structure[1][1] = 'vin not found'); // hax(!)
+            let structure = super.render(data.vin, error, {...attributes, ref: dom => focusVin && (dom.focus(), dom.select(), focusVin = false)});
+            data.vinvalid === 'Y' || data.vin != 0 && (structure[1][1] = 'vin not found');
             return structure;
         }
     }
@@ -75,6 +77,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 })
             }, Form.field(Editbox, { 
                 atr: $$ => fields.simple(config.field, {
+                    spellcheck: 'false',
                     pattern: config.pattern, 
                     disabled: vehDetailsDisabled($$),
                     style: 'width: 150px; text-transform: uppercase;',
@@ -135,7 +138,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 get: $$ => 'Location #' + ($$.index() + 1)
             }), Form.field(Button, "add-car", {
                 get: () => 'Add Vehicle',
-                set: $$ => $$.append('.car', carDefaults),
+                set: $$ => ($$.append('.car', carDefaults), focusVin = true),
                 atr: () => ({
                     style: 'padding: 1px 10px'
                 }),
@@ -593,7 +596,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 } ]
             }, [ Form.field(Button, "clone-car", {
                 get: () => 'Clone Vehicle',
-                set: $$ => $$.clone(),
+                set: $$ => ($$.clone(), focusVin = $$.get('.hasvin') == 'Y'),
                 atr: () => ({ 
                     style: 'padding: 1px 10px; margin: 0px 5px'
                 }),

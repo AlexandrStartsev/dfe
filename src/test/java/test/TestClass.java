@@ -15,7 +15,9 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Test;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
+@SuppressWarnings("restriction")
 public class TestClass {
 	
 	@Test
@@ -41,7 +43,11 @@ public class TestClass {
 			e.eval("var __AJAX_ROOT__ = 'https://arrowheadexchange.com', __STATIC_ROOT__ = 'classpath:'");
 			e.eval("load('classpath:nashorn-utils.js')");
 			e.eval("load('classpath:ajaxCache.js')");
-			e.eval("load('classpath:test.js')");
+			//e.eval("load('classpath:test.js')");
+			e.eval("var jsonModel = JSON.stringify(require('model')), formClass =  require('forms/testform');");
+			ScriptObjectMirror obj = (ScriptObjectMirror) e.eval("ssr( jsonModel, formClass, 10000, true )");
+			System.out.println(obj.get("script"));
+			System.out.println(obj.get("html"));
 			System.out.println("ok");
 		} catch(Throwable ex) {
 			ex.printStackTrace(System.err);

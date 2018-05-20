@@ -3,8 +3,8 @@ define(function() {
         return document; 
     }
     
-	var innerContentAllowed = new Set();
-	['AREA', 'BASE', 'BR', 'COL', 'COMMAND', 'EMBED', 'HR', 'IMG', 'INPUT', 'KEYGEN', 'LINK', 'META', 'PARAM', 'SOURCE', 'TRACK', 'WBR'].forEach(function(tag) { innerContentAllowed.add(tag) });
+	var innerContentNotAllowed = new Set();
+	['AREA', 'BASE', 'BR', 'COL', 'COMMAND', 'EMBED', 'HR', 'IMG', 'INPUT', 'KEYGEN', 'LINK', 'META', 'PARAM', 'SOURCE', 'TRACK', 'WBR'].forEach(function(tag) { innerContentNotAllowed.add(tag) });
 	
     
 	function escapeHtml(str) {

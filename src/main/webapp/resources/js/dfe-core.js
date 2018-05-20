@@ -414,6 +414,9 @@ define('dfe-core', ['dfe-dom'], function(document) {
                     break;
                 case 'input':
                 case 'textarea':
+                    if(newAttributes.spellcheck !== oldAttributes.spellcheck ) {
+                        newAttributes.spellcheck === undefined ? domElement.removeAttribute("spellcheck") : domElement.setAttribute("spellcheck", newAttributes.spellcheck);
+                    }
                     if(newAttributes.type !== oldAttributes.type ) {
                         newAttributes.type === undefined ? domElement.removeAttribute("type") : domElement.setAttribute("type", newAttributes.type);
                     }

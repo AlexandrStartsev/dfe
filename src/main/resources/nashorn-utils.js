@@ -990,6 +990,6 @@ var ssr = (function () {
 			return runtime && !(runtime.shouldAnythingRender || waitAjax && EventLoop.hasPendingNonTimerEvents()) 
 		});
 		// undefined,
-		return '<script>' + ajaxPrime.map(function(o) { return 'ajaxCache.putResolved("' + o.key + '", ' + JSON.stringify(o.payload) + ')' } ).join(";\n") + '</script>\n' + node.serialize([]).join('');
+		return { script: ajaxPrime.map(function(o) { return 'ajaxCache.putResolved("' + o.key + '", ' + JSON.stringify(o.payload) + ')' } ).join(","), html: node.serialize([]).join('') };
 	}
 })();
