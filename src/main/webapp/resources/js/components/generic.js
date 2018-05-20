@@ -196,12 +196,12 @@ define('components/validation-component', ['dfe-core', 'core-validation-componen
         }
         splitAttributes(attributes, error) {
             let ret = {}, hideError = attributes.hideError;
-            if( !!error && !hideError && attributes.eclass ) {
-                ret.class = (attributes.class ? attributes.class + ' ' : '') + attributes.eclass;
+            if( !!error && !hideError && attributes.errorClass ) {
+                ret.class = (attributes.class ? attributes.class + ' ' : '') + attributes.errorClass;
                 hideError = true;
                 delete attributes.class;
             }
-            delete attributes.eclass;
+            delete attributes.errorClass;
             delete attributes.hideError;
             Object.getOwnPropertyNames(attributes).forEach( 
                 a => { 
@@ -331,7 +331,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'ui
             Object.assign(this, {format: format, pattern: pattern, transform: transform, trigger: trigger});
             return [[
                 Core.createElement( 'input', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }), 
-                typeof eclass !== 'string' && super.render(null, error, rest)
+                typeof errorClass !== 'string' && super.render(null, error, rest)
             ]]
         }
     }
@@ -828,11 +828,11 @@ define('components/modal', ['dfe-core', 'components/div'], function(Core, Div){
 })
 
 define('components/editbox-popup', ['dfe-core', 'components/editbox', 'components/textarea'], function(Core, Editbox, Textarea) {
-    class EditboxPopup extends Editbox {
+   return class EditboxPopup extends Editbox {
         constructor(node) {
             super(node);
             let editBoxKeyDownEvent = this.events.onKeyDown;
-            this.popup = Core.createNode( node, { component: Textarea, set: (_, value) => this.store(this.setMapper(value)) }, node.unboundModel );
+            this.popup = Core.createNode( node, { component: Textarea, set: (_, value) => this.store(this.setMapper(value)) }, node.unboundModel, node.runtime );
             this.ref = null;
             this.focusInterval = null;
             this.popupAttributes = {};
@@ -939,7 +939,6 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
             return this.popupContainer.firstChild;
         }
     }
-    return EditboxPopup;
 })
 
 /* TODO: 
@@ -1031,5 +1030,5 @@ define("components/generic", [ 'module',
             'components/textarea',
             'components/validation-component',
         ], function(module, ...components) {
-    return components.reduce((out, clazz) => ({...out, clazz}), {});
+    return components.reduce((out, clazz) => ({ ...out, [clazz.name]: clazz }), {});
 })

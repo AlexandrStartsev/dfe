@@ -1787,12 +1787,12 @@ define('components/validation-component', ['dfe-core', 'core-validation-componen
             value: function splitAttributes(attributes, error) {
                 var ret = {},
                     hideError = attributes.hideError;
-                if (!!error && !hideError && attributes.eclass) {
-                    ret.class = (attributes.class ? attributes.class + ' ' : '') + attributes.eclass;
+                if (!!error && !hideError && attributes.errorClass) {
+                    ret.class = (attributes.class ? attributes.class + ' ' : '') + attributes.errorClass;
                     hideError = true;
                     delete attributes.class;
                 }
-                delete attributes.eclass;
+                delete attributes.errorClass;
                 delete attributes.hideError;
                 Object.getOwnPropertyNames(attributes).forEach(function (a) {
                     ret[a] = attributes[a];
@@ -2007,7 +2007,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'ui
                     rest = _objectWithoutProperties(attributes, ['format', 'pattern', 'transform', 'trigger']);
 
                 _extends(this, { format: format, pattern: pattern, transform: transform, trigger: trigger });
-                return [[Core.createElement('input', _extends({}, this.splitAttributes(rest, error), this.events, { value: this.getValueProcessed(data.toString()) })), typeof eclass !== 'string' && _get(Editbox.prototype.__proto__ || Object.getPrototypeOf(Editbox.prototype), 'render', this).call(this, null, error, rest)]];
+                return [[Core.createElement('input', _extends({}, this.splitAttributes(rest, error), this.events, { value: this.getValueProcessed(data.toString()) })), typeof errorClass !== 'string' && _get(Editbox.prototype.__proto__ || Object.getPrototypeOf(Editbox.prototype), 'render', this).call(this, null, error, rest)]];
             }
         }]);
 

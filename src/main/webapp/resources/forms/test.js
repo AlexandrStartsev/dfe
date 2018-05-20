@@ -30,7 +30,7 @@ define('forms/test',[ "dfe-core",
             DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup, Modal, Div, EditboxCodePopup ) {
     let Form = Core.Form;
     
-    /*return class TestForm extends Core.Form {
+   /* return class TestForm extends Core.Form {
         static fields() {
             return [
                 //Form.field(Textarea, { get: $$ => $$.get('testCode'), set: ($$, value) => $$.set('testCode', value), atr: () => ({ style: 'width: 200px; height: 100px'}) }),
@@ -65,7 +65,7 @@ define('forms/test',[ "dfe-core",
             return [
                 Form.field(Container, "field-1", [
                     Form.field(Container, "field-2", [
-                        Form.field(EditboxCodePopup, "field-3", { 
+                        Form.field(EditboxPopup, "field-3", { 
                             atr: () => fields.simple('.vinnumber', {
                                 ta: {
                                     style: 'width: 500px; font-size: 14px; height: 200px; border: 2px solid #aaa; border-radius: 3px',

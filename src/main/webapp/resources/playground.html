@@ -8,19 +8,145 @@
                 padding-bottom: 0px;
             }
         </style>
-        
+        <link rel="stylesheet" type="text/css" href="/js/ui/dfe-style.css">
         <script src="/js/require.js"></script>
         
         <script> 
             require.config({
                 baseUrl: '/js', 
+                bundles: {
+                    'ui/utils': ['ui/utils'] // , 'dfe-dom'
+                },
                 paths: { 
                     //'dfe-core': 'es5', 'components/generic': 'es5', 'forms/corecomm/quote.cmau.car': 'es5',  
                     forms : '../forms' 
                 }
             })
             var model = new Promise(function(resolve, reject) {
-                require(['../test/test-100-cars', 'dfe-core', 'ui/utils' ], function(json, core) {
+                require(['../test/test-arf-2', 'dfe-core', 'ui/utils' ], function(json, core) {
+                    //'../test/model', 
+                    /*let nextKey = 0;
+                    class JsonProxy {
+                        constructor(data, parent, parentProp, listener) {
+                            data = typeof data === 'object' ? data : null;
+                            Object.defineProperties(this, {
+                                $internal: { 
+                                    enumerable: false, 
+                                    writable: false,
+                                    value: { 
+                                        data: data||{},
+                                        persisted: data,
+                                        parent: parent,
+                                        parentProp: parentProp,
+                                        listener: listener
+                                    }
+                                },
+                                key: {
+                                    enumerable: false, 
+                                    writable: false,
+                                    value: data && data.key || ++nextKey
+                                }
+                            })
+                        }
+                        get(prop) {
+                            let int = this.$internal, data = int.data, value = data[prop];
+                            int.listener && int.listener.depend(data, prop);
+                            return data === undefined ? '' : data;
+                        }
+                        set(prop, value) {
+                            this.persist();
+                            let int = this.$internal, data = int.data, old = data[prop];
+                            if(old !== value) {
+                                data[prop] = value;
+                                int.listener.notify(data, prop, 'modified', old, value);
+                            }
+                        }
+                        isShadow() {
+                            return typeof this.$internal.persisted === 'object';
+                        }
+                        persist() {
+                            let int = this.$internal, parent = int.parent;
+                            if(int.persisted !== int.data && parent) {
+                                parent.persist();
+                                parent.append( int.parentProp, int.persisted = int.data, false );
+                            }
+                        }
+                        detach() {
+                            let int = this.$internal, parent = int.parent;
+                            if(int.persisted === int.data && parent) {
+                                let pint = parent.$internal, arr = pint.data[int.parentProp], index = arr.indexOf(int.data);
+                                index >= 0 && arr.splice(index, 1);
+                                pint.listener.notify(pint.data, int.parentProp, 'removed', int.data);
+                                int.persisted = null;
+                            }
+                        }
+                        append(prop, defaults, asShadow) {
+                            let ret ;
+                            if(asShadow) {
+                                return new JsonProxy(data, )
+                            }
+                            asShadow || this.persist();
+                            let int = this.$internal, arr = int.data[prop];
+                            if( arr === undefined ) {
+                                arr = int.data[prop] = [data];
+                            }
+                        }
+                    }
+
+                    class JsonProxyArray extends Array {
+                        constructor(data, parent, clazz) {
+                            if(typeof data === 'number') {
+                                super(data);
+                            } else {
+                                super();
+                                (data || []).forEach(i => this.push(new clazz(i, parent)));
+                            }
+                        }
+                    }
+
+                    class Car extends JsonProxy {
+                        get vinnumber() {
+                            return this.$data.vinnumber||'';
+                        }
+                        set vinnumber(value) {
+                            this.$data.vinnumber = '' + (value||'');
+                        }
+                        detach() {
+                            let arr = this.$parent.$data.car, index = arr.indexOf(this.$data);
+                            index >= 0 && arr.splice(arr, 1);
+                        }
+                        get location() {
+                            return this.$parent;
+                        }
+                    }
+
+                    class CarArray extends JsonProxyArray {
+                        constructor(data, parent) {
+                            super(data, parent, Car);
+                        }
+                        get vinnumber() {
+                            let ret = [], v;
+                            this.forEach(i => (v = i.vinnumber)===''||ret.push(v))
+                            return ret;
+                        }
+                        set vinnumber(value) {
+                            this.forEach(i => i.vinnumber = value);
+                        }
+                    }
+
+                    class Location extends JsonProxy {
+                        get address() {
+                            return this.$data.address||'';
+                        }
+                        set address(value) {
+                            this.$data.address = '' + (value||'');
+                        }
+                        get car() {
+                            return new CarArray(this.$data.car || [], this)
+                        }
+                    }                    
+                    */
+                    
                     window.Core = core;
                     resolve(json);
                 })
@@ -29,7 +155,11 @@
             function getES5(doUglify) {
                 require(['babel', 'uglify', 'ui/jquery'], function(babel, uglify) {
                     let formName = "forms/" + document.getElementById("dfe").getAttribute("dfe-form") + ".js"
-                    Promise.all([$.get("js/dfe-core.js"), $.get("js/components/generic.js"), $.get("js/dfe-field-helper.js"), $.get(formName)]).then( // "transform-react-jsx",   , "react"
+                    Promise.all([//$.get("js/dfe-core.js") 
+                                 //$.get("js/components/generic.js"), 
+                                // $.get("js/dfe-field-helper.js"), 
+                                 $.get(formName)
+                               ]).then( // "transform-react-jsx",   , "react"
                     function(a) {
                         var s = babel.transform(a.join('\n\n\n'), {  plugins: [ "transform-object-rest-spread", "transform-object-assign"],  presets: ["es2015"] }).code;
                         if( doUglify ) {
@@ -78,7 +208,9 @@
                
         <!--<div style="position: relative; height:200px; width: 200px; overflow: scroll">
         <br><br> -->
-        <span id='dfe' dfe-form='corecomm/quote.cmau.car' dfe-model='window.model' dfe-edit-target ></span>
+        <span id='dfe' dfe-form='corecomm/quote.cmau.car' dfe-model='window.model' dfe-edit-target >
+            <DIV><DIV style="width: 900px;"><DIV class="tab-header"><DIV class="tab-item tab-item-active"><DIV class="div-button"><LABEL class="div-button-text"><a style="color: #444">Location #1</a><br/>MCPHERSON KS 67460</LABEL></DIV></DIV><DIV class="tab-item"><DIV class="div-button"><LABEL class="div-button-text"><a style="color: #444">Location #2</a><br/>NEWTON KS 67460</LABEL></DIV></DIV></DIV><DIV class="inline-section-header"><DIV>Location #1</DIV><DIV style="position: absolute; right: 5px; top: 5px"><INPUT style="padding: 1px 10px" type="button" value="Add Vehicle"/></DIV></DIV><DIV><DIV><DIV class="tab-header"><DIV class="tab-item tab-item-active"><DIV class="div-button"><LABEL class="div-button-text">KS - Vehicle #1<br/>2017 TOYOTA</LABEL></DIV></DIV><DIV class="tab-item"><DIV class="div-button"><LABEL class="div-button-text">KS - Vehicle #2<br/>2017 TOYOTA</LABEL></DIV></DIV></DIV><DIV class="dfe-inline-section"><TABLE class="dfe-table tab-cols-5-5"><TBODY><TR><TD class="inline-section-header" colSpan="2">Vehicle #1</TD></TR><TR><TD>Do you have the VIN?</TD><TD><INPUT name="Radiolist#1" type="radio" />Yes<INPUT name="Radiolist#1" type="radio" checked=""/>No</TD></TR><TR><TD style="padding-left: 16px;">Vehicle Year, Make and/or Model is not available in dropdown</TD><TD><INPUT name="Radiolist#3" type="radio" checked=""/>Yes<INPUT name="Radiolist#3" type="radio" />No</TD></TR><TR><TD>Vehicle Type</TD><TD><SELECT style="width: fit-content;" ><OPTION value="" >Please select...</OPTION><OPTION value="car" selected="">Private Passenger Type</OPTION><OPTION value="truck" >Trucks, Tractors and Trailers</OPTION><OPTION value="golf" >Golf Carts and Low Speed Vehicles</OPTION><OPTION value="mobile" >Mobile Homes</OPTION><OPTION value="antique" >Antique Autos</OPTION></SELECT></TD></TR><TR><TD><LABEL style="padding-left: 10px"><a href="javascript:showHelp('/cmau_help.html#year')" class="css-qmark"></a>Vehicle Year</LABEL></TD><TD><INPUT style="width: 150px; text-transform: uppercase;"  value="2017"/></TD></TR><TR><TD><LABEL style="padding-left: 10px"><a href="javascript:showHelp('/cmau_help.html#make')" class="css-qmark"></a>Vehicle Make</LABEL></TD><TD><INPUT style="width: 150px; text-transform: uppercase;"  value="TOYOTA"/></TD></TR><TR><TD><LABEL style="padding-left: 10px"><a href="javascript:showHelp('/cmau_help.html#model')" class="css-qmark"></a>Vehicle Model</LABEL></TD><TD><INPUT style="width: 150px; text-transform: uppercase;"  value="COROLLA"/></TD></TR><TR><TD>Original Cost New</TD><TD><INPUT style="width: 150px;"  value="$33,111"/></TD></TR></TBODY></TABLE></DIV><DIV class="dfe-inline-section"><TABLE class="dfe-table col-3-centred tab-cols-2-5-3"><TBODY><TR><TD class="inline-section-header" colSpan="3">Private Passenger Auto</TD></TR><TR><TD>Usage</TD><TD><SELECT><OPTION value="" >Please select...</OPTION><OPTION value="Furnished for Non-Business Use" selected="">Furnished for Non-Business Use</OPTION><OPTION value="All Other" >All Other</OPTION></SELECT></TD><TD><INPUT class="link-button" type="button" value="Apply to all Passenger Vehicles"/></TD></TR><TR><TD style="padding-left: 16px;">Operator Experience</TD><TD><SELECT><OPTION value="" >Please select...</OPTION><OPTION value="No operator licensed less than 5 years" selected="">No operator licensed less than 5 years</OPTION><OPTION value="Licensed less than 5 yrs not owner or principal operator" >Licensed less than 5 yrs not owner or principal operator</OPTION><OPTION value="Owner or principal operator licensed less than 5 yrs" >Owner or principal operator licensed less than 5 yrs</OPTION></SELECT></TD><TD><INPUT class="link-button" type="button" value="Apply to all Passenger Vehicles"/></TD></TR><TR><TD style="padding-left: 16px;">Operator Use</TD><TD><SELECT><OPTION value="" >Please select...</OPTION><OPTION value="Not driven to work or school" selected="">Not driven to work or school</OPTION><OPTION value="To of from work less than 15 miles" >To of from work less than 15 miles</OPTION><OPTION value="To or from work 15 or more miles" >To or from work 15 or more miles</OPTION></SELECT></TD><TD><INPUT class="link-button" type="button" value="Apply to all Passenger Vehicles"/></TD></TR></TBODY></TABLE></DIV><DIV class="dfe-inline-section"><TABLE class="dfe-table col-va-middle col-3-centred tab-cols-3-4-3"/></DIV><DIV class="dfe-inline-section"><TABLE class="dfe-table col-3-centred tab-cols-4-3-3"/></DIV><DIV class="dfe-inline-section"><TABLE class="dfe-table col-3-centred tab-cols-2-5-3"/></DIV><DIV class="dfe-inline-section"><TABLE class="dfe-table col-3-centred tab-cols-4-3-3"><TBODY><TR><TD class="inline-section-header" colSpan="3">Coverages</TD></TR><TR><TD>Physical Damage Only?</TD><TD><INPUT type="checkbox" checked=""/></TD><TD><INPUT class="link-button" type="button" value="Apply to all Vehicles"/></TD></TR><TR><TD>Comp. Ded</TD><TD><SELECT><OPTION value="" >Please select...</OPTION><OPTION value="No Coverage" >No Coverage</OPTION><OPTION value="Full" selected="">Full</OPTION><OPTION value="50" >$50 </OPTION><OPTION value="100" >$100 </OPTION><OPTION value="250" >$250 </OPTION><OPTION value="500" >$500 </OPTION><OPTION value="1000" >$1,000 </OPTION><OPTION value="2000" >$2,000 </OPTION><OPTION value="3000" >$3,000 </OPTION><OPTION value="5000" >$5,000 </OPTION></SELECT></TD><TD><INPUT class="link-button" type="button" value="Apply to all Vehicles"/></TD></TR><TR><TD>Coll. Ded</TD><TD><SELECT><OPTION value="" >Please select...</OPTION><OPTION value="No Coverage" selected="">No Coverage</OPTION><OPTION value="50" >$50 </OPTION><OPTION value="100" >$100 </OPTION><OPTION value="250" >$250 </OPTION><OPTION value="500" >$500 </OPTION><OPTION value="1000" >$1,000 </OPTION><OPTION value="2000" >$2,000 </OPTION><OPTION value="3000" >$3,000 </OPTION><OPTION value="5000" >$5,000 </OPTION></SELECT></TD><TD><INPUT class="link-button" type="button" value="Apply to all Vehicles"/></TD></TR><TR><TD>Valuation</TD><TD><SELECT><OPTION value="" >Please select...</OPTION><OPTION value="Actual Cash Value" selected="">Actual Cash Value</OPTION><OPTION value="Stated Amount" >Stated Amount</OPTION></SELECT></TD><TD><INPUT class="link-button" type="button" value="Apply to all Vehicles"/></TD></TR></TBODY></TABLE></DIV><DIV class="dfe-inline-section"><TABLE class="dfe-table col-3-centred tab-cols-4-3-3"><TBODY><TR><TD class="inline-section-header" colSpan="3">Optional Coverages</TD></TR><TR><TD>Towing and Labor</TD><TD><SELECT style="width: fit-content"><OPTION value="" selected="">Please select...</OPTION><OPTION value="No Coverage" >No Coverage</OPTION><OPTION value="50" >$50</OPTION><OPTION value="100" >$100</OPTION><OPTION value="200" >$200</OPTION></SELECT></TD><TD><INPUT class="link-button" type="button" value="Apply to all Vehicles"/></TD></TR><TR><TD>Loss Payee</TD><TD><INPUT type="checkbox" /></TD><TD><INPUT class="link-button" type="button" value="Apply to all Vehicles"/></TD></TR><TR><TD>Employee as Lessor</TD><TD><INPUT type="checkbox" /></TD><TD><INPUT class="link-button" type="button" value="Apply to all Vehicles"/></TD></TR><TR><TD>Additional Named Insured</TD><TD><INPUT type="checkbox" /></TD><TD><INPUT class="link-button" type="button" value="Apply to all Vehicles"/></TD></TR></TBODY></TABLE></DIV><DIV class="inline-section-header" style="display: inline-block; width: 100%; box-sizing: border-box;"><DIV style="display: inline-block; float: right;"><INPUT style="padding: 1px 10px; margin: 0px 5px" type="button" value="Clone Vehicle"/></DIV><DIV style="display: inline-block; float: right;"><INPUT style="padding: 1px 10px; margin: 0px 5px" type="button" value="Remove Vehicle"/></DIV></DIV></DIV></DIV></DIV></DIV>
+        </span>
         <!-- <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
         </div> -->
         <br>
@@ -89,8 +221,8 @@
         <script>
             setTimeout(function(){
                 var node = document.getElementById('edit');
-              //  node.setAttribute('dfe-form', 'dfe.edit.dfe');
-             //   node.setAttribute('dfe-arguments', '(function(r){ return {config: {targetRuntime: r}, model: r.nodes[0].field} })(document.querySelector("[dfe-edit-target]")._dfe_runtime)');
+               // node.setAttribute('dfe-form', 'dfe.edit.dfe');
+               // node.setAttribute('dfe-arguments', '(function(r){ return {config: {targetRuntime: r}, model: r.nodes[0].field} })(document.querySelector("[dfe-edit-target]")._dfe_runtime)');
             }, 1000) 
         </script>
     </body>

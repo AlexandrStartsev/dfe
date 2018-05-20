@@ -1,4 +1,4 @@
-define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r", "components/generic" ], function(Core, require, uglify, babel, cmn, Button, Label, Dropdown, Checkbox, EditboxCodePopup, Editbox, DivButton, Div, DivC, DivR, generic) {
+define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code-popup", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r", "components/generic" ], function(Core, require, uglify, babel, cmn, Button, Label, Dropdown, Checkbox, EditboxCodePopup, Editbox, DivButton, Div, DivC, DivR, generic) {
     let Form = Core.Form;
     let compilationError = function($$) { $$.error('compilation error') };
     
@@ -21,7 +21,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 atr: () => ({
                     class: 'div-flex',
                     rowclass: 'div-flex-row',
-                    rowstyle: 'border: 1px solid; border-color: darkgray; border-radius: 5px; width: min-content; width: -moz-min-content;',
+                    rowstyle: 'overflow: hidden; border: 1px solid; border-color: darkgray; border-radius: 5px; width: min-content; width: -moz-min-content;',
                     rowstyle$header: 'display: table',
                     rowclass$footer: 'div-flex-row',
                     rowstyle$footer: 'flex-wrap: wrap; width: 800px;'
@@ -256,7 +256,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 } ]
             }), Form.field(Label, "ppos_field_h", {
                 class: "header",
-                get: () => 'Layout specific',
+                get: () => 'Layout',
                 atr: () => ({
                         style: 'white-space: nowrap;'
                     }),
@@ -292,7 +292,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                     items: Editor.allFields($$).filter(px => px.get('.name') != $$.get('.name')).map(px => px.get('.name')).sort()
                 }),
                 set: ($$, value) => this.changeParent($$, value),
-                //atr: $$ => ({ style: $$.get('..component') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
+                atr: $$ => ({ style: $$.get('..name') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
                 layout: [ {
                     class: "div-flex-col"
                 } ]
@@ -317,14 +317,15 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         style: 'margin: 0px',
                         spellcheck: 'false',
                         vstrategy: 'always',
-                        eclass: 'editbox-error',
+                        errorClass: 'editbox-error',
+                        func: {
+                            template: '$$ => {}'
+                        },
                         ta: {
-                            func: {
-                                template: '$$ => {}'
-                            },
                             offsetLeft: -100,
                             class: 'popup-editor-wrapper',
-                            eclass: 'popup-code-editor-erroring'
+                            editorClass: 'edit-popup-textarea',
+                            errorClass: 'popup-code-editor-erroring'
                         }
                     }),
                 layout: [ {
@@ -342,14 +343,15 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         style: 'margin: 0px',
                         spellcheck: 'false',
                         vstrategy: 'always',
-                        eclass: 'editbox-error',
+                        errorClass: 'editbox-error',
+                        func: {
+                            template: '($$, value) => {}'
+                        },
                         ta: {
-                            func: {
-                                template: '($$, value) => {}'
-                            },
                             offsetLeft: -100,
                             class: 'popup-editor-wrapper',
-                            eclass: 'popup-code-editor-erroring'
+                            editorClass: 'edit-popup-textarea',
+                            errorClass: 'popup-code-editor-erroring'
                         }
                     }),
                 layout: [ {
@@ -367,14 +369,15 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         style: 'margin: 0px',
                         spellcheck: 'false',
                         vstrategy: 'always',
-                        eclass: 'editbox-error',
+                        errorClass: 'editbox-error',
+                        func: {
+                            template: '$$ => {}'
+                        },
                         ta: {
-                            func: {
-                                template: '$$ => {}'
-                            },
                             offsetLeft: -100,
                             class: 'popup-editor-wrapper',
-                            eclass: 'popup-code-editor-erroring'
+                            editorClass: 'edit-popup-textarea',
+                            errorClass: 'popup-code-editor-erroring'
                         }
                     }),
                 layout: [ {
@@ -392,14 +395,15 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         style: 'margin: 0px',
                         spellcheck: 'false',
                         vstrategy: 'always',
-                        eclass: 'editbox-error',
+                        errorClass: 'editbox-error',
+                        func: {
+                            template: '$$ => {}'
+                        },
                         ta: {
-                            func: {
-                                template: '$$ => {}'
-                            },
                             offsetLeft: -100,
                             class: 'popup-editor-wrapper',
-                            eclass: 'popup-code-editor-erroring'
+                            editorClass: 'edit-popup-textarea',
+                            errorClass: 'popup-code-editor-erroring'
                         }
                     }),
                 layout: [ { class: "div-flex-col" } ]
@@ -429,136 +433,28 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 layout: [ {
                     class: "div-flex-col editbox-col"
                 } ]
-            }), Form.field(Div, "layout_spec_ctrl", {
-                get: $$ => [ $$.get('.layout')[+$$.get('.pos_idx')] ],
-                atr: $$ => ({
-                        style: 'padding:0px 1px 0px 1px; display: flex; flex-direction: row;',
-                        skip: [ this.getContainerLayout($$) == 'tpos' ? 'dpos_ctrl' : 'tpos_ctrl' ]
-                    })
-            }, [ Form.field(Button, "layout_spec_arrows_left", {
-                class: "header",
-                get: () => '<',
-                set: $$ => $$.set('.pos_idx', +$$.get('.pos_idx') - 1),
-                atr: $$ => ({
-                        disabled: $$.get('.pos_idx') == 0,
-                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$.get('.pos_idx') == 0 ? '' : 'font-weight: bold;') + ' color: black;'
-                    }),
-                layout: [ {
-                    style: "display: inline; margin-top: 2px;"
-                } ]
-            }), Form.field(Button, "layout_spec_arrows_right", {
-                class: "header",
-                get: $$ => '>',
-                set: $$ => $$.set('.pos_idx', +$$.get('.pos_idx') + 1),
-                atr: $$ => ({
-                        disabled: $$.get('.pos_idx') == $$.get('.layout').length - 1,
-                        style: 'padding-left: 1px; padding-right: 1px; margin-right: 1px; ' + ($$.get('.pos_idx') == $$.get('.layout').length - 1 ? '' : 'font-weight: bold;') + ' color: black;'
-                    }),
-                layout: [ {
-                    style: "display: inline; margin-top: 2px;"
-                } ]
-            }), Form.field(Div, "tpos_ctrl", {
+            }), Form.field(EditboxCodePopup, "layout_spec_ctrl", {
+                get: $$ => JSON.stringify($$.get('.layout_text')),
+                set: function($$, value) {
+                    console.warn('TODO');
+                }, 
                 atr: () => ({
-                        class: 'div-flex-row'
-                    }),
-                layout: [ {
-                    class: "div-flex-col-embedded-1"
-                } ]
-            }, [ Form.field(Label, "tpos_col_w", {
-                get: () => 'Width:',
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }), Form.field(Dropdown, "tpos_field_w", {
-                get: $$ => ({
-                        value: $$.get('.colSpan'),
-                        items: [ '', 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
-                    }),
-                set: ($$, value) => this.changePos($$, '.colSpan', value),
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }), Form.field(Label, "tpos_col_h", {
-                get: () => 'Height:',
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }), Form.field(Dropdown, "tpos_field_h", {
-                get: $$ => ({
-                        value: $$.get('.rowSpan'),
-                        items: [ '', 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
-                    }),
-                set: ($$, value) => this.changePos($$, '.rowSpan', value),
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }), Form.field(Checkbox, "tpos_field_n", {
-                get: $$ => ({
-                        checked: $$.get('.newRow'),
-                        text: '<'
-                    }),
-                set: ($$, value) => this.changePos($$, '.newRow', value==='Y'),
-                atr: () => ({
-                        style: 'display: flex; align-items: center;'
-                    }),
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }), Form.field(Editbox, "tpos_field_s", {
-                get: $$ => $$.get('.style'),
-                set: ($$, value) => this.changePos($$, '.style', value),
-                atr: () => ({
-                        style: 'width: 100px'
-                    }),
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }) ]), Form.field(Div, "dpos_ctrl", {
-                atr: $$ => ({
-                        class: 'div-flex-row'
-                    }),
-                layout: [ {
-                    class: "div-flex-col-embedded-1"
-                } ]
-            }, [ Form.field(Label, "dpos_colclass_l", {
-                get: () => 'Class:',
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }), Form.field(Editbox, "dpos_colclass", {
-                get: $$ => $$.get('.class'),
-                set: ($$, value) => this.changePos($$, '.class', value),
-                atr: () => ({
-                        style: 'width: 100px'
-                    }),
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }), Form.field(Label, "dpos_colstyle_l", {
-                get: () => 'Style:',
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }), Form.field(Editbox, "dpos_colstyl", {
-                get: $$ => $$.get('.style'),
-                set: ($$, value) => this.changePos($$, '.style', value),
-                atr: () => ({
-                        style: 'width: 113px'
-                    }),
-                layout: [ {
-                    class: "div-flex-col-embedded"
-                } ]
-            }) ]) ]) ]) ]);
+                    style: 'margin: 0px',
+                    spellcheck: 'false',
+                    errorClass: 'editbox-error',
+                    ta: {
+                        offsetLeft: -300,
+                        class: 'popup-editor-wrapper',
+                        editorClass: 'edit-popup-textarea',
+                        errorClass: 'popup-code-editor-erroring'
+                    }
+                }),
+                layout: [ { class: "div-flex-col" } ]
+            }) ]) ])
         }
         static allFields($$) {
-            var dfe = $$.get('dfe'), form = dfe[0] && dfe[0].data.form;
-            return function tr(lst, out) {
-                lst.forEach(function(i) {
-                    i.data.form == form && out.push(i);
-                    tr(i.get('.children'), out);
-                });
-                return out;
-            }(dfe, []);
+            let tr = model => model.get('.children').reduce( (out, field) => out.concat(tr(field)), [model])
+            return [].concat.apply([], $$.get('children').map(tr));
         }
         static codeToText(fn) {
             return fn.toString().replace(/^function[^(]*/, 'function').replace(/\n\/\*``\*\//, '');
@@ -574,6 +470,9 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 return false;
             }
             return true;
+        }
+        static getContainerLayout(proxy) {
+            return proxy.get('..component') == generic.Table ? 'tpos' : 'dpos'; //return proxy.get('..component').layout;
         }
         highlightField(e, control) {
             console.warn("TODO");
@@ -609,9 +508,6 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 }
             }*/
         }
-        getContainerLayout(proxy) {
-            return proxy.get('..component') == generic.Table ? 'tpos' : 'dpos'; //return proxy.get('..component').layout;
-        }           
         /*textToCode(runtime, code) {
             var obj = runtime.target_runtime.form, dp = 'var __=1', t = window.opener || window;
             for (var d in obj.dependencies) obj.dependencies[d].match(/components\//) || (dp += ', ' + d + '=target.require("' + obj.dependencies[d] + '")');

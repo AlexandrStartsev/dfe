@@ -50,6 +50,7 @@ require.config({
     }
 });
 
+//define('dfe-dom', function() {return document});
 
 // ############ polyfill for Array.*, Map and Set
 Array.isArray || (Array.isArray = function(o) { return o instanceof Array })
@@ -350,7 +351,7 @@ DFE.nav = function () {
     };
 } ();
 
-define(['dfe-core', 'module'], function(core, m) {
+define(['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
     function setupNode(node) {
 		var formName = node.getAttribute('dfe-form'), args = node.getAttribute('dfe-arguments'), model = node.getAttribute('dfe-model');
@@ -361,8 +362,13 @@ define(['dfe-core', 'module'], function(core, m) {
             model = args.model || (typeof model === 'string' && model != 0 ? eval(model) : node.dfeModel) || {};
             var pm = model instanceof Promise ? model : new Promise(function(r){ r(model) });
             Promise.all([require(['forms/' + formName]), pm]).then(function(values) {
+                while(node.firstChild) node.removeChild(node.firstChild);
                 var dfe = values[0], arf = values[1];
                 node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: node, form: dfe }));
+                /*
+                var ssr = dom.createElement('span');
+                node._dfe_runtime = core.startRuntime(_extend(args, { model : arf, node: ssr, form: dfe }));
+                setTimeout(() => node.innerHTML = ssr.serialize([]).join(''), 200);*/
             })
         }
 	}
@@ -371,12 +377,15 @@ define(['dfe-core', 'module'], function(core, m) {
     navigator.appVersion.match(/MSIE (8|9)/) && setInterval(function() { 
     	try { document.getElementById('innercontainer').style.width = (document.getElementById('body').clientWidth + document.getElementsByClassName('nav-menu-options')[0].clientWidth + 20) + 'px' } catch(e) {}
     }, 100);
-    var styleUri = m.uri.replace(m.id.match(/[^\/]*$/)[0] + '.js', 'dfe-style.css'), link = document.createElement('link');
-    link.setAttribute('rel', "stylesheet");
-    link.setAttribute('type', "text/css");
-    link.setAttribute('href', styleUri);
-    var document_head = _isIE7 || _isIE8 ? document.getElementsByTagName('head')[0] : document.head;
-    document_head.appendChild(link);
+    var styleUri, document_head = _isIE7 || _isIE8 ? document.getElementsByTagName('head')[0] : document.head;
+    for(var a = document.querySelectorAll('link'), i = a.length-1; i>=0; i--) a[i].href.match('dfe-style.css') && (styleUri = a[i].href);
+    if(!styleUri) {
+        var styleUri = m.uri.replace(m.id.match(/[^\/]*$/)[0] + '.js', 'dfe-style.css'), link = document.createElement('link');
+        link.setAttribute('rel', "stylesheet");
+        link.setAttribute('type', "text/css");
+        link.setAttribute('href', styleUri);
+        document_head.appendChild(link);
+    }
     function lookup() { for(var n = document.querySelectorAll('[dfe-form]'), i = 0; i < n.length; setupNode(n[i++])); }
     setInterval(lookup, 100);
     setTimeout(lookup, 0); 

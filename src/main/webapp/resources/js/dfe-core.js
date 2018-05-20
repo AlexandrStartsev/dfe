@@ -1,4 +1,4 @@
-define('dfe-core', function() {
+define('dfe-core', ['dfe-dom'], function(document) {
     let arfDatePattern = /^(18|19|20)((\\d\\d(((0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-8]))|((0[13578]|1[02])(29|30|31))|((0[4,6,9]|11)(29|30))))|(([02468][048]|[13579][26])0229))$/;
 	//deep
 	function deepCopy(to, from) { 
@@ -437,7 +437,7 @@ define('dfe-core', function() {
                     newAttributes.text == oldAttributes.text || (domElement.innerText = newAttributes.text);
                     break;
                 case 'select':
-                    newAttributes.selectedIndex == domElement.selectedIndex || (domElement.selectedIndex = newAttributes.selectedIndex);
+                    newAttributes.selectedIndex == oldAttributes.selectedIndex || (domElement.selectedIndex = newAttributes.selectedIndex);
                     break ;
                 case 'option':
                     newAttributes.text == oldAttributes.text || (domElement.text = newAttributes.text);
@@ -640,6 +640,9 @@ define('dfe-core', function() {
         render(lastData, lastError, lastAttributes) {
             if( this.shouldRender && this.isAttached() ) {
                 this.shouldRender = false;
+                if(lastData.found === "No Coverage" )
+                    lastData = lastData;
+                
                 let { attributeMapper: mapper, ...rest} = lastAttributes;
                 let renderStructure = this.control.render(lastData, lastError, rest, this.children);
                 let attributes = this.field.layout||[], layoutIndex = 0;
@@ -854,7 +857,7 @@ define('dfe-core', function() {
             }
             this.processor = null;
         }
-        restart(parentElement, initAction) {
+        restart(parentElement, initAction, interval) {
             parentElement || this.nodes.length && ( parentElement = this.nodes[0].$parentDom );
 	        this.shutdown();
             this.initAction = {action: initAction||'init'};
@@ -862,7 +865,7 @@ define('dfe-core', function() {
                 parentElement && (parentElement._dfe_runtime = this);
                 let node = this.addNode( null, this.rootProxy, new Field( this.formClass, completeNames( this.formClass.fields([], this.config) ) ) );
                 node.setDom({ type: 'div' }, parentElement, null);
-	            this.processor = setInterval(() => this.processInterceptors(), 50);
+	            this.processor = setInterval(() => this.processInterceptors(), interval||50);
                 this.processInterceptors();
             }
             return this;

@@ -54,7 +54,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 atr: () => fields.date('.effFrom', {
                     text: 'Effective Date Range:',
                     vstrategy: 'notified',
-                    eclass: 'wrong-date',
+                    errorClass: 'wrong-date',
                     type: 'datepicker'
                 })
             }), Form.field(LabeledEditbox, "field-6", {
@@ -66,7 +66,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 atr: () => fields.date('.effTo', {
                     text: 'to:',
                     vstrategy: 'notified',
-                    eclass: 'wrong-date',
+                    errorClass: 'wrong-date',
                     type: 'datepicker'
                 })
             }), Form.field(LabeledDropdown, "field-8", {

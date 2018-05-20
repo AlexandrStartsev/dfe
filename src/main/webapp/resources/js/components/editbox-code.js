@@ -101,7 +101,7 @@ define('components/editbox-code-popup', ['dfe-core', 'components/editbox-popup',
     return class EditboxCodePopup extends EditboxPopup {
         constructor(node){
             super(node);
-            this.popup = Core.createNode( node, { component: EditboxCode, set: (_, value) => this.store(this.setMapper(value)) }, node.unboundModel );
+            this.popup = Core.createNode( node, { component: EditboxCode, set: (_, value) => this.store(this.setMapper(value)) }, node.unboundModel, node.runtime );
         }
         onResize() {
             aceEditor.resize();
