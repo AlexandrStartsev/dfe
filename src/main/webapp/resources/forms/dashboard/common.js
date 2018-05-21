@@ -12,25 +12,48 @@ define(["ui/shapes", "ui/utils", "module", "ui/jquery", "dfe-common"], function(
     		z-index: 100;
     	}
     	
-	    .dashboard-table th {
-	        background-color: #97a47a;
-	        border-right: solid 1px white;
-	        white-space: nowrap;
+	    .dashboard-table th:not(:first-child) {
+	        border-left: solid 1px #bbb;
 	    }
 
 	    .dashboard-table th {
+	        background-color: #97a47a;
 	        color: white;
 	        outline: none;
 	        white-space: nowrap;
 	    }
+	    
+	    .dashboard-table tr:first-child > th:first-child {
+			border-top-left-radius: 5px;
+		}
 
+	    .dashboard-table tr:first-child > th:last-child {
+			border-top-right-radius: 5px;
+		}
+		
 	    .dashboard-table {
-	        border-collapse: collapse;
+	        border-radius: 5px;
+    		border: 1px solid #bbb;
+    		border-spacing: 0px;
+    		overflow: hidden;
 	    }   
 	    
 	    .wrong-date {
 	        background: antiquewhite;
-	    }	    
+	    }
+	    
+	    table.dashboard-table-details td:first-child, table.diaries-table td:first-child {
+    		border-top: 1px solid #bbb;
+        }
+        
+        table.dashboard-table-details td:not(:first-child), table.diaries-table td:not(:first-child) {
+    		border-top: 1px solid #bbb;
+    		border-left: 1px solid #bbb;
+        }
+        
+        table.dashboard-table-details tr:nth-child(odd), table.diaries-table tr:nth-child(odd) {
+            background: #fafafa;
+        }
 	`, module.id);
 	let detailsCache = new Map();
 	return {

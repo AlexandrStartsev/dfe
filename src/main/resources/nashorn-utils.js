@@ -933,11 +933,13 @@ require.config({
 	},
 	map: {
 		ui: {
+			'utils' : 'nashorn-ui-utils',
 			'*' : '__noop__'
 		}
 	},
 	paths: { 
-		forms: __STATIC_ROOT__ + 'js/core/forms/'
+		forms: __STATIC_ROOT__ + 'js/core/forms/',
+		'nashorn-ui-utils': 'classpath:com/arrow/js/nashorn-ui-utils'
 	}
 })
 
@@ -958,9 +960,9 @@ var validateDfe = (function(){
 	        For: function(o) { return listener(o); }
 		}
 	}
-	var Core = require('dfe-core');
 	return function (jsonModel, formClass, timeLimit) {
 		console.time('Nashorn validation took');
+		var Core = require('dfe-core');
 		var errors = [], runtime = new Core.Runtime(listener()).setDfeForm(formClass).setModel(JSON.parse(jsonModel));
 		var failure = EventLoop.run(function() { runtime.restart(null, 'validate', 5) }, timeLimit*1000, undefined, function() { return runtime && !(runtime.shouldAnythingRender || EventLoop.hasPendingNonTimerEvents()) });
 		if( failure instanceof JavaException || failure instanceof Error ) {
@@ -975,21 +977,31 @@ var validateDfe = (function(){
 })();
 
 var ssr = (function () {
-	var Core = require('dfe-core');
-	var DOM = require('dfe-dom');
-
 	return function(jsonModel, formClass, timeLimit, waitAjax) {
+		var Core = require('dfe-core');
+		var DOM = require('dfe-dom');
+		var ajaxCache = require('ajaxCache');
+		var uiUtils = require('ui/utils');
 		var runtime, node = DOM.createElement('span'), ajaxKeys = new Set(), ajaxPrime = []; 
-		var ajaxCacheCallback = function(key, promise){
-			ajaxKeys.has(key) || (ajaxKeys.add(key), promise.then(function(payload){ ajaxPrime.push({key: key, payload: payload}) }))
+		try {
+			var ajaxCacheCallback = function(key, promise){
+				ajaxKeys.has(key) || (ajaxKeys.add(key), promise.then(function(payload){ ajaxPrime.push({key: key, payload: payload}) }))
+			}
+			EventLoop.run(function() {
+				ajaxCache.setCallback(waitAjax ? ajaxCacheCallback : null);
+				runtime = new Core.Runtime().setDfeForm(formClass).setModel(JSON.parse(jsonModel));
+				runtime.restart(node, undefined, 5);
+			}, timeLimit*1000, undefined, function() {
+				return runtime && !(runtime.shouldAnythingRender || waitAjax && EventLoop.hasPendingNonTimerEvents()) 
+			});
+			var styles = uiUtils.getAllCustomStyles([runtime.nodes[0].field]);
+			return { 
+				styles: Object.keys(styles).map(function(name) { return '<style id="' + name + '-custom-style">' + styles[name] + '</style>' }).join(''),
+				script: 'require(["ajaxCache"], function(ajaxCache){' + ajaxPrime.map(function(o) { return 'ajaxCache.putResolved("' + o.key + '", ' + JSON.stringify(o.payload) + ')' } ).join(",") + '})', 
+				html: node.serialize([]).join('') 
+			}
+		} finally {
+			runtime && runtime.shutdown();
 		}
-		EventLoop.run(function() {
-			ajaxCache.setCallback(waitAjax ? ajaxCacheCallback : null);
-			runtime = Core.startRuntime({ model : JSON.parse(jsonModel), node: node, form: formClass });
-		}, timeLimit, undefined, function() {
-			return runtime && !(runtime.shouldAnythingRender || waitAjax && EventLoop.hasPendingNonTimerEvents()) 
-		});
-		// undefined,
-		return { script: ajaxPrime.map(function(o) { return 'ajaxCache.putResolved("' + o.key + '", ' + JSON.stringify(o.payload) + ')' } ).join(","), html: node.serialize([]).join('') };
 	}
 })();

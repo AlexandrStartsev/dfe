@@ -1,4 +1,4 @@
-define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-money", "components/radiolist", "components/container", "components/table", "components/checkbox", "ui/jquery-ui" ], function(require, Core, cmn, uiUtils, fields, Label, Editbox, Dropdown, Button, Div, EditboxMoney, Radiolist, Container, Table, Checkbox, jQuery) {
+define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-money", "components/radiolist", "components/container", "components/table", "components/checkbox", "ui/jquery-ui", "ajaxCache" ], function(require, Core, cmn, uiUtils, fields, Label, Editbox, Dropdown, Button, Div, EditboxMoney, Radiolist, Container, Table, Checkbox, jQuery, ajaxCache) {
     let Form = Core.Form;
     class QuoteWorkClassForm extends Form {
         constructor(node) {
@@ -21,9 +21,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
         static fields() {   
             return Form.field(Div, "root", {
                 get: $$ => $$.get('policy.work'),
-                atr: () => ({
-                    style: 'width: 550px'
-                })
+                layout: [{ style: 'width: 550px' }]
             }, [ Form.field(Table,"locs", {
                 get: $$ => $$.get('.location'),
                 val: $$ => $$.required('.location'),
@@ -123,6 +121,7 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     get: $$ => $$.get('.class'),
                     val: $$ => $$.required('.class'),
                     atr: $$ => ({
+                    	class: 'class-codes',
                         style: 'width: 100%;',
                         skip: $$.get('.class').length > 1 ? [] : [ 'field-23', 'field-31' ]
                     }), layout: [ { colSpan: "7" } ]
@@ -144,16 +143,16 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
                     get: () => 'Class Code'
                 }), Form.field(Label,"field-19", {
                     class: "header",
-                    get: () => '# F.T. Employees'
+                    get: () => '# F.T.\nEmployees'
                 }), Form.field(Label,"field-20", {
                     class: "header",
-                    get: () => '# P.T. Employees'
+                    get: () => '# P.T.\nEmployees'
                 }), Form.field(Label,"field-21", {
                     class: "header",
-                    get: () => '# Seasonal Employees'
+                    get: () => '# Seasonal\nEmployees'
                 }), Form.field(Label,"field-22", {
                     class: "header",
-                    get: () => 'Est. Annual Remuneration'
+                    get: () => 'Est. Annual\nRemuneration'
                 }), Form.field(Label,"field-16", {
                     class: "header",
                     get: $$ => 'If any',
@@ -357,7 +356,14 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
             });
         }
     }
-    uiUtils.setDfeCustomStyle(`
+	uiUtils.setDfeCustomStyle(`
+    	table.class-codes th {
+    		white-space: pre-wrap;
+    	}
+        .no-specific-field {
+            display: flex;
+            white-space: nowrap;
+        }
         .no-specific-field {
             display: flex;
             white-space: nowrap;
@@ -368,6 +374,6 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
         .ui-widget-overlay {
             opacity: .3;
         }
-    `, QuoteWorkClassForm.name);
+    `, QuoteWorkClassForm.name);    
     return QuoteWorkClassForm;
 })

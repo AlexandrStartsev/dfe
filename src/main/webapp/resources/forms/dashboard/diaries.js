@@ -126,8 +126,8 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
                 width: 100%;
             }
 
-            .diaries-table th {
-                border-bottom: solid 2px white;
+            .diaries-table tr:first-child > th:first-child {
+                border-bottom: 1px solid #bbb;
             }
 
             .diaries-table th > div {

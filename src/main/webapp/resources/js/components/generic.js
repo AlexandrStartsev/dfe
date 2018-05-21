@@ -752,8 +752,8 @@ define('components/labeled', ['dfe-core', 'components/validation-component'], fu
             let { cclass: cclass, cstyle: cstyle, text: text, label: label, html: html, hideError: hideError, ...rest } = attributes;
             return [[
                 html || label || cclass || cstyle ? Core.createElement('label', { class: cclass, style: cstyle, text: label || text, html: html }) : text,
-                super.render(null, error, { hideError: hideError })
-            ], ...this.renderComponent(data, null, rest, children) ]
+                super.render(null, rest.errorClass ? null : error, { hideError: hideError })
+            ], ...this.renderComponent(data, rest.errorClass ? error : null, rest, children) ]
         }
     }
 })

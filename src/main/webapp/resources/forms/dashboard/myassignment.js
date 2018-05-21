@@ -1,6 +1,6 @@
 define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/container", "components/span" ], function(Core, StatusGridForm, NotesForm, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Container, Span) {
     let Form = Core.Form;
-    let detailGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'producerCode', 'effectiveDate', 'writtenPremium', 'govClass', 'grade', 'newRenewal', 'notes' ];
+    let detailsGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'producerCode', 'effectiveDate', 'writtenPremium', 'govClass', 'grade', 'newRenewal', 'notes' ];
     let detailsGridClass = 'dashboard-rbody-tbl';
     class MyAssignmentForm extends Form {
         constructor(node) {
@@ -157,13 +157,10 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 } ]
             }), Form.field(Button, "field-1", {
                 get: $$ => 'Reset',
-                set: $$ => jq.get('/AJAXServlet.srv?method=DashboardScriptHelper&action=getcriteria&default=true', r => $$.reflect(JSON.parse(r.result).criteria[0])),
+                set: $$ => jq.get('/AJAXServlet.srv?method=DashboardScriptHelper&action=getcriteria&default=true', r => r.status === 'success' && $$.reflect(r.result.criteria[0])),
                 atr: $$ => ({
                     style: 'color: #000'
-                }),
-                layout: [ {
-                    style: "padding-bottom: 20px;"
-                } ]
+                })
             }) ]), Form.field(Div, "myassignment", {
                 get: $$ => $$.defaultSubset('my'),
                 atr: () => ({
@@ -193,7 +190,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }), Form.field(StatusGridForm, "report", {
                 config: {
                     rowFilterMaker: $$ => MyAssignmentForm.makeRowFilter($$),
-            		skipColumns: colName => detailGridColumns.indexOf(colName.replace(/^.*\./,'')) == -1,
+            		skipColumns: colName => detailsGridColumns.indexOf(colName.replace(/^.*\./,'')) == -1,
             		tableClass: detailsGridClass
                 }
             }) ]) ]) ]);
@@ -303,7 +300,8 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }
 
             .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('newRenewal') + 1}) {
-                padding-left: 5px
+                padding-left: 5px;
+                text-align: center;
             }	
 
             .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('notes') + 1}) {
@@ -321,6 +319,6 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }`, name);     
     }
     
-    setupStyle(MyAssignmentForm.name, detailGridColumns, detailsGridClass);
+    setupStyle(MyAssignmentForm.name, detailsGridColumns, detailsGridClass);
     return MyAssignmentForm;
 })

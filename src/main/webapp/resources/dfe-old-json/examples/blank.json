@@ -1,9 +1,0 @@
-{ "dfe": [
-    {
-      "name": "root",
-      "type": "div",
-      "_get": "[$$]",
-      "attributes" : "{ style: 'display: flex; flex-flow : row wrap;' }"
-    } 
-  ]
- }

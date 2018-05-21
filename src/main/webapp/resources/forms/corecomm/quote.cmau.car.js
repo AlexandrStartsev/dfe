@@ -1,4 +1,4 @@
-define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/labeled-radiolist", "components/labeled-editbox", "components/labeled-dropdown", "components/labeled-editbox-money", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/labeled-checkbox"], function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, LabeledComponent, Container, InlineRows, LabeledCheckbox) {
+define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/div-button", "components/label", "components/button", "components/div", "components/labeled-radiolist", "components/labeled-editbox", "components/labeled-dropdown", "components/labeled-editbox-money", "components/table", "components/tab-s", "components/editbox", "components/dropdown", "components/either", "components/labeled-component", "components/container", "components/inline-rows", "components/labeled-checkbox", "ajaxCache"], function(require, Core, cmn, fields, DivButton, Label, Button, Div, LabeledRadiolist, LabeledEditbox, LabeledDropdown, LabeledEditboxMoney, Table, TabS, Editbox, Dropdown, Either, LabeledComponent, Container, InlineRows, LabeledCheckbox, ajaxCache) {
     let Form = Core.Form;
     
     let carDefaults = {
@@ -77,7 +77,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                 })
             }, Form.field(Editbox, { 
                 atr: $$ => fields.simple(config.field, {
-                    spellcheck: 'false',
+                    domAttributes: {spellcheck: 'false'},
                     pattern: config.pattern, 
                     disabled: vehDetailsDisabled($$),
                     style: 'width: 150px; text-transform: uppercase;',
@@ -196,7 +196,7 @@ define([ "require", "dfe-core", "dfe-common", "dfe-field-helper", "components/di
                     },
                     val: $$ => $$.get('.vinoverride') == 'Y' || $$.required('.vinnumber') && $$.required('.vinnumber', /[a-zA-Z0-9]{17}/, 'Invalid VIN format') && ($$.get('.vinvalid') == 'Y' || $$.error('Vin not found')),
                     atr: $$ => ({
-                        spellcheck: 'false',
+                    	domAttributes: {spellcheck: 'false'},
                         disabled: $$.get('.hasvin') != 'Y',
                         style: 'width: 150px; text-transform: uppercase; display: block;',
                         pattern: /[a-zA-Z0-9]{1,17}/,

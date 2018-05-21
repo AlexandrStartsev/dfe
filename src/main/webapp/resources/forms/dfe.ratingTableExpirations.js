@@ -10,7 +10,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
             return Form.field(Div, "root", {
                 atr: () => ({
                     wrap: true,
-                    style: 'display: table; background-color: white; width: 900px; position: relative'
+                    style: 'display: table; background-color: white; width: 1100px; position: relative'
                 })
             }, [ Form.field(HtmlForm,"form", {
                 atr: () => ({
@@ -53,10 +53,10 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                         } ].concat(companies)
                     };
                 },
-                set: ($$, value) => $$.set('.companyCode', value),
+                set: ($$, value) => ($$.set('.companyCode', value), $$.get('.expirationDate') == 0 && document.querySelector('[name="expDt"]').focus()),
                 val: $$ => $$.required('.companyCode'),
                 atr: $$ => ({
-                    style: 'width: 200px',
+                	style: 'width: 200px; box-shadow: 0 0;',
                     ...$$.get('.edit') == 'Y' ? {
                         name: 'compCd'
                     } : {
@@ -64,8 +64,10 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                     }
                 })
             }), Form.field(Editbox, "field-7", {
+            	set: ($$, value) => ($$.set('.expirationDate', value), $$.get('.comment') == 0 && document.querySelector('[name="expDt"]').parentNode.nextSibling.firstChild.focus()),
                 atr: $$ => fields.date('.expirationDate', {
                     type: 'datepicker',
+                    style: 'box-shadow: 0 0;',
                     ...$$.get('.edit') == 'Y' ? {
                         name: 'expDt'
                     } : {
@@ -74,7 +76,7 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
                 })
             }), Form.field(Editbox, "field-8", {
                 atr: $$ => fields.simple('.comment', {
-                    style: 'width: 400px',
+                    style: 'width: 400px; box-shadow: 0 0;',
                     disabled: $$.get('.edit') != 'Y'
                 })
             }), Form.field(Button,"field-9", {
@@ -213,21 +215,66 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
         input[disabled]{
             background: white;
         }
+        
         button.ui-button[disabled] {
             opacity: .5;
             cursor: default!Important;
         }
+        
         table.expirations-table {
-            border-collapse: collapse;
+            border-radius: 3px;
+    		border: 1px solid #bbb;
+    		border-spacing: 0px;
         }
+        
+        table.expirations-table input {
+    		border: none;
+        }
+        
         table.changelog-table {
-            border: 1px solid #888;
-            border-collapse: collapse;
+            border-radius: 5px;
+    		border: 1px solid #bbb;
+    		border-spacing: 0px;
         }
-        table.changelog-table td, table.changelog-table th, table.expirations-table th {
-            border: 1px solid #888;
+        table.expirations-table input, table.expirations-table select {
+    		border: none!Important;
+    		outline: none;
+    		font-size: 14px;
+        }
+
+        table.changelog-table td:first-child, table.expirations-table td:first-child {
+    		border-top: 1px solid #bbb;
+        }
+        
+        table.changelog-table td:not(:first-child), table.expirations-table td:not(:first-child) {
+    		border-top: 1px solid #bbb;
+    		border-left: 1px solid #bbb;
+        }
+        
+        table.changelog-table th:not(:first-child), table.expirations-table th:not(:first-child) {
+    		border-left: 1px solid #bbb;
+        }
+        
+        table.changelog-table th, table.expirations-table th {
+    		text-align: center;
+        }
+        
+        table.changelog-table td, table.expirations-table td, table.changelog-table th, table.expirations-table th {
             padding: 2px;
+            font-size: 14px;
         }
+        
+        .expirations-table select[disabled] {
+    		-webkit-appearance: none;
+		    -moz-appearance: none;
+		    background: none;
+		    text-indent: 1px;
+		    text-overflow: '';
+        }
+        
+        .expirations-table select[disabled]::-ms-expand {
+    		display: none;
+        }        
     `, RatingTableExpirationForm.name);
     return RatingTableExpirationForm;
 })

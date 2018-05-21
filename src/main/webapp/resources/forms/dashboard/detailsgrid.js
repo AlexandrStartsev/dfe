@@ -10,7 +10,7 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
                 atr: $$ => ({
                     filter: config.rowFilterMaker($$),
                     skip: config.skipColumns,
-                    class: 'dashboard-table ' + config.tableClass,
+                    class: 'dashboard-table dashboard-table-details ' + config.tableClass,
                     order: dashboardCommon.makeSortFunction($$)
                 })
             }, [ Form.field(Label, "h.quoteid", {
@@ -121,22 +121,36 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
     }
     
     function setupNotesHint() {
+    	let hint = jq('<label>'), container = jq('<div>').attr({ class: 'dashboard-quotes-popup' }), current = null;
+    	hint.appendTo(container);
+    	
+    	
         jq(document).on('mousemove', function(e) {
-            let c = jq('.dashboard-quotes-popup'), p = c.parent()[0], t;
-            for(t = e.target; t && t.tagName !== 'TD'; t = t.parentNode );
-            if(t) {
-                let node = Core.nodeFromElement(t);
-                p && (p != t && !jq.contains(p, t) || e.target.tagName === 'DIV') && c.remove();
-                if ( e.target.tagName !== 'DIV' && node && c.parent().length === 0 && node.form instanceof DetailsGridForm ) {
-                    let $$ = node.model, text = '', fld = node.field.name;
-                    if (fld == 'producerCode') text = $$.get('.producerName');
-                    if (fld == 'govClass') text = $$.get('.govCCDescription');
-                    if (fld == 'notes') ($$ = DetailsGridForm.firstUserNote($$)) && (text = $$.get('.subject'));
-                    text && jq('<label>').appendTo(jq('<div>').appendTo(jq(t)).attr({
-                        class: 'dashboard-quotes-popup'
-                    })).text(text);
-                }
-            } else c.remove();
+        	if( hint[0] !== e.target) {
+	            let t;
+	            for(t = e.target; t && t.tagName !== 'TD'; t = t.parentNode );
+	            if(t) {
+	                let node = Core.nodeFromElement(t);
+	                if ( node && node.form instanceof DetailsGridForm ) {
+	                    let $$ = node.model, text = '', fld = node.field.name;
+	                    if (fld == 'producerCode') text = $$.get('.producerName');
+	                    if (fld == 'govClass') text = $$.get('.govCCDescription');
+	                    if (fld == 'notes') ($$ = DetailsGridForm.firstUserNote($$)) && (text = $$.get('.subject'));
+	                    if(text) {
+		                    container.appendTo($(document.body));
+		                    hint.text(text);
+			                if (node !== current) {
+			                	let r = t.getBoundingClientRect(), sp = container[0];
+			                	sp.style.top = r.bottom - 1 + (document.defaultView.scrollY || document.defaultView.window.pageYOffset) + 'px';
+	                            sp.style.left = r.left + r.width/2 - 160 + (document.defaultView.scrollX || document.defaultView.window.pageXOffset) + 'px';
+			                }
+			                current = node;
+			                return ;
+	                    }
+	                }
+	            }
+	            container.remove();
+        	}
         });
     }
     setupNotesHint();
@@ -154,19 +168,17 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
 
         .dashboard-quotes-popup {
             position: absolute;
+            width: 1px;
+            z-index: 100;
         }
 
         .dashboard-quotes-popup > label {
             display: block;
-            position: relative;
             opacity: 0.9;
             background: antiquewhite;
             padding: 5px 10px;
             border-radius: 7px;
             box-shadow: 2px 2px lightgrey;
-            z-index: 100;
-            top: -5px;
-            left: -100px;
             width: 120px;
         }
     `, DetailsGridForm.name);

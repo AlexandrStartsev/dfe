@@ -43,14 +43,13 @@ require.config({
             'components/textarea',
             'components/validation-component'
         ],
-        'components/editbox-code' : [
-            'components/editbox-code', 
-            'components/editbox-code-popup'
+        'editor/editbox-code' : [
+            'editor/editbox-code', 
+            'editor/editbox-code-popup'
         ]
     }
 });
 
-//define('dfe-dom', function() {return document});
 
 // ############ polyfill for Array.*, Map and Set
 Array.isArray || (Array.isArray = function(o) { return o instanceof Array })
@@ -292,7 +291,7 @@ function dfe_navigate(form, action) {
 		var model = eval(rootElement.getAttribute("dfe-model"));
 	    form.policy_formname.value = model.policy[0].formname;
 	    if(action == 'next') {
-	    	form.action.value = 'next_experimental';
+	    	form.action.value = 'next_clientside';
 	     	postModel(
                 model, 
 	     		function(){ 
@@ -351,7 +350,8 @@ DFE.nav = function () {
     };
 } ();
 
-define('ui/utils', ['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
+define(['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
+	core=core;
 	function _extend(from, to) { for (var key in from) to[key] = from[key]; return to; }
     function setupNode(node) {
 		var formName = node.getAttribute('dfe-form'), args = node.getAttribute('dfe-arguments'), model = node.getAttribute('dfe-model');
@@ -387,9 +387,9 @@ define('ui/utils', ['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
     setInterval(lookup, 100);
     setTimeout(lookup, 0); 
     return {
-        setAttribute: function (node, name, value) { 
+        /*setAttribute: function (node, name, value) { 
         	if(value===true) value = '';
-            if(typeof value=='string') { /*_isIE7 ? jq(node).attr(name, value) :*/ node.setAttribute(name, value); return true; } else node.removeAttribute(name); 
+            if(typeof value=='string') { node.setAttribute(name, value); return true; } else node.removeAttribute(name); //_isIE7 ? jq(node).attr(name, value) : 
         },
         addEventListener: function (node, eventname, handler, capture) {
             typeof node.addEventListener === 'function' ? node.addEventListener(eventname, handler, capture) : node.attachEvent('on' + eventname, handler);
@@ -399,7 +399,7 @@ define('ui/utils', ['dfe-core', 'module', 'dfe-dom'], function(core, m, dom) {
         },
         removeNode: function(node) {
         	node && node.parentNode && node.parentNode.removeChild(node);
-        },
+        },*/
         setDfeCustomStyle: function(css, formname) {
 			if(typeof document == 'object') {
 				var e;

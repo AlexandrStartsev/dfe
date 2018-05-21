@@ -8,7 +8,7 @@
   even primed, processing fetched values through Promise.then causes browser to refresh control with empty data, so done/result was added as a shortcut.
 */
 
-var ajaxCache = (function() {
+define(function() {
 	var hook = typeof JavaThreadLocal !== 'undefined' ? new JavaThreadLocal() : { set: function(cb) { this.callback = cb; }, get: function() {return this.callback} };
     var storage = typeof JavaCacheHandler !== 'undefined' ? JavaCacheHandler.sharedCache('ajaxCache', '1000', '10') : new Map();
     var extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
@@ -20,8 +20,7 @@ var ajaxCache = (function() {
             storage.clear();
         },
         get: function(opt) {
-        	//var base = 'https://cors-anywhere.herokuapp.com/https://arrowheadexchange.com/AJAXServlet.srv?';
-        	var base = 'https://arrowheadexchange.com/AJAXServlet.srv?';
+        	var base = '/AJAXServlet.srv?';
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
                 var u = base;
                 for(var o in opt)
@@ -91,4 +90,4 @@ var ajaxCache = (function() {
             storage.set(key, v);
         }
     }
-})()
+})

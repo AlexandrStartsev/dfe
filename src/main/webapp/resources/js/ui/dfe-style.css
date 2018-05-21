@@ -27,7 +27,7 @@ input[type='button'] {
     outline: none;
 }
 
-input[type="text"]:not([disabled]):hover, input[type="button"]:not([disabled]):hover, input:not([type]):not([disabled]):hover, select:not([disabled]):hover {
+input[type="text"]:not([disabled]):hover, input[type="datepicker"]:not([disabled]):hover, input[type="button"]:not([disabled]):hover, input:not([type]):not([disabled]):hover, select:not([disabled]):hover {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
     transition: all 0s;
@@ -37,7 +37,7 @@ input[type="checkbox"] {
     background-color: gray;
 }
 
-input[type="checkbox"]:hover {
+input[type="checkbox"]:not([disabled]):hover {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     transition: all 0s;
 }
@@ -182,7 +182,7 @@ th {
     border-top: 2px solid white;
     background: lightgray;
     text-align: left;
-    padding: 6px;
+    padding: 4px;
     border-right: 0px;
     position:relative;
     color: #333333;

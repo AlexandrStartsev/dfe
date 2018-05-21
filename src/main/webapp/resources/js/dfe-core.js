@@ -248,6 +248,17 @@ define('dfe-core', ['dfe-dom'], function(document) {
         hasChild(other) {
             return this.data === other.data || other.parents.some(p => p.data === this.data);
         }
+        
+        reflect(other) {
+        	if(typeof other === 'object') {
+	        	if(other instanceof JsonProxy) {
+	        		// TODO: ...
+	        	} else {
+	        		Object.getOwnPropertyNames(this.data).forEach(prop => prop !== 'key' && other[prop] === undefined && this.set('.' + prop) );
+	        		Object.getOwnPropertyNames(other).forEach(prop => prop !== 'key' && this.set('.' + prop, other[prop]));
+	        	}
+        	}
+        }
     }
 
     //###############################################################################################################################
@@ -385,7 +396,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
             }
             if(newAttributes.name != oldAttributes.name) {
                 (newAttributes.name === undefined ? domElement.removeAttribute('name') : domElement.setAttribute('name', newAttributes.name));
-            }        
+            }
             DOMEvents.forEach( e => {
                 if(newAttributes[e.name] != oldAttributes[e.name]) {
                     typeof oldAttributes[e.name] === 'function' && domElement.removeEventListener(e.event, oldAttributes[e.name], false);
@@ -400,6 +411,13 @@ define('dfe-core', ['dfe-dom'], function(document) {
                         typeof newEvents[e.name] === 'function' && domElement.addEventListener(e.event, newEvents[e.name], false);
                     }
                 })
+            }
+            if( typeof newAttributes.domAttributes === 'object' || typeof oldAttributes.domAttributes === 'object' ) {
+                let newDomAttributes = newAttributes.domAttributes||{}, oldDomAttributes = oldAttributes.domAttributes||{};
+                Object.getOwnPropertyNames(newDomAttributes).forEach(
+            		prop => newDomAttributes[prop] == oldDomAttributes[prop] || ( newDomAttributes[prop] === undefined ? domElement.removeAttribute(prop) : domElement.setAttribute(prop, newDomAttributes[prop])  )  
+        		)
+        		Object.getOwnPropertyNames(oldDomAttributes).forEach(prop => newDomAttributes.hasOwnProperty(prop) || domElement.removeAttribute(prop));
             }
             if(newAttributes.html != oldAttributes.html) {
                 if(oldAttributes.html) {
@@ -426,9 +444,6 @@ define('dfe-core', ['dfe-dom'], function(document) {
                     break;
                 case 'input':
                 case 'textarea':
-                    if(newAttributes.spellcheck !== oldAttributes.spellcheck ) {
-                        newAttributes.spellcheck === undefined ? domElement.removeAttribute("spellcheck") : domElement.setAttribute("spellcheck", newAttributes.spellcheck);
-                    }
                     if(newAttributes.type !== oldAttributes.type ) {
                         newAttributes.type === undefined ? domElement.removeAttribute("type") : domElement.setAttribute("type", newAttributes.type);
                     }
@@ -660,9 +675,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
         render(lastData, lastError, lastAttributes) {
             if( this.shouldRender && this.isAttached() ) {
                 this.shouldRender = false;
-                if(lastData.found === "No Coverage" )
-                    lastData = lastData;
-                
+
                 let { attributeMapper: mapper, ...rest} = lastAttributes;
                 let renderStructure = this.control.render(lastData, lastError, rest, this.children);
                 let attributes = this.field.layout||[], layoutIndex = 0;
@@ -774,7 +787,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
                 }
             }
             prevNode && (prevNode.$nextNode = null);
-            lastRenderStructure.forEach( lst => lst.used || lst.childNode || lst.dom.parentElement.removeChild(lst.dom) );
+            lastRenderStructure.forEach( lst => lst.used || lst.childNode || lst.dom.parentNode.removeChild(lst.dom) );
             return renderStructure;
         }
         setDom( elementInfo, parentDom, prevDom ) {

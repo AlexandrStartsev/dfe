@@ -1,6 +1,6 @@
 define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/either" ], function(Core, StatusGridForm, notes, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Either) {
     let Form = Core.Form;
-    let detailGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'effectiveDate', 'writtenPremium', 'newRenewal', 'userId', 'reassign' ];
+    let detailsGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'effectiveDate', 'writtenPremium', 'newRenewal', 'userId', 'reassign' ];
     let detailsGridClass = 'team-rbody-tbl';
     
     class TeamForm extends Form {
@@ -248,7 +248,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
                 Form.field(StatusGridForm,"team", {
                     config: {
                         rowFilterMaker: $$ => TeamForm.makeRowFilter($$),
-                        skipColumns: colName => detailGridColumns.indexOf(colName.replace(/^.*\./, '')) == -1,
+                        skipColumns: colName => detailsGridColumns.indexOf(colName.replace(/^.*\./, '')) == -1,
                         tableClass: detailsGridClass
                     }
                 })
@@ -364,7 +364,8 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }
 
             .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('newRenewal') + 1}) {
-                padding-left: 5px
+                padding-left: 5px;
+        		text-align: center;
             }            
 
             .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('userId') + 1}) {
@@ -377,6 +378,6 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             }
             `, name);
     }
-    setupStyle(TeamForm.name, detailGridColumns, detailsGridClass);
+    setupStyle(TeamForm.name, detailsGridColumns, detailsGridClass);
     return TeamForm;
 })
