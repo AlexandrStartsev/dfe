@@ -21,7 +21,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 atr: () => ({
                     class: 'div-flex',
                     rowclass: 'div-flex-row',
-                    rowstyle: 'overflow: hidden; border: 1px solid; border-color: darkgray; border-radius: 5px; width: min-content; width: -moz-min-content;',
+                    rowstyle: 'margin-top: 2px; overflow: hidden; border: 1px solid; border-color: darkgray; border-radius: 5px; width: min-content; width: -moz-min-content;',
                     rowstyle$header: 'display: table',
                     rowclass$footer: 'div-flex-row',
                     rowstyle$footer: 'flex-wrap: wrap; width: 800px;'
@@ -194,8 +194,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 } ]
             }, [ Form.field(Label, "up_field_h", {
                 class: "header",
-                get: () => 'x',
-                atr: () => ({ style: 'visibility:hidden'}),
+                get: () => '#',
                 layout: [ {
                     class: "div-flex-col sticky-header",
                     style: "border-top-left-radius: 3px;"
@@ -263,8 +262,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         style: 'white-space: nowrap;'
                     }),
                 layout: [ {
-                    class: "div-flex-col sticky-header",
-                    style: "border-top-right-radius: 3px;margin-bottom: 0px;"
+                    class: "div-flex-col sticky-header"
                 } ]
             }), 
                 Form.field(Editbox, "field_index", {
@@ -307,10 +305,17 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 } ]
             }), Form.field(Dropdown, "parent_field", {
                 get: $$ => ({
-                    value: $$.get('..name'),
-                    items: Editor.allFields($$).filter(px => px.get('.name') != $$.get('.name')).map(px => px.get('.name')).sort()
+                    value: $$.get('..key'),
+                    items: Editor.allFields($$).filter(px => px.get('.name') != $$.get('.name')).map(
+                        px => ({ value: px.key, description: px.get('.name').toString() })
+                    ).sort((v1, v2) => v1.description < v2.description ? -1 : 1 )
                 }),
-                set: ($$, value) => this.changeParent($$, value),
+                set: function($$, key) {
+                    let node = targetRuntime.nodes.filter(node => node.field.key === $$.key).shift();
+                    Editor.allFields($$).filter(px => px.key === key).shift().append('.children', $$, true);
+                    Editor.resetField(config.targetRuntime, node.parent.field.key);
+                    Editor.resetField(config.targetRuntime, key);
+                },
                 atr: $$ => ({ style: $$.get('..name') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
                 layout: [ {
                     class: "div-flex-col"
@@ -481,8 +486,10 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
         }
         static resetField(targetRuntime, fieldKey) {
             targetRuntime.nodes.filter(node => node.field.key === fieldKey).forEach(node => {
-                node.parent.notify();
-                targetRuntime.evict(node);
+                if(node.parent) {
+                    node.parent.notify();
+                    targetRuntime.evict(node);
+                }
             })
         }
         static allFields($$) {

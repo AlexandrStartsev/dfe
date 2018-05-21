@@ -81,7 +81,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
             return va;
         }
         
-        shadow(path, defaults) {
+        shadow(path, defaults, consume) {
             if(path.length == 0) {
                 return [];
             }
@@ -100,10 +100,18 @@ define('dfe-core', ['dfe-dom'], function(document) {
             }
             ret = ret || new JsonProxy(undefined, this.parents, p, this.listener);
             if(typeof defaults === 'object') {
-                deepCopy( ret.data, defaults instanceof JsonProxy ? defaults.data : defaults );
-            } 
-            if(typeof defaults === 'function' && defaults.data ) {
-                deepCopy( ret.data, defaults.data );
+                if(consume) {
+                    if(defaults instanceof JsonProxy) {
+                        defaults.detach();
+                        defaults.data.key = ret.data.key;
+                        ret.data = defaults.data;
+                    } else {
+                        defaults.key = ret.data.key;
+                        ret.data = defaults;
+                    }
+                } else {
+                    deepCopy( ret.data, defaults instanceof JsonProxy ? defaults.data : defaults );
+                }
             }
             return [ret];
         }
@@ -125,8 +133,8 @@ define('dfe-core', ['dfe-dom'], function(document) {
             return this;
         }
 
-        append(path, defaults) {
-            var ret = this.shadow(path, defaults);
+        append(path, defaults, consume) {
+            var ret = this.shadow(path, defaults, consume);
             ret.forEach(function (px) { px.persist(); });
             return ret;
         }

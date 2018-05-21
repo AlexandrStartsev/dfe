@@ -280,8 +280,8 @@ th {
     top: 0px; 
     z-index: 105;
     margin: 0px;
-    border: solid 1px white;
-    border-bottom: solid 1px lightgray;
+    border: solid 1px darkgrey;
+    background: #ddd;
 }
 .div-flex-col-embedded {
     justify-content: center; 

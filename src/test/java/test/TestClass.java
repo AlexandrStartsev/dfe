@@ -43,12 +43,12 @@ public class TestClass {
 			e.eval("var __AJAX_ROOT__ = 'https://arrowheadexchange.com', __STATIC_ROOT__ = 'classpath:'");
 			e.eval("load('classpath:nashorn-utils.js')");
 			e.eval("load('classpath:ajaxCache.js')");
-			//e.eval("load('classpath:test.js')");
-			e.eval("var jsonModel = JSON.stringify(require('model')), formClass =  require('forms/testform');");
+			e.eval("load('classpath:test.js')");
+			/*e.eval("var jsonModel = JSON.stringify(require('model')), formClass =  require('forms/testform');");
 			ScriptObjectMirror obj = (ScriptObjectMirror) e.eval("ssr( jsonModel, formClass, 10000, true )");
 			System.out.println(obj.get("script"));
 			System.out.println(obj.get("html"));
-			System.out.println("ok");
+			System.out.println("ok");*/
 		} catch(Throwable ex) {
 			ex.printStackTrace(System.err);
 		}
