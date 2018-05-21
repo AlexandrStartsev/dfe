@@ -59,7 +59,7 @@ define('components/editbox-code', ['dfe-core', 'ace/ace', 'ui/jquery', 'uglify']
                 }
             }
         } catch (e) {}
-        return (text||'').toString();
+        return text;
     }
  
     return class EditboxCode extends Core.Component {
@@ -70,7 +70,8 @@ define('components/editbox-code', ['dfe-core', 'ace/ace', 'ui/jquery', 'uglify']
         }
         render(data, error, attributes, children) {
             let { func: func, ref: ref, lang: lang, ...rest } = attributes;
-            let code = formatCode(data.toString(), func);
+            data = new String(data).toString();
+            let code = formatCode(data, func);
             
             if(!this.session) { 
                 this.session = ace.createEditSession( code, 'ace/mode/' + (lang||'javascript') );

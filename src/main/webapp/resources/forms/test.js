@@ -25,9 +25,10 @@ define('forms/test',[ "dfe-core",
         "components/editbox-popup",         
         "components/modal",
         "components/div-r",
-        "components/editbox-code-popup" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
+        "components/editbox-code-popup",
+        "components/label" ], function(Core, shapes, fields, Labeled, Editbox, Container, Table, Button, Checkbox, 
             Text, Dropdown, Html, DivR, TabS, TabD, DivC, Radiolist, Textarea,// ChildRuntime, 
-            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup, Modal, Div, EditboxCodePopup ) {
+            DivButton, Multioption, LabeledEditbox, Span, InlineRows, EditboxPopup, Modal, Div, EditboxCodePopup, Label ) {
     let Form = Core.Form;
     
    /* return class TestForm extends Core.Form {
@@ -94,7 +95,10 @@ define('forms/test',[ "dfe-core",
                     Form.field(DivButton, 'header', { get: $$ => 'Car#' + $$.index(2), atr: () => ({ style: 'background: #bbb; border-radius: 2px; display: inline-block; margin: 2px'}) }),
                     Form.field(Editbox, "field-3", {
                         atr: () => fields.simple('.vinnumber', { vstrategy: 'always' })
-                    })
+                    }),
+                    Form.field(Table, 'someTable', 
+                        Form.field(Label, { get: () => 'header', class: 'header' })
+                    )
                 ])
             ]
         }

@@ -142,7 +142,9 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         ta: {
                             style: 'width: 1070px; font-size: 14px; height: 400px;',
                             offsetLeft: -500,
-                            class: 'popup-editor-wrapper'
+                            class: 'popup-editor-wrapper',
+                            editorClass: 'edit-popup-textarea',
+                            errorClass: ''
                         }
                     }),
                 layout: [ {
@@ -181,8 +183,8 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         rowclass$header: 'div-alt-color-fc',
                         orientation: 'horizontal',
                         events: {
-                            mouseover: this.highlightField,
-                            mouseleave: this.highlightField
+                            onMouseOver: this.highlightField.bind(this, config.targetRuntime),
+                            onMouseLeave: this.highlightField.bind(this, config.targetRuntime)
                         }
                     };
                 },
@@ -264,17 +266,26 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                     class: "div-flex-col sticky-header",
                     style: "border-top-right-radius: 3px;margin-bottom: 0px;"
                 } ]
-            }), Form.field(Editbox, "field_index", {
+            }), 
+                Form.field(Editbox, "field_index", {
                 get: $$ => $$.index().toString(),
-                set: ($$, value) => this.moveField($$, value),
-                atr: $$ => ({
-                    /*events: {
-                        focus: function(e, c) {
-                            c.ui.setSelectionRange(0, 99);
+                set: function($$, newIndex){
+                    newIndex = +newIndex;
+                    if(isNaN(newIndex) || newIndex < 0) {
+                        $$.$node.notify();
+                    } else {
+                        let all = $$.get('..').data.children, currentIndex = $$.index();
+                        if( newIndex >= all.length ) {
+                            newIndex = all.length - 1;
                         }
-                    },*/
+                        all.splice(newIndex, 0, all.splice(currentIndex, 1)[0]);
+                        $$.get('..').append('.children').pop().detach();
+                        Editor.resetField(config.targetRuntime, $$.get('..').key); 
+                    }
+                },
+                atr: $$ => ({
                     trigger: 'change',
-                    //style: $$.get('..component') == 0 ? 'visibility:hidden;' : '',
+                    style: $$.get('..name') == 0 ? 'visibility:hidden;' : '',
                     class: 'editor-pos-fld'
                 }),
                 layout: [ {
@@ -282,7 +293,15 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 } ]
             }), Form.field(Editbox, "name_field", {
                 get: $$ => $$.get('.name'),
-                set: ($$, value) => this.changeName($$, value),
+                set: function($$, value){
+                    if(value == 0 || Editor.allFields($$).filter(px => px.get('.name') == value) != 0) {
+                        $$.$node.notify();
+                    } else {
+                        $$.set('.name', value);
+                        Editor.resetField(config.targetRuntime, $$.key); 
+                    }
+                }, 
+                atr: () => ({ trigger: 'change', style: 'width: 120px;'}),
                 layout: [ {
                     class: "div-flex-col"
                 } ]
@@ -298,10 +317,18 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 } ]
             }), Form.field(Dropdown, "type_field", {
                 get: $$ => ({
-                    value: $$.get('.component').name,
-                    items: [{value: Core.Component, description: '{{unknown}}'}].concat(Object.keys(generic).map(key => ({value: generic[key], description: key})))
+                    value: $$.get('.component'),
+                    items: [{
+                        value: Core.Component, 
+                        description: 'Base/Unknown'
+                    }].concat(Object.keys(generic).map(
+                        key => ({value: generic[key], description: key})
+                    ))
                 }),
-                set: ($$, value) => this.changeType($$, value),
+                set: function($$, value){
+                    $$.set('.component', value);
+                    Editor.resetField(config.targetRuntime, $$.key);
+                }, 
                 layout: [ {
                     class: "div-flex-col editbox-col"
                 } ]
@@ -452,6 +479,12 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 layout: [ { class: "div-flex-col" } ]
             }) ]) ])
         }
+        static resetField(targetRuntime, fieldKey) {
+            targetRuntime.nodes.filter(node => node.field.key === fieldKey).forEach(node => {
+                node.parent.notify();
+                targetRuntime.evict(node);
+            })
+        }
         static allFields($$) {
             let tr = model => model.get('.children').reduce( (out, field) => out.concat(tr(field)), [model])
             return [].concat.apply([], $$.get('children').map(tr));
@@ -474,39 +507,42 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
         static getContainerLayout(proxy) {
             return proxy.get('..component') == generic.Table ? 'tpos' : 'dpos'; //return proxy.get('..component').layout;
         }
-        highlightField(e, control) {
-            console.warn("TODO");
-            /*var rt = control.model.runtime && control.model.runtime.target_runtime;
-            if (!rt) return;
-            var cc, doc = rt.rootControls[0].ui.ownerDocument, clazz = '__marker__', ui, r, sp, hl = 'background: peru;', body = doc.getElementsByTagName('body')[0], mrk = doc.getElementsByClassName(clazz);
-            for (var i = mrk.length; i > 0; i--, mrk[i].parentElement.removeChild(mrk[i])) ;
-            var dom = document.elementFromPoint(e.clientX, e.clientY), c, proxy;
-            while (dom && !dom._dfe_) dom = dom.parentNode;
-            if (dom && (c = dom._dfe_) && (proxy = c.model)) {
-                if (e.type == 'mouseover') {
-                    do {
-                        if (rt.findControls(proxy.get('.name')).filter(function(c) {
-                            if(Array.isArray(c._allParentNodes)) {
-                                var a;
-                                c._allParentNodes.forEach(function(ui){
-                                    if((r = ui.getBoundingClientRect()) && (r.x || r.width)){
-                                        a = true;
-                                        body.appendChild(sp = doc.createElement('span'));
-                                        sp.setAttribute('style', 'position: absolute; z-index: 3000; opacity: 0.5; border-radius: 5px; ' + hl);
-                                        sp.setAttribute('class', '__marker__');
-                                        sp.style.top = r.top - 3 + (doc.defaultView.scrollY || doc.defaultView.window.pageYOffset) + 'px';
-                                        sp.style.left = r.left - 4 + (doc.defaultView.scrollX || doc.defaultView.window.pageXOffset) + 'px';
-                                        sp.style.width = r.width + 10 + 'px';
-                                        sp.style.height = r.height + 6 + 'px';
-                                    }
-                                })
-                                return a;
-                            }
-                        }).length > 0) break;
-                        proxy.get('.name') != 0 && (hl = 'border: dashed; border-color: red;'), proxy = proxy.get('..');
-                    } while (proxy);
+        highlightField(targetRuntime, event) {
+            let my = Core.nodeFromElement( event.target );
+            let doc = targetRuntime.nodes[0].$parentDom.ownerDocument;
+            for(let old = doc.getElementsByClassName('__marker__'), i = old.length-1; i >= 0; i--) {
+                doc.body.removeChild(old[i]);
+            }
+            if(my && my.model) {
+                let fieldKey = my.model.key, style = 'background: peru;';
+                let nodes = targetRuntime.nodes.filter(node => node.field.key === fieldKey && node !== targetRuntime.nodes[0]);
+                while(nodes.length && !nodes.some(node => node.isAttached())) {
+                    nodes = nodes.map(node => node.parent).filter(node => node);
+                    style = 'border: dashed; border-color: red;';
                 }
-            }*/
+                let uniq = new Set();
+                nodes.filter(node => node.isAttached()).forEach(node => uniq.add(node));
+                
+                uniq.forEach(
+                    node => {
+                        let content = Core.getDOMContent(node);
+                        content.filter( node => content.indexOf(node.parentNode) === -1 ).forEach(
+                            dom => {
+                                let r = (dom.getBoundingClientRect ? dom : dom.parentNode).getBoundingClientRect(), sp;
+                                if(r && (r.x || r.width)){
+                                    doc.body.appendChild(sp = doc.createElement('span'));
+                                    sp.setAttribute('style', 'position: absolute; z-index: 3000; opacity: 0.5; border-radius: 5px; ' + style);
+                                    sp.setAttribute('class', '__marker__');
+                                    sp.style.top = r.top - 3 + (doc.defaultView.scrollY || doc.defaultView.window.pageYOffset) + 'px';
+                                    sp.style.left = r.left - 4 + (doc.defaultView.scrollX || doc.defaultView.window.pageXOffset) + 'px';
+                                    sp.style.width = r.width + 10 + 'px';
+                                    sp.style.height = r.height + 6 + 'px';
+                                }
+                            }
+                        )
+                    }
+                )
+            }
         }
         /*textToCode(runtime, code) {
             var obj = runtime.target_runtime.form, dp = 'var __=1', t = window.opener || window;

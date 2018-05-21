@@ -235,6 +235,14 @@ th {
 /*.link-button:focus {
    outline: -webkit-focus-ring-color auto 5px;
 }*/
+.div-button-text {
+    transition: text-shadow 0.25s;
+}
+
+.div-button-text:hover {
+    text-shadow: 0 0 2px;
+    transition: all 0s;
+}
 
 .div-flex {
     overflow:visible;

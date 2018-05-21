@@ -418,7 +418,7 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
             let selectedIndex = 0;
             if(Array.isArray(data.items)) {
                 options = options.concat( data.items.map( 
-                    item => typeof item === 'object' ? { text: item.description || item.value.toString(), value: item.value } : { text: item.toString(), value: item } 
+                    item => item && typeof item === 'object' ? { text: item.description || new String(item.value).toString(), value: item.value } : { text: new String(item).toString(), value: item } 
                 ) );
             }
             options.forEach( (item, i) => testChoice(data.value, item.value) && (selectedIndex = i) );

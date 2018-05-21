@@ -174,8 +174,11 @@ define('dfe-core', ['dfe-dom'], function(document) {
             le = p.pop();
             va.forEach(function(px) {
                 var v = px.data[le], old = v;
-                if(typeof value == 'object') {
-                    Array.isArray(v) ? px.get('.' + le).forEach(function(px) { px.set(value)}) : px.append('.' + le, value);
+                if(typeof value === 'object' || typeof value === 'function') {
+                    if(v !== value) {
+                        px.data[le] = value;
+                        listener && listener.notify(px.data, le, 'm', old, value); 
+                    }
                 } else {
                     if(v == undefined || v==[]) v = '';
                     if(typeof v == 'number') v = v.toString();
@@ -355,6 +358,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
         {name: 'onKeyUp', event: 'keyup'}, 
         {name: 'onChange', event: 'change'}, 
         {name: 'onClick', event: 'click'}, 
+        {name: 'onMouseOver', event: 'mouseover'},
         {name: 'onMouseEnter', event: 'mouseenter'}, 
         {name: 'onMouseLeave', event: 'mouseleave'}, 
         {name: 'onBlur', event: 'blur'}, 
@@ -474,6 +478,13 @@ define('dfe-core', ['dfe-dom'], function(document) {
             nodes.forEach(node => node.render(node.lastData, node.lastError, node.attributes));
         }
         
+        static getDOMContent(node) {
+            let exploreContent = (content, nodes) => content.forEach(st => st.childNode instanceof Node || (nodes.push(st.dom), exploreContent(st.children, nodes)))
+            let ret = [];
+            node.lastRenderStructure.filter(lrs => lrs.dom).forEach(st => (ret.push(st.dom), exploreContent(st.content, ret)));
+            return ret;
+        }
+        
         static nodeFromElement(domElement) {
             function isChildOf(parentElement) {
                 if( parentElement ) {
@@ -485,15 +496,6 @@ define('dfe-core', ['dfe-dom'], function(document) {
                 }
                 return false;
             }
-            let exploreContent = (content, nodes) => content.forEach(st => st.childNode instanceof Node || (nodes.push(st.dom), exploreContent(st.children, nodes)))
-            function getContentNodes(node) {
-                if(node.key === 'accountName-22') {
-                    node = node;
-                }
-                let ret = [];
-                node.lastRenderStructure.filter(lrs => lrs.dom).forEach(st => (ret.push(st.dom), exploreContent(st.content, ret)));
-                return ret;
-            }
             let runtime = null, prnt = domElement;
             while(!runtime && prnt) {
                 runtime = prnt._dfe_runtime;
@@ -501,7 +503,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
             }
             if( runtime ) {
                 let ret = null;
-                runtime.nodes.concat().reverse().filter(node => node.isAttached()).forEach(node => ret || getContentNodes(node).some(isChildOf) && (ret = node));
+                runtime.nodes.concat().reverse().filter(node => node.isAttached()).forEach(node => ret || DOM.getDOMContent(node).some(isChildOf) && (ret = node));
                 return ret;
             }
             return null;
@@ -525,7 +527,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
         destroy() {
         }
         update() {
-            this.$node.notify({ action : 'self' }); 
+            this.$node.notify(); 
         }
         doValidation(events, attrs) {
             return false;
@@ -591,7 +593,12 @@ define('dfe-core', ['dfe-dom'], function(document) {
 
     function completeNames(fields) {
         let fieldIndex = 0;
-        (Array.isArray(fields) ? fields : [fields]).forEach( field => field.name || (field.name = field.component.name + '#' + (++fieldIndex) ) );
+        (Array.isArray(fields) ? fields : [fields]).forEach( 
+            field => {
+                field.name || (field.name = field.component.name + '#' + (++fieldIndex) );
+                completeNames(field.children);
+            }
+        );
         return fields;
     }
     
@@ -639,6 +646,8 @@ define('dfe-core', ['dfe-dom'], function(document) {
             this.form = control instanceof Form ? control : parent.form;
             this.control = control;
             this.model = new ProxyModel(unboundModel, runtime, this);
+            
+            unboundModel.$node = this;
         }
         render(lastData, lastError, lastAttributes) {
             if( this.shouldRender && this.isAttached() ) {
@@ -805,7 +814,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
             return !node;
         }
         notify(action) {
-            this.notifications.push(action);
+            this.notifications.push(action || { action : 'self' });
             this.runtime.shouldAnythingRender = true;
         }
         store(value, method) {
@@ -914,8 +923,12 @@ define('dfe-core', ['dfe-dom'], function(document) {
         }
         evict(node) {
             node.evicted = true;
-            node.notifications = [];
-            node.children.forEach(fieldMap => fieldMap.forEach( node => this.evict(node)));
+            node.children.forEach(fieldMap => fieldMap.forEach( node => (node.parent = null, this.evict(node))));
+            if(node.parent) {
+                let fieldMap = node.parent.children.get(node.model.data);
+                fieldMap.delete(node.field);
+                fieldMap.size || node.parent.children.delete(node.model.data);
+            }
         }
         removeEvicted() {
             let cur = 0;
@@ -945,7 +958,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
                     present = rows.get(r); 
                     fkeys.forEach(function(k) {
                         c = m.get(k);
-                        present ? c || m.set(k, this.addNode(parent, present, k)) : c && (this.evict(c), m['delete'](k));
+                        present ? c || m.set(k, this.addNode(parent, present, k)) : c && (c.parent = null, this.evict(c), m['delete'](k));
                     }, this);
                     m.size || lastChildren['delete'](r);
                 });
@@ -1015,6 +1028,10 @@ define('dfe-core', ['dfe-dom'], function(document) {
         startRuntime: Runtime.startRuntime,
         createElement: createElement,
         nodeFromElement: DOM.nodeFromElement,
+        getDOMContent: (node, includeLayout) => {
+            let all = DOM.getDOMContent(node);
+            return includeLayout ? all : all.filter(dom => dom.parentNode !== node.$parentDom)
+        },
         createNode: (...args) => new Node(...args),
         reconcileDOMAttributes: DOM.reconcileAttributes,
         Component: Component
