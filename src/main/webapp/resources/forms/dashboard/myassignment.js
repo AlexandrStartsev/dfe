@@ -1,4 +1,4 @@
-define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/container", "components/span" ], function(Core, StatusGridForm, NotesForm, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Container, Span) {
+define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/container", "components/span", "module" ], function(Core, StatusGridForm, NotesForm, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Container, Span, module) {
     let Form = Core.Form;
     let detailsGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'producerCode', 'effectiveDate', 'writtenPremium', 'govClass', 'grade', 'newRenewal', 'notes' ];
     let detailsGridClass = 'dashboard-rbody-tbl';
@@ -233,7 +233,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
         }
     }
 
-    function setupStyle(name, columns, clazz) {
+    function setupStyle(columns, clazz) {
         uiUtils.setDfeCustomStyle(`
             .${clazz}{
                 width: 100%
@@ -316,9 +316,9 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
 
             .${clazz} td:nth-child(10n+${columns.indexOf('notes') + 1}) > .dashboard-quotes-popup > label {
                 left: -120px;
-            }`, name);     
+            }`, module.id);     
     }
     
-    setupStyle(MyAssignmentForm.name, detailsGridColumns, detailsGridClass);
+    setupStyle(detailsGridColumns, detailsGridClass);
     return MyAssignmentForm;
 })

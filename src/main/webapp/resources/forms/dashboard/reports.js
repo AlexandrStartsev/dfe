@@ -1,4 +1,4 @@
-define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery-ui", "components/div", "components/div-button", "components/tab-s", "components/iframe", "components/button", "components/label", "components/html" ], function(Core, cmn, dashboardCommon, uiUtils, shapes, fields, jq, Div, DivButton, TabS, Iframe, Button, Label, Html) {
+define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery-ui", "components/div", "components/div-button", "components/tab-s", "components/iframe", "components/button", "components/label", "components/html", "module" ], function(Core, cmn, dashboardCommon, uiUtils, shapes, fields, jq, Div, DivButton, TabS, Iframe, Button, Label, Html, module) {
     let Form = Core.Form;
     class ReportsForm extends Form{
         constructor(node) {
@@ -183,8 +183,8 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/common", "ui/utils", "ui/sha
                 visibility: hidden;
             }
 
-        `, name);
+        `, module.id);
     }
-    style(ReportsForm.name);
+    style();
     return ReportsForm;
 })

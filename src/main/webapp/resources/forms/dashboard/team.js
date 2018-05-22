@@ -1,4 +1,4 @@
-define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/either" ], function(Core, StatusGridForm, notes, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Either) {
+define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/html", "components/label", "components/div", "components/labeled-editbox", "components/labeled-dropdown", "components/editbox", "components/button", "components/table", "components/either", "module" ], function(Core, StatusGridForm, notes, dashboardCommon, jq, cmn, uiUtils, shapes, fields, Html, Label, Div, LabeledEditbox, LabeledDropdown, Editbox, Button, Table, Either, module) {
     let Form = Core.Form;
     let detailsGridColumns = [ 'quoteid', 'accountName', 'companyCode', 'effectiveDate', 'writtenPremium', 'newRenewal', 'userId', 'reassign' ];
     let detailsGridClass = 'team-rbody-tbl';
@@ -316,7 +316,7 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
         }
     }
     
-    function setupStyle(name, columns, clazz) {
+    function setupStyle(columns, clazz) {
         uiUtils.setDfeCustomStyle(`
             .${clazz}{
                 width: 100%
@@ -376,8 +376,8 @@ define([ "dfe-core", "forms/dashboard/statusgrid", "forms/dashboard/notes", "for
             .${clazz} td:nth-child(${columns.length}n+${columns.indexOf('reassign') + 1}) {
                 text-align: center;
             }
-            `, name);
+            `, module.id);
     }
-    setupStyle(TeamForm.name, detailsGridColumns, detailsGridClass);
+    setupStyle(detailsGridColumns, detailsGridClass);
     return TeamForm;
 })

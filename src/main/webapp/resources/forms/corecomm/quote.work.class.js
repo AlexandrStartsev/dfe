@@ -1,4 +1,4 @@
-define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-money", "components/radiolist", "components/container", "components/table", "components/checkbox", "ui/jquery-ui", "ajaxCache" ], function(require, Core, cmn, uiUtils, fields, Label, Editbox, Dropdown, Button, Div, EditboxMoney, Radiolist, Container, Table, Checkbox, jQuery, ajaxCache) {
+define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "components/label", "components/editbox", "components/dropdown", "components/button", "components/div", "components/editbox-money", "components/radiolist", "components/container", "components/table", "components/checkbox", "ui/jquery-ui", "ajaxCache", "module" ], function(require, Core, cmn, uiUtils, fields, Label, Editbox, Dropdown, Button, Div, EditboxMoney, Radiolist, Container, Table, Checkbox, jQuery, ajaxCache, module) {
     let Form = Core.Form;
     class QuoteWorkClassForm extends Form {
         constructor(node) {
@@ -374,6 +374,8 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "dfe-field-helper", "c
         .ui-widget-overlay {
             opacity: .3;
         }
-    `, QuoteWorkClassForm.name);    
+    `, // TODO: since we can't use form class name (it will be scrambled), gotta figure out the way to tie form class and module/custom style ... 
+    (QuoteWorkClassForm._module = module).id);
+	
     return QuoteWorkClassForm;
 })

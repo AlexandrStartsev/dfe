@@ -1,4 +1,4 @@
-define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "components/label", "components/table", "components/checkbox", "components/html" ], function(Core, SortableHeaderForm, NotesForm, dashboardCommon, jq, cmn, uiUtils, shapes, Label, Table, Checkbox, Html) {
+define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", "forms/dashboard/common", "ui/jquery-ui", "dfe-common", "ui/utils", "ui/shapes", "components/label", "components/table", "components/checkbox", "components/html", "module" ], function(Core, SortableHeaderForm, NotesForm, dashboardCommon, jq, cmn, uiUtils, shapes, Label, Table, Checkbox, Html, module) {
     let Form = Core.Form;
 
     let noteRt = new Map();
@@ -181,7 +181,7 @@ define([ "dfe-core", "forms/dashboard/sortableheader", "forms/dashboard/notes", 
             box-shadow: 2px 2px lightgrey;
             width: 120px;
         }
-    `, DetailsGridForm.name);
+    `, module.id);
     
     return DetailsGridForm;
 })

@@ -1,4 +1,4 @@
-define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "components/label", "components/editbox", "components/button", "components/table", "components/html-form", "dfe-field-helper", "components/dropdown", "ui/jquery-ui", "components/html" ], function(require, uiUtils, Core, cmn, Div, Label, Editbox, Button, Table, HtmlForm, fields, Dropdown, jQuery, Html) {
+define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "components/label", "components/editbox", "components/button", "components/table", "components/html-form", "dfe-field-helper", "components/dropdown", "ui/jquery-ui", "components/html", "module" ], function(require, uiUtils, Core, cmn, Div, Label, Editbox, Button, Table, HtmlForm, fields, Dropdown, jQuery, Html, module) {
     let Form = Core.Form;
     
     class RatingTableExpirationForm extends Form {
@@ -275,6 +275,6 @@ define([ "require", "ui/utils", "dfe-core", "dfe-common", "components/div", "com
         .expirations-table select[disabled]::-ms-expand {
     		display: none;
         }        
-    `, RatingTableExpirationForm.name);
+    `, module.id);
     return RatingTableExpirationForm;
 })

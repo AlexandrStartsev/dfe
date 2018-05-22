@@ -1,4 +1,4 @@
-define([ "require", "dfe-core", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/label", "components/textarea", "components/html", "components/div" ], function(require, Core, cmn, uiUtils, shapes, fields, Label, Textarea, Html, Div) {
+define([ "require", "dfe-core", "dfe-common", "ui/utils", "ui/shapes", "dfe-field-helper", "components/label", "components/textarea", "components/html", "components/div", "module" ], function(require, Core, cmn, uiUtils, shapes, fields, Label, Textarea, Html, Div, module) {
     let Form = Core.Form;
     class NotesForm extends Form {
         static fields() {
@@ -64,6 +64,6 @@ define([ "require", "dfe-core", "dfe-common", "ui/utils", "ui/shapes", "dfe-fiel
             outline: none;
             overflow: auto;
         }
-    `, NotesForm.name);
+    `, module.id);
     return NotesForm;
 })

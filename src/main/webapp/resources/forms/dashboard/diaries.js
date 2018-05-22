@@ -1,4 +1,4 @@
-define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery-ui", "components/label", "components/table", "components/div" ], function(Core, cmn, SortableHeaderForm, dashboardCommon, uiUtils, shapes, fields, jq, Label, Table, Div) {
+define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dashboard/common", "ui/utils", "ui/shapes", "dfe-field-helper", "ui/jquery-ui", "components/label", "components/table", "components/div", "module" ], function(Core, cmn, SortableHeaderForm, dashboardCommon, uiUtils, shapes, fields, jq, Label, Table, Div, module) {
     let Form = Core.Form; 
     let diariesRt = new Map();
     let columnNames = [ 'actionDate', 'appNumber', 'accountName', 'diarySubject', 'notes', 'createdByUser', 'creationDate', 'taskId' ];
@@ -120,7 +120,7 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
         }
     }
     
-    function style(name, columns) {
+    function style(columns) {
         uiUtils.setDfeCustomStyle(`
             .diaries-table {
                 width: 100%;
@@ -144,9 +144,9 @@ define([ "dfe-core", "dfe-common", "forms/dashboard/sortableheader", "forms/dash
             .diaries-table td:nth-child(8n+${columns.indexOf('notes') + 1}) {
                 text-align: left;
             }            	
-        `, name);
+        `, module.id);
     }
     
-    style(DiaryForm.name, columnNames );
+    style( columnNames );
     return DiaryForm;
 })
