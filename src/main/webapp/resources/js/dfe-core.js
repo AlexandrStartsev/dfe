@@ -943,25 +943,23 @@ define('dfe-core', ['dfe-dom'], function(document) {
             }
         }
         evict(node) {
+            this.removeErroring(node);
             node.evicted = true;
-            node.children.forEach(fieldMap => fieldMap.forEach( node => (node.parent = null, this.evict(node))));
+            node.children.forEach(fieldMap => fieldMap.forEach( node => this.evict(node)));
+            node.control.destroy();
+            node.model.destroy();
             if(node.parent) {
                 let fieldMap = node.parent.children.get(node.model.data);
-                fieldMap.delete(node.field);
-                fieldMap.size || node.parent.children.delete(node.model.data);
+                if(fieldMap) {
+                	fieldMap.delete(node.field);
+                	fieldMap.size || node.parent.children.delete(node.model.data);
+                }
+                node.parent = null;
             }
         }
         removeEvicted() {
             let cur = 0;
-            this.nodes.forEach( (node, index) => {
-                if(node.evicted) {
-                    this.removeErroring(node);
-                    node.model.destroy();
-                    node.control.destroy();
-                } else {
-                    this.nodes[cur++] = this.nodes[index];
-                }
-            })
+            this.nodes.forEach( node => node.evicted || (this.nodes[cur++] = node) );
             this.nodes.splice(cur);
         }
         reconcileChildren(parent, rowProxies) {
@@ -979,7 +977,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
                     present = rows.get(r); 
                     fkeys.forEach(function(k) {
                         c = m.get(k);
-                        present ? c || m.set(k, this.addNode(parent, present, k)) : c && (c.parent = null, this.evict(c), m['delete'](k));
+                        present ? c || m.set(k, this.addNode(parent, present, k)) : c && this.evict(c);
                     }, this);
                     m.size || lastChildren['delete'](r);
                 });
