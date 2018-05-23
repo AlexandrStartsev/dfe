@@ -322,8 +322,8 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 set: function($$, key) {
                     let node = targetRuntime.nodes.filter(node => node.field.key === $$.key).shift();
                     Editor.allFields($$).filter(px => px.key === key).shift().append('.children', $$, true);
-                    Editor.resetField(node.parent.field.key);
-                    Editor.resetField(key);
+                    Editor.resetField(node.parent.field.key, true);
+                    Editor.resetField(key, true);
                     let myRuntime = $$.$node.runtime;
                     myRuntime.nodes.filter(node => node.model.key === $$.key).forEach(node => {
                         node.parent.notify();
@@ -478,11 +478,12 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 layout: [ { class: "div-flex-col" } ]
             }) ]) ])
         }
-        static resetField(fieldKey) {
+        static resetField(fieldKey, resetChildren) {
             targetRuntime.nodes.filter(node => node.field.key === fieldKey || node.field.name === fieldKey).forEach(node => {
-                if(node.parent) {
-                    node.parent.notify();
-                    targetRuntime.evict(node);
+                let targetNode = resetChildren ? node : node.parent;
+                if(targetNode) {
+                    targetNode.children.forEach(map => map.forEach(child => targetRuntime.evict(child)));
+                    targetNode.notify();
                 }
             })
         }
@@ -596,6 +597,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }
         }
         restartWithNewScript(script) {
+            formScript = script;
             let defScript = script.replace(/^[\t\n ]*define *\([\t\n ]*([^'"])/,'define("' + formModuleName + '",$1');
             let myRuntime = this.$node.runtime;
             targetWindow.require.undef(formModuleName);
