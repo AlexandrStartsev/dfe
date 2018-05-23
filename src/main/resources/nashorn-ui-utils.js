@@ -1,6 +1,5 @@
 define([], function() {
-	var JavaCacheHandler = Java.type('com.arrow.util.nashorn.CacheHandler');
-	var customStyles = new JavaCacheHandler();
+	var customStyles = new Map();
 	
 	return {
 		setDfeCustomStyle: function(style, name) {

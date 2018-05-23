@@ -859,6 +859,7 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
                 popup.setDom({ type: 'div' }, this.ref.ownerDocument.body, null);
                 popup.render(this.popupData, this.popupError, this.mapPopupAttributes());
                 if(!active) {
+                    this.onPopupShown();
                     for(let element = this.ref.parentElement; element; element = element.parentElement) {
                         element.addEventListener('scroll', this.scrollFollow);
                     }
@@ -929,6 +930,7 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
             });
         }
         onResize() {}
+        onPopupShown() {}
         getMapper(value) { 
             return value; 
         }
@@ -937,6 +939,10 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
         }
         getPopupActiveElement() {
             return this.popupContainer.firstChild;
+        }
+        destroy() {
+            this.popup.control.destroy();
+            super.destroy();
         }
     }
 })

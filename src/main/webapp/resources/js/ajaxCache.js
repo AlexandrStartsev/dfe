@@ -10,7 +10,7 @@
 
 define(function() {
 	var hook = typeof JavaThreadLocal !== 'undefined' ? new JavaThreadLocal() : { set: function(cb) { this.callback = cb; }, get: function() {return this.callback} };
-    var storage = typeof JavaCacheHandler !== 'undefined' ? JavaCacheHandler.sharedCache('ajaxCache', '1000', '10') : new Map();
+    var storage = typeof JavaCacheHandler !== 'undefined' ? JavaCacheHandler.sharedCache('ajaxCache', '1000', '10') : typeof Map !== 'undefined' ? new Map() : { _: {}, has: function(key) { return this._.hasOwnProperty(key) }, get: function(key) { return this._[key]; }, set: function(key, value) { this._[key] = value; } };
     var extend = function(from, to) {for (var key in from) to[key] = from[key]; return to; }
     return {
     	setCallback: function(callback) {
@@ -20,7 +20,7 @@ define(function() {
             storage.clear();
         },
         get: function(opt) {
-        	var base = '/AJAXServlet.srv?';
+        	var base = 'https://arrowheadexchange.com/AJAXServlet.srv?';
             if(typeof opt != 'string' && !opt.url) { // method: ... action: ...
                 var u = base;
                 for(var o in opt)

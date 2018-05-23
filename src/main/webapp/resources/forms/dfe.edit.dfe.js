@@ -1,21 +1,38 @@
-define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code-popup", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r", "components/generic" ], function(Core, require, uglify, babel, cmn, Button, Label, Dropdown, Checkbox, EditboxCodePopup, Editbox, DivButton, Div, DivC, DivR, generic) {
+define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code-popup", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r", "components/generic", "ui/jquery" ], function(Core, require, uglify, babel, cmn, Button, Label, Dropdown, Checkbox, EditboxCodePopup, Editbox, DivButton, Div, DivC, DivR, generic, jQuery) {
     let Form = Core.Form;
-    let compilationError = function($$) { $$.error('compilation error') };
+    let compilationError = $$ => $$.error('compilation error');
+    
+    let targetRuntime, targetFormClass, targetDocument, targetWindow, formModuleName, formScript;
     
     return class Editor extends Form {
         constructor(node) {
             super(node);
             
-            /*try {
-                $$.set('pp_output', this.runtimeToJs($$.data));
-            } catch (e) {
-                console.warn('failed to process form model: ' + e);
-            }*/
+            if(formScript === undefined) {
+                // TODO: use target's window/document
+                let defined = window.require.s.contexts._.defined;
+                formModuleName = Object.keys(defined).filter(prop => defined[prop] === node.unboundModel.get('.component')).shift();
+                let origins = document.querySelector('script[data-requiremodule="' + formModuleName + '"]').src;
+                jQuery.get(origins, script => {
+                    this.parseScript(script);
+                    node.unboundModel.set({formScript: formScript});
+                }, "text");
+            } else {
+                this.parseScript(formScript);
+                node.unboundModel.set({formScript: formScript});
+            }
+            
+            Editor.allFields(node.unboundModel).forEach(
+                px => ['.get', '.set', '.val', '.atr'].forEach(
+                    prop => px.set(prop + '_text', Editor.codeToText(px.get(prop)))
+                )
+            )
         }
         static fields(_, config) {
-            let targetRuntime = config.targetRuntime;
-            let targetDocument = targetRuntime.nodes[0].$parentDom.ownerDocument;
-            let targetWindow = targetDocument.defaultView;
+            targetRuntime = config.targetRuntime;
+            targetFormClass = targetRuntime.formClass;
+            targetDocument = targetRuntime.nodes[0].$parentDom.ownerDocument;
+            targetWindow = targetDocument.defaultView;
             
             return Form.field(DivR,"root", {
                 atr: () => ({
@@ -30,21 +47,21 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 class: "header",
                 get: () => '+',
                 set: function($$, value) {
-                    var co = $$.get('childrenOf'), ppx = Editor.allFields($$).filter(function(px) {
-                        return co == 0 || px.get('.name') == co;
-                    }).shift();
-                    var d = ppx.append('.children', {
-                        name: this.generateName($$),
-                        get: this.textToCode($$.runtime, '$$ => [$$]'),
-                        children: [],
-                        layout: [ {} ]
-                    })[0].data;
-                    d.component = require('components/editbox');
-                    d.form = $$.runtime.target_runtime.form;
+                    let targetCore = targetWindow.eval('require("dfe-core")');
+                    let targetEditbox = targetWindow.eval('require("components/editbox")'), taken = [], pattern = targetEditbox.name + '#';
+                    let co = $$.get('childrenOf'), ppx = Editor.allFields($$).filter(
+                        px => {
+                            let name = px.get('.name');
+                            name.match(pattern) && taken.push(name);
+                            return co == 0 || name == co
+                        }
+                    ).shift();
+                    let index = 1;
+                    while(taken.indexOf(pattern + index) !== -1) index++;
+                    ppx.append('.children', targetCore.Form.field(targetEditbox, pattern + index), true);
+                    targetRuntime.nodes.forEach(node => node.field.key === ppx.key && node.notify());
                 },
-                layout: [ {
-                    style: "display: inline; height: min-content;"
-                } ]
+                layout: [ { style: "display: inline; height: min-content;" } ]
             }), Form.field(Label, "l1", {
                 class: "header",
                 get: () => 'Show only children of: ',
@@ -101,40 +118,32 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }), Form.field(Button, "JS", {
                 class: "header",
                 get: () => 'to JS',
-                set: $$ => $$.set('pp_output', this.runtimeToJs($$.data)),
-                layout: [ {
-                    style: "display: inline; margin-left: 2px; height: min-content;"
-                } ]
-            }), Form.field(Button, "JS - min", {
-                class: "header",
-                get: () => 'to JS(min)',
-                set: function($$, value) {
-                    var s = babel.transform(this.runtimeToJs($$.data), {
-                        plugins: [ 'transform-es3-property-literals', 'transform-es3-member-expression-literals' ],
-                        presets: [ 'es2015' ]
-                    }).code;
-                    //s = s.replace('defineForm("' + $$.data.name + '"', 'defineForm("' + $$.data.name + '.min"');
-                                        s = s.replace("Object.defineProperty(target, descriptor.key, descriptor);", "try{Object.defineProperty(target, descriptor.key, descriptor)}catch(e){target[descriptor.key] = descriptor.value}");
-                    s = uglify.parse(s);
-                    s.figure_out_scope();
-                    s.compute_char_frequency();
-                    s.mangle_names();
-                    $$.set('pp_output', s.print_to_string({ ie8: true }));
-                },
+                set: function($$) {
+                    let fields = this.fieldsToText($$);
+                    let returnStatement = uglify.parse('function f(){return'+fields+'}').body[0].body[0];
+                    let i, body = this.ast.fieldsDeclBody;
+                    for(i = 0; i < body.length && !(body[i] instanceof uglify.AST_Return); i ++ ) ;
+                    body[i] = returnStatement;
+                    $$.set('formScript', this.ast.ast.print_to_string({
+                        quote_style: 3,
+                        beautify: true,
+                        comments: true
+                    }))
+                }, 
                 layout: [ {
                     style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
             }), Form.field(Button, "load - js", {
                 class: "header",
                 get: () => 'from JS',
-                set: $$ => this.loadJS($$, $$.get('pp_output')),
+                set: function($$) { this.restartWithNewScript($$.get('formScript')) },
                 layout: [ {
                     style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
-            }), Form.field(EditboxCodePopup, "pp_output", {
+            }), Form.field(EditboxCodePopup, {
                 class: "header",
-                get: $$ => $$.get('pp_output'),
-                set: ($$, value) => $$.set('pp_output', value),
+                get: $$ => $$.get('formScript'),
+                set: ($$, value) => $$.set('formScript', value),
                 atr: () => ({
                         class: 'focus-front',
                         trigger: 'change',
@@ -153,21 +162,21 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }), Form.field(Button, "validate", {
                 class: "header",
                 get: () => 'Simulate validation',
-                //set: $$ => this.validateTarget($$),
+                set: $$ => targetRuntime.nodes.forEach(node => node.notify({action: 'validate'})),
                 layout: [ {
                     style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
             }), Form.field(Button, "restart", {
                 class: "header",
                 get: () => 'Restart target',
-                //set: $$ => $$.runtime.target_runtime.restart(),
+                set: () => targetRuntime.restart(),
                 layout: [ {
                     style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
             }), Form.field(Button, "push2srv", {
                 class: "header",
                 get: () => 'Store in session',
-                //set: $$ => this.storeInSession($$),
+                set: () => alert('Implement me'),
                 layout: [ {
                     style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
@@ -177,14 +186,14 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                     let nameToField = new Map();
                     Editor.allFields($$).forEach(d => nameToField.set(d.get('.name'), d));
                     return {
-                        filter: Editor.filterRow.bind($$.get('childrenOf'), $$.get('hierarchyOf'), $$.get('subChildren'), nameToField),
+                        filter: Editor.filterRow.bind(null, $$.get('childrenOf'), $$.get('hierarchyOf'), $$.get('subChildren'), nameToField),
                         class: 'div-flex-h',
                         style: 'box-sizing: border-box; overflow-y: scroll; height: 400px;',
                         rowclass$header: 'div-alt-color-fc',
                         orientation: 'horizontal',
                         events: {
-                            onMouseOver: this.highlightField.bind(this, config.targetRuntime),
-                            onMouseLeave: this.highlightField.bind(this, config.targetRuntime)
+                            onMouseOver: this.highlightField.bind(this),
+                            onMouseLeave: this.highlightField.bind(this)
                         }
                     };
                 },
@@ -278,7 +287,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         }
                         all.splice(newIndex, 0, all.splice(currentIndex, 1)[0]);
                         $$.get('..').append('.children').pop().detach();
-                        Editor.resetField(config.targetRuntime, $$.get('..').key); 
+                        Editor.resetField($$.get('..').key); 
                     }
                 },
                 atr: $$ => ({
@@ -296,7 +305,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         $$.$node.notify();
                     } else {
                         $$.set('.name', value);
-                        Editor.resetField(config.targetRuntime, $$.key); 
+                        Editor.resetField($$.key); 
                     }
                 }, 
                 atr: () => ({ trigger: 'change', style: 'width: 120px;'}),
@@ -313,8 +322,13 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 set: function($$, key) {
                     let node = targetRuntime.nodes.filter(node => node.field.key === $$.key).shift();
                     Editor.allFields($$).filter(px => px.key === key).shift().append('.children', $$, true);
-                    Editor.resetField(config.targetRuntime, node.parent.field.key);
-                    Editor.resetField(config.targetRuntime, key);
+                    Editor.resetField(node.parent.field.key);
+                    Editor.resetField(key);
+                    let myRuntime = $$.$node.runtime;
+                    myRuntime.nodes.filter(node => node.model.key === $$.key).forEach(node => {
+                        node.parent.notify();
+                        myRuntime.evict(node);
+                    })
                 },
                 atr: $$ => ({ style: $$.get('..name') == 0 ? 'visibility:hidden;' : 'width: 100%;' }),
                 layout: [ {
@@ -332,7 +346,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 }),
                 set: function($$, value){
                     $$.set('.component', value);
-                    Editor.resetField(config.targetRuntime, $$.key);
+                    Editor.resetField($$.key);
                 }, 
                 layout: [ {
                     class: "div-flex-col editbox-col"
@@ -340,9 +354,8 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }), Form.field(EditboxCodePopup, "get_field", {
                 get: $$ => $$.get('.get_text'),
                 set: function($$, value) {
-                    console.warn('TODO');
-                    //$$.set('.get_text', value);
-                    //$$.set('.get', this.textToCode($$.runtime, value));
+                    $$.set({get_text: value, get: this.textToCode(value)});
+                    targetRuntime.nodes.forEach(node => node.field.key === $$.key && node.notify());
                 },
                 val: $$ => $$.get('.get') == compilationError && $$.error('Compilation error'),
                 atr: () => ({
@@ -350,9 +363,6 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         spellcheck: 'false',
                         vstrategy: 'always',
                         errorClass: 'editbox-error',
-                        func: {
-                            template: '$$ => {}'
-                        },
                         ta: {
                             offsetLeft: -100,
                             class: 'popup-editor-wrapper',
@@ -366,9 +376,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }), Form.field(EditboxCodePopup, "set_field", {
                 get: $$ => $$.get('.set_text'),
                 set: function($$, value) {
-                    console.warn('TODO');
-                    //$$.set('.set_text', value);
-                    //$$.set('.set', this.textToCode($$.runtime, value));
+                    $$.set({set_text: value, set: this.textToCode(value)});
                 },
                 val: $$ => $$.get('.set') == compilationError && $$.error('Compilation error'),
                 atr: () => ({
@@ -376,9 +384,6 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         spellcheck: 'false',
                         vstrategy: 'always',
                         errorClass: 'editbox-error',
-                        func: {
-                            template: '($$, value) => {}'
-                        },
                         ta: {
                             offsetLeft: -100,
                             class: 'popup-editor-wrapper',
@@ -386,15 +391,12 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                             errorClass: 'popup-code-editor-erroring'
                         }
                     }),
-                layout: [ {
-                    class: "div-flex-col"
-                } ]
+                layout: [ { class: "div-flex-col" } ]
             }), Form.field(EditboxCodePopup, "val_field", {
                 get: $$ => $$.get('.val_text'),
                 set: function($$, value) {
-                    console.warn('TODO');
-                    //$$.set('.val_text', value);
-                    //$$.set('.val', this.textToCode($$.runtime, value));
+                    $$.set({val_text: value, val: this.textToCode(value)});
+                    targetRuntime.nodes.forEach(node => node.field.key === $$.key && node.notify());
                 },
                 val: $$ => $$.get('.val') == compilationError && $$.error('Compilation error'),
                 atr: () => ({
@@ -402,9 +404,6 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         spellcheck: 'false',
                         vstrategy: 'always',
                         errorClass: 'editbox-error',
-                        func: {
-                            template: '$$ => {}'
-                        },
                         ta: {
                             offsetLeft: -100,
                             class: 'popup-editor-wrapper',
@@ -412,15 +411,12 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                             errorClass: 'popup-code-editor-erroring'
                         }
                     }),
-                layout: [ {
-                    class: "div-flex-col"
-                } ]
+                layout: [ { class: "div-flex-col" } ]
             }), Form.field(EditboxCodePopup, "attr_field", {
                 get: $$ => $$.get('.atr_text'),
                 set: function($$, value) {
-                    console.warn('TODO');
-                    //$$.set('.atr_text', value);
-                    //$$.set('.atr', this.textToCode($$.runtime, value));
+                    $$.set({atr_text: value, atr: this.textToCode(value)});
+                    targetRuntime.nodes.forEach(node => node.field.key === $$.key && node.notify());
                 },
                 val: $$ => $$.get('.atr') == compilationError && $$.error('Compilation error'),
                 atr: () => ({
@@ -428,9 +424,6 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         spellcheck: 'false',
                         vstrategy: 'always',
                         errorClass: 'editbox-error',
-                        func: {
-                            template: '$$ => {}'
-                        },
                         ta: {
                             offsetLeft: -100,
                             class: 'popup-editor-wrapper',
@@ -441,15 +434,15 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 layout: [ { class: "div-flex-col" } ]
             }), Form.field(DivButton, "field_del", {
                 get: $$ => 'X',
-                set: $$ => $$.detach(),
+                set: function($$) {
+                    Editor.resetField($$.key);
+                    $$.detach();
+                },
                 atr: $$ => ({
-                        class: 'div-button',
-                        style: 'padding: 2px 5px; min-height: initial;' + ($$.get('..component') == 0 ? 'visibility:hidden;' : '')
-                    }),
-                layout: [ {
-                    class: "div-flex-col editbox-col",
-                    style: "padding: 0px; margin: 0px"
-                } ]
+                    class: 'div-button',
+                    style: 'padding: 2px 5px; min-height: initial;' + ($$.get('..component') == 0 ? 'visibility:hidden;' : '')
+                }),
+                layout: [ { class: "div-flex-col editbox-col", style: "padding: 0px; margin: 0px" } ]
             }), Form.field(Dropdown, "class_field", {
                 get: $$ => ({
                         value: $$.get('.class'),
@@ -466,12 +459,13 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                     class: "div-flex-col editbox-col"
                 } ]
             }), Form.field(EditboxCodePopup, "layout_spec_ctrl", {
-                get: $$ => JSON.stringify($$.get('.layout_text')),
+                get: $$ => JSON.stringify($$.listener.get($$.data, 'layout')||[]),
                 set: function($$, value) {
                     console.warn('TODO');
                 }, 
                 atr: () => ({
                     style: 'margin: 0px',
+                    trigger: 'change',
                     spellcheck: 'false',
                     errorClass: 'editbox-error',
                     ta: {
@@ -484,8 +478,8 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 layout: [ { class: "div-flex-col" } ]
             }) ]) ])
         }
-        static resetField(targetRuntime, fieldKey) {
-            targetRuntime.nodes.filter(node => node.field.key === fieldKey).forEach(node => {
+        static resetField(fieldKey) {
+            targetRuntime.nodes.filter(node => node.field.key === fieldKey || node.field.name === fieldKey).forEach(node => {
                 if(node.parent) {
                     node.parent.notify();
                     targetRuntime.evict(node);
@@ -514,7 +508,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
         static getContainerLayout(proxy) {
             return proxy.get('..component') == generic.Table ? 'tpos' : 'dpos'; //return proxy.get('..component').layout;
         }
-        highlightField(targetRuntime, event) {
+        highlightField(event) {
             let my = Core.nodeFromElement( event.target );
             let doc = targetRuntime.nodes[0].$parentDom.ownerDocument;
             for(let old = doc.getElementsByClassName('__marker__'), i = old.length-1; i >= 0; i--) {
@@ -551,76 +545,101 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 )
             }
         }
-        /*textToCode(runtime, code) {
-            var obj = runtime.target_runtime.form, dp = 'var __=1', t = window.opener || window;
-            for (var d in obj.dependencies) obj.dependencies[d].match(/components\//) || (dp += ', ' + d + '=target.require("' + obj.dependencies[d] + '")');
-            try {
-                if (typeof code == 'string' && code.length > 0) {
-                    try {
-                        if (uglify.parse(code).body[0].body instanceof uglify.AST_Arrow) {
-                            return new Function('code', 'target', dp + '; return eval(code)').call(obj, code, t);
-                            // to set 'this' of arrow function to form
-                                                }
-                    } catch (e) {}
-                    return t.eval('(function() { var target = this; ' + dp + ';return ' + code + '})()');
+        parseScript(script) {
+            let ast = uglify.parse(script);
+            ast.body = ast.body.filter(
+                item => item.body instanceof uglify.AST_Call && item.body.expression.name === 'define' &&
+                (!(item.body.args[0] instanceof uglify.AST_String) || 
+                   item.body.args[0] instanceof uglify.AST_String && item.body.args[0].value === formModuleName  )
+            );
+            let defineStatement = ast.body[0].body;
+            formScript = script.substr(defineStatement.start.pos, defineStatement.end.endpos);
+            let defineFunc = defineStatement.args[defineStatement.args.length-1];
+            let defineScope = (
+                defineStatement.args.reduce(
+                    (ret, cur) => ret || cur instanceof uglify.AST_Array && cur, null
+                )||{elements:[]}
+            ).elements.map( (ast, i) => defineFunc.argnames[i].name  + '=this.require("' + ast.value + '")' ).join();
+            let classDecl = {}, targetClassDecl = null;
+            let returnStatement = defineFunc.body.reduce(
+                (ret, cur) => {
+                    if(!ret) {
+                        if(cur instanceof uglify.AST_Return) {
+                            if(cur.value instanceof uglify.AST_ClassExpression ) {
+                                targetClassDecl = cur.value;
+                            } else {
+                                if(cur.value instanceof uglify.AST_SymbolRef ) {
+                                    targetClassDecl = classDecl[cur.value.name];
+                                } else {
+                                    throw 'Unrecognized construction';
+                                }
+                            }
+                            ret = cur;
+                        }
+                        if(cur instanceof uglify.AST_DefClass || cur instanceof uglify.AST_ClassExpression) {
+                            classDecl[cur.name.name] = cur;
+                        }
+                        if( cur instanceof uglify.AST_Let || cur instanceof uglify.AST_Var ) {
+                            cur.definitions.forEach(def => def.value instanceof uglify.AST_ClassExpression && (classDecl[def.name.name] = def.value));
+                        }
+                    }
+                    return ret; 
+                },
+                null
+            );
+            let fieldsDecl = targetClassDecl.properties.filter(prop => prop instanceof uglify.AST_ConciseMethod && prop.key.name === 'fields').shift();
+            this.ast = {
+                ast: ast,
+                defineScope: defineScope,
+                targetClassDecl: targetClassDecl,
+                fieldsDeclBody: fieldsDecl.value.body // decl.value.print_to_string = function(){return[Form.field(...   - AST_Accessor 
+            }
+        }
+        restartWithNewScript(script) {
+            let defScript = script.replace(/^[\t\n ]*define *\([\t\n ]*([^'"])/,'define("' + formModuleName + '",$1');
+            let myRuntime = this.$node.runtime;
+            targetWindow.require.undef(formModuleName);
+            targetWindow.eval(defScript);
+            targetWindow.require([formModuleName], formClass => {
+                targetRuntime.setDfeForm(formClass).restart();
+                myRuntime.setModel(targetRuntime.nodes[0].field).restart();
+            })
+        }
+        fieldsToText($$) {
+            function stringify(value) {
+                switch(typeof value) {
+                    case 'function':
+                        return value.toString();
+                    case 'object':
+                        throw 'TODO'
+                    default:
+                        return JSON.stringify(value);
                 }
-                return undefined;
-            } catch (e) {
+            }
+            let tr = data => {
+                let {key, name, component, children, ...rest} = data;
+                let chldrn = children.map(tr).join();
+                let str = 'Form.field(' + component.name;
+                let props = Object.getOwnPropertyNames(rest).filter(prop => !prop.match(/_text/)).map(
+                    prop => prop + ':' + stringify(rest[prop])
+                ).join();
+                name.match(/#\d+/) || (str += ',"' + name + '"');
+                props && (str += ',{' + props + '}');
+                chldrn && (str += ',' + (children.length > 1 ? '[' + chldrn + ']' : chldrn ));
+                str += ')';
+                return str;
+            }
+            return '[' + [].concat.apply([], $$.get('children').map(px => px.data).map(tr)).join() + ']';
+        }
+        textToCode(code) {
+            try {
+                return new Function(targetFormClass.name, "var " + this.ast.defineScope + "; return " + code).call(targetWindow, targetFormClass);
+            } catch(e) {
                 console.error('Compilation error [' + e.message + '] for:\n' + code);
                 return compilationError;
             }
         }
-        runtimeToJs(obj) {
-            var cc = [], dp = '', cts = obj.constructor.toString(), ast;
-            if (!cts.match(/^class/)) cts = 'class {\n' + Object.getOwnPropertyNames(obj.__proto__).map(function(p) {
-                var s = obj[p].toString();
-                return s.replace('function ', s.match(/function \(\)/) ? 'constructor' : '').replace(/"use strict";/, '');
-            }).join('\n') + '\n}';
-            ast = uglify.parse('new ' + cts);
-            for (var d in obj.dependencies) {
-                cc.push(obj.dependencies[d]);
-                dp += (dp == 0 ? '' : ',') + d;
-            }
-            var self = this, f = function collect(dfe) {
-                return dfe[0] && dfe[0].form == obj && dfe.map(function(r) {
-                    var c = r.component.cname, cf = collect(r.children)||'', cn;
-                    if(c.match(/^forms\//)) {
-                        cn = '__f_' + c.replace(/.*(?=\/\w+$)/g,'').substr(1);
-                        cc.indexOf(c) == -1 && (dp += ', ' + cn) && cc.push(c);
-                    } else {
-                        cn = '__c_' + c.replace(/\-|\//g, '_');
-                        cc.indexOf('components/' + c) == -1 && (dp += ', ' + cn) && cc.push('components/' + c);
-                    }
-                    var field = cn + '("' + r.name + '",{', cma = '';
-                    [ 'class', 'get', 'set', 'val', 'atr', 'oncreate', 'preRender', 'postRender' ].forEach(function(p) {
-                        if (typeof r[p] != 'undefined') {
-                            field += cma + p + ': ' + (typeof r[p] == 'function' ? self.codeToText(r[p]) : '"' + r[p] + '"');
-                            cma = ',';
-                        }
-                    });
-                    field += JSON.stringify(r.pos).match(/^\[[{},]*\]$/) ? '' : cma + 'pos:' + JSON.stringify(r.pos);
-                    field += '}' + (cf == 0 ? '' : ',[' + cf + ']') + ')';
-                    return field;
-                }).join(',');
-            }(obj.dfe);
-            ast.body[0].body.expression.properties.forEach(function(p) {
-                if (p instanceof uglify.AST_ConciseMethod && p.key.name == 'constructor') 
-                	for (var b = p.value.body, i = 0; i < b.length; i++) 
-                		if (b[i].body instanceof uglify.AST_Assign && b[i].body.left.property == 'dfe') 
-                			b[i] = uglify.parse('this.dfe=' + f);
-            });
-            var enc = uglify.parse('defineForm(["' + cc.join('", "') + '"], function (' + dp + ') { return ' + ast.print_to_string({
-                quote_style: 3,
-                beautify: true,
-                comments: true
-            }) + '})');
-            return enc.print_to_string({
-                quote_style: 3,
-                beautify: true,
-                comments: true
-            });
-            //, ie8: true
-        }
+        /*
         storeInSession($$) {
             function ajaxPost(data, url, accept, error) {
                 var xhr = new XMLHttpRequest();
@@ -643,32 +662,6 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }, function(xhr, s) {
                 xhr.responseText ? displayServerError(xhr.responseText) : displayServerError(JSON.stringify(xhr));
             });
-        }     
-        changeName(px, value) {
-            if (value == 0 || Editor.allFields(px).filter(function(p) {
-                return p.get('.name') == value;
-            }) != 0) {
-                px.listener.notify(px.data, 'name', 'm');
-            } else {
-                px.set('.name', value);
-                px.listener.notify(px.get('..').data, 'children');
-            }
-        }
-        moveField(proxy, newpos) {
-            var idx = proxy.index(), ch = proxy.get('..children');
-            newpos = newpos >= ch.length ? ch.length - 1 : newpos;
-            if (idx != newpos && newpos >= 0) {
-                var data = proxy.get('..').data;
-                data.children.splice(newpos, 0, data.children.splice(idx, 1).shift());
-                proxy.listener.notify(data, 'children', 'm');
-            }
-        }
-        changeParent(px, value) {
-            var par = Editor.allFields(px).filter(function(p) {
-                return p.get('.name') == value;
-            }).pop();
-            px.detach();
-            cmn.extend( px.data, par.append('.children')[0].data );
         }
         changePos(px, prop, value) {
             if (px) {
@@ -677,17 +670,6 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 prop && px.set(prop, value);
                 fpx.data.pos = cmn.extend(fpx.data.pos, []);
             }
-        }
-        changeType(px, value) {
-            require([ 'components/' + value ], function(c) {
-                px.listener.set(px.data, 'component', c);
-                px.listener.notify(px.get('..').data, 'children');
-                var pos = [];
-                for (var i = 0; i < c.slots; i++) pos.push({});
-                for (var i = px.data.pos.length, j = c.slots; i > 0 && j > 0; ) cmn.extend(px.data.pos[--i], pos[--j]);
-                px.listener.set(px.data, 'pos', pos);
-                px.set('.pos_idx');
-            });
         }
         validateTarget($$) {
             var tr = $$.runtime.target_runtime, formName = $$.data.name;
