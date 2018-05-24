@@ -1,18 +1,17 @@
-define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code-popup", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r", "components/generic", "ui/jquery" ], function(Core, require, uglify, babel, cmn, Button, Label, Dropdown, Checkbox, EditboxCodePopup, Editbox, DivButton, Div, DivC, DivR, generic, jQuery) {
+define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/button", "components/label", "components/dropdown", "components/checkbox", "components/editbox-code-popup", "components/editbox", "components/div-button", "components/div", "components/div-c", "components/div-r", "ui/jquery" ], function(Core, require, uglify, babel, cmn, Button, Label, Dropdown, Checkbox, EditboxCodePopup, Editbox, DivButton, Div, DivC, DivR, jQuery) {
     let Form = Core.Form;
     let compilationError = $$ => $$.error('compilation error');
     
-    let targetRuntime, targetFormClass, targetDocument, targetWindow, formModuleName, formScript;
+    let targetRuntime, targetFormClass, targetDocument, targetWindow, formModuleName, formScript, targetCore;
     
     return class Editor extends Form {
         constructor(node) {
             super(node);
             
             if(formScript === undefined) {
-                // TODO: use target's window/document
-                let defined = window.require.s.contexts._.defined;
+                let defined = targetWindow.require.s.contexts._.defined;
                 formModuleName = Object.keys(defined).filter(prop => defined[prop] === node.unboundModel.get('.component')).shift();
-                let origins = document.querySelector('script[data-requiremodule="' + formModuleName + '"]').src;
+                let origins = targetDocument.querySelector('script[data-requiremodule="' + formModuleName + '"]').src;
                 jQuery.get(origins, script => {
                     this.parseScript(script);
                     node.unboundModel.set({formScript: formScript});
@@ -33,6 +32,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             targetFormClass = targetRuntime.formClass;
             targetDocument = targetRuntime.nodes[0].$parentDom.ownerDocument;
             targetWindow = targetDocument.defaultView;
+            targetCore = targetWindow.require("dfe-core");
             
             return Form.field(DivR,"root", {
                 atr: () => ({
@@ -47,8 +47,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 class: "header",
                 get: () => '+',
                 set: function($$, value) {
-                    let targetCore = targetWindow.eval('require("dfe-core")');
-                    let targetEditbox = targetWindow.eval('require("components/editbox")'), taken = [], pattern = targetEditbox.name + '#';
+                    let targetEditbox = targetWindow.require("components/editbox"), taken = [], pattern = targetEditbox.name + '#';
                     let co = $$.get('childrenOf'), ppx = Editor.allFields($$).filter(
                         px => {
                             let name = px.get('.name');
@@ -176,7 +175,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }), Form.field(Button, "push2srv", {
                 class: "header",
                 get: () => 'Store in session',
-                set: () => alert('Implement me'),
+                set: $$ => Editor.storeInSession($$),
                 layout: [ {
                     style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
@@ -335,15 +334,22 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                     class: "div-flex-col"
                 } ]
             }), Form.field(Dropdown, "type_field", {
-                get: $$ => ({
-                    value: $$.get('.component'),
-                    items: [{
-                        value: Core.Component, 
-                        description: 'Base/Unknown'
-                    }].concat(Object.keys(generic).map(
-                        key => ({value: generic[key], description: key})
-                    ))
-                }),
+                get: function($$) {
+                    targetWindow.require(["components/generic"], function(generic) {
+                        let availableComponents = {};
+                        Object.keys(generic).forEach(key => availableComponents[key] = generic[key] )
+                        targetRuntime.nodes.forEach(node => availableComponents[node.field.component.name] = node.field.component);
+                        $$.result({
+                            value: $$.get('.component'),
+                            items: [{
+                                value: targetCore.Component, 
+                                description: 'Base/Unknown'
+                            }].concat(Object.keys(availableComponents).map(
+                                key => ({value: availableComponents[key], description: key})
+                            ))
+                        })
+                    })
+                },
                 set: function($$, value){
                     $$.set('.component', value);
                     Editor.resetField($$.key);
@@ -508,7 +514,8 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             })
         }
         static allFields($$) {
-            let tr = model => model.data.__bkp$children ? [model] : model.get('.children').reduce( (out, field) => out.concat(tr(field)), [model]);
+            let targetFormBase = targetCore.Form;
+            let tr = model => model.get('.component').prototype instanceof targetFormBase ? [model] : model.get('.children').reduce( (out, field) => out.concat(tr(field)), [model]);
             return [].concat.apply([], $$.get('children').map(tr));
         }
         static codeToText(fn) {
@@ -526,16 +533,13 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }
             return true;
         }
-        static getContainerLayout(proxy) {
-            return proxy.get('..component') == generic.Table ? 'tpos' : 'dpos'; //return proxy.get('..component').layout;
-        }
         highlightField(event) {
             let my = Core.nodeFromElement( event.target );
             let doc = targetRuntime.nodes[0].$parentDom.ownerDocument;
             for(let old = doc.getElementsByClassName('__marker__'), i = old.length-1; i >= 0; i--) {
                 doc.body.removeChild(old[i]);
             }
-            if(my && my.model) {
+            if(my && my.model && event.type === 'mouseover') {
                 let fieldKey = my.model.key, style = 'background: peru;', pseudo = 'border: dashed; border-color: red;';
                 let nodes = targetRuntime.nodes.filter(node => node.field.key === fieldKey && node !== targetRuntime.nodes[0]);
                 while(nodes.length && !nodes.some(node => node.isAttached())) {
@@ -547,7 +551,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 
                 uniq.forEach(
                     node => {
-                        let getContent = (n) => { let c = Core.getDOMContent(n); n == 0 && (c = Core.getDOMContent(n, true)); return c }
+                        let getContent = (n) => { let c = targetCore.getDOMContent(n); n == 0 && (c = targetCore.getDOMContent(n, true)); return c }
                         let content = getContent(node);
                         if(content == 0 && node.$prevDom !== node.$lastDom) {
                             let st = node.$prevDom ? node.$prevDom.nextSibling : node.$parentDom.firstChild;
@@ -593,7 +597,10 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 defineStatement.args.reduce(
                     (ret, cur) => ret || cur instanceof uglify.AST_Array && cur, null
                 )||{elements:[]}
-            ).elements.map( (ast, i) => defineFunc.argnames[i].name  + '=this.require("' + ast.value + '")' ).join();
+            ).elements.map( (ast, i) => ({name: defineFunc.argnames[i].name, module: ast.value}) );
+            
+            defineScope = defineScope.filter(o => ['exports', 'module'].indexOf(o.module) === -1).map(o => o.name + '=this.require("' + o.module + '")').join();
+            	
             let classDecl = {}, targetClassDecl = null;
             let returnStatement = defineFunc.body.reduce(
                 (ret, cur) => {
@@ -640,6 +647,14 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 myRuntime.setModel(targetRuntime.nodes[0].field).restart();
             })
         }
+        textToCode(code) {
+            try {
+                return new Function(targetFormClass.name, "var " + this.ast.defineScope + "; return " + code).call(targetWindow, targetFormClass);
+            } catch(e) {
+                console.error('Compilation error [' + e.message + '] for:\n' + code);
+                return compilationError;
+            }
+        }
         fieldsToText($$) {
             function stringify(value) {
                 switch(typeof value) {
@@ -658,9 +673,10 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         return JSON.stringify(value);
                 }
             }
+            let targetFormBase = targetCore.Form;
             let tr = data => {
-                let {key, name, __bkp$children, component, children, ...rest} = data;
-                let chldrn = (__bkp$children||children).map(tr).join();
+                let {key, name, passedChildren, component, children, ...rest} = data;
+                let chldrn = (component.prototype instanceof targetFormBase ? passedChildren : children).map(tr).join();
                 let str = 'Form.field(' + component.name;
                 let props = Object.getOwnPropertyNames(rest).filter(prop => !prop.match(/_text/)).map(
                     prop => prop + ':' + stringify(rest[prop])
@@ -673,18 +689,9 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }
             return '[' + [].concat.apply([], $$.get('children').map(px => px.data).map(tr)).join() + ']';
         }
-        textToCode(code) {
-            try {
-                return new Function(targetFormClass.name, "var " + this.ast.defineScope + "; return " + code).call(targetWindow, targetFormClass);
-            } catch(e) {
-                console.error('Compilation error [' + e.message + '] for:\n' + code);
-                return compilationError;
-            }
-        }
-        /*
-        storeInSession($$) {
+        static storeInSession($$) {
             function ajaxPost(data, url, accept, error) {
-                var xhr = new XMLHttpRequest();
+                let xhr = new XMLHttpRequest();
                 xhr.open('POST', url);
                 xhr.setRequestHeader("Content-type", "text/plain");
                 xhr.onreadystatechange = function() {
@@ -697,14 +704,13 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 };
                 xhr.send(data);
             }
-            let es6 = this.runtimeToJs($$.data);
-            let es5 = babel.transform(es6, { plugins: [ 'transform-es3-property-literals', 'transform-es3-member-expression-literals' ], presets: [ 'es2015' ] }).code;
-            ajaxPost(JSON.stringify({es6: es6, es5: es5}), '/DfeServlet.srv?a=dfe&p=' + $$.data.name, function(d, s) {
+            let es6 = $$.get('formScript');
+            let es5 = babel.transform(es6, { plugins: [ 'transform-es3-property-literals', 'transform-es3-member-expression-literals', 'transform-object-assign', 'transform-object-rest-spread' ], presets: [ 'es2015' ] }).code;
+            ajaxPost(JSON.stringify({es6: es6, es5: es5}), '/DfeServlet.srv?a=dfe&p=' + formModuleName.replace(/^forms\//,''), function(d, s) {
                 alert(s);
             }, function(xhr, s) {
                 xhr.responseText ? displayServerError(xhr.responseText) : displayServerError(JSON.stringify(xhr));
             });
         }
-        */
     }
 })

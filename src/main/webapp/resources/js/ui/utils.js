@@ -43,9 +43,9 @@ require.config({
             'components/textarea',
             'components/validation-component'
         ],
-        'editor/editbox-code' : [
-            'editor/editbox-code', 
-            'editor/editbox-code-popup'
+        'components/editbox-code' : [
+            'components/editbox-code', 
+            'components/editbox-code-popup'
         ]
     }
 });

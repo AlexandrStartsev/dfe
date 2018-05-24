@@ -199,7 +199,7 @@ var EventLoop = (function(){
 			type: type,
 			status: 'scheduled',
 			perform: function() {
-				context.eventQueue.put({task: task, args: argsToArray(arguments)})
+				context.eventQueue ? context.eventQueue.put({task: task, args: argsToArray(arguments)}) : console.warn('eventQueue has already been stopped and will be unable to execute task [' + type + ']\nyou stopped this queue despite it still having this task, so it s fine, right?');
 			},
 			debugInfo: isDebugMode && makeDebugInfo(callback, _this, parameters)   
 		}
