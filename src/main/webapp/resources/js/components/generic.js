@@ -25,16 +25,16 @@ define('components/text', ['components/base'], function(BaseComponent) {
 })
 
 define('components/span', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
-    return class Span extends BaseComponent {         
+    return class Span extends BaseComponent {
         render(data, error, attributes, children) {
             let sub = [], {wrap: wrap, ...rest} = attributes, header = children.get(null);
-            header && header.forEach( 
-                child => sub.push( Core.createElement('span', child) ) 
+            header && header.forEach(
+                child => sub.push( Core.createElement('span', child) )
             );
-            children.forEach( 
-                (map, row) => row && map.forEach( 
-                    child => sub.push( Core.createElement('span', child) ) 
-                ) 
+            children.forEach(
+                (map, row) => row && map.forEach(
+                    child => sub.push( Core.createElement('span', child) )
+                )
             )
             return wrap ? Core.createElement('span', attributes, sub) : [sub];
         }
@@ -42,16 +42,16 @@ define('components/span', ['dfe-core', 'components/base'], function(Core, BaseCo
 })
 
 define('components/div', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
-    return class Div extends BaseComponent {         
+    return class Div extends BaseComponent {
         render(data, error, attributes, children) {
             let sub = [], {wrap: wrap, ...rest} = attributes, header = children.get(null);
-            header && header.forEach( 
-                child => sub.push( Core.createElement('div', child) ) 
+            header && header.forEach(
+                child => sub.push( Core.createElement('div', child) )
             );
-            children.forEach( 
-                (map, row) => row && map.forEach( 
-                    child => sub.push( Core.createElement('div', child) ) 
-                ) 
+            children.forEach(
+                (map, row) => row && map.forEach(
+                    child => sub.push( Core.createElement('div', child) )
+                )
             )
             return wrap ? Core.createElement('div', rest, sub) : [sub];
         }
@@ -59,13 +59,13 @@ define('components/div', ['dfe-core', 'components/base'], function(Core, BaseCom
 })
 
 define('components/inline-rows', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
-    return class InlineRows extends BaseComponent {         
+    return class InlineRows extends BaseComponent {
         render(data, error, attributes, children) {
             let { singleColumn: singleColumn } = attributes;
             let rows = [], current, type = this.$node.elementInfo.type;
             let cellElement = type === 'div' || type === 'span' ? type : 'td';
-            children.forEach( 
-                (map, row) => map.forEach( 
+            children.forEach(
+                (map, row) => map.forEach(
                     child => {
                         if( child.control instanceof InlineRows ) {
                             rows.push( child );
@@ -95,11 +95,11 @@ define('components/table', ['dfe-core', 'components/base', 'components/inline-ro
         render(data, error, attributes, children) {
             let {
                 rowclass$header: headerClass,
-                rowstyle$header: headerStyle, 
+                rowstyle$header: headerStyle,
                 rowclass$footer: footerClass,
                 rowstyle$footer: footerStyle,
                 rowclass: rowClass,
-                rowstyle: rowStyle, 
+                rowstyle: rowStyle,
                 singleColumn: singleColumn,
                 skip: skip,
                 colOrder: colOrder,
@@ -166,7 +166,7 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
         render(data, error, attributes, children) {
             let {
                 rowclass$header: headerClass,
-                rowstyle$header: headerStyle, 
+                rowstyle$header: headerStyle,
                 rowclass$footer: footerClass,
                 rowstyle$footer: footerStyle,
                 rowclass: rowClass,
@@ -181,7 +181,7 @@ define('components/div-r', ['dfe-core', 'components/table'], function(Core, Tabl
             data = this.orderFilterRows(data, filter, order).map(row => row.data);
             let columns = this.orderFilterFields(skip, colOrder);
             return Core.createElement('div', rest, [
-                ...this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'div', 'div', singleColumn ), 
+                ...this.makeRows( columns, [null], children, 'header', {style: headerStyle, class: headerClass}, 'div', 'div', singleColumn ),
                 ...this.makeRows( columns, data, children, '', {style: rowStyle, class: rowClass}, 'div', 'div', singleColumn ),
                 ...this.makeRows( columns, [null], children, 'footer', {style: footerStyle, class: footerClass}, 'div', 'div', singleColumn )
             ]);
@@ -203,10 +203,10 @@ define('components/validation-component', ['dfe-core', 'core-validation-componen
             }
             delete attributes.errorClass;
             delete attributes.hideError;
-            Object.getOwnPropertyNames(attributes).forEach( 
-                a => { 
-                    ret[a] = attributes[a]; 
-                    delete attributes[a]; 
+            Object.getOwnPropertyNames(attributes).forEach(
+                a => {
+                    ret[a] = attributes[a];
+                    delete attributes[a];
                 }
             )
             if( hideError ) {
@@ -221,18 +221,18 @@ define('components/label', ['dfe-core', 'components/validation-component'], func
     return class Label extends ValidationComponent {
         render(data, error, attributes, children) {
             let { html: html, text: text, label: label, hideError: hideError, ...rest } = attributes;
-            return [[ 
+            return [[
                 html || label ? Core.createElement('label', {text: label, html: html, ...rest}) : text || data.toString(),
                 super.render(null, error, {hideError: hideError}, children)
             ]]
         }
     }
-}) 
+})
 
 define('components/editbox', ['dfe-core', 'components/validation-component', 'ui/date-picker-polyfill'], function(Core, ValidationComponent) {
-    function Patterning (v, p) { 
+    function Patterning (v, p) {
         while(p && v != 0 && !(v.match(p) && v.match(p)[0] == v) ) {
-            v = v.substr(0, v.length-1); 
+            v = v.substr(0, v.length-1);
         }
         return v;
     }
@@ -262,13 +262,13 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'ui
         }
         onKeyUp(e, doStore) {
             doStore = doStore || this.trigger !== 'change';
-            let data = Patterning(Formatting(e.target.value, this.format), this.pattern); 
+            let data = Patterning(Formatting(e.target.value, this.format), this.pattern);
             let transform = typeof this.transform === 'string' && this.transform.split('').map(s => +s);
             if(transform) {
-                let t = []; 
+                let t = [];
                 for(let i=0; i < transform.length; i++)
                     data.length > transform[i] && (t[i] = data.charAt(transform[i]));
-                for(let i=0; i < t.length; i++) 
+                for(let i=0; i < t.length; i++)
                     t[i] = t[i]||' ';
                 data = t.join('');
             }
@@ -276,12 +276,12 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'ui
             doStore && this.store(data);
         }
         onKeyDown(e) {
-            let ui = e.target, s = ui.selectionStart, v = ui.value; 
+            let ui = e.target, s = ui.selectionStart, v = ui.value;
             if((e.key == 'Backspace' || e.key == 'Delete' || e.key == 'Del') && this.format && v.length != ui.selectionEnd) {
                 e.preventDefault();
-                s && (ui.selectionEnd = --ui.selectionStart);  
-            } 
-            if(!e.key || e.key.length > 1 || e.ctrlKey) 
+                s && (ui.selectionEnd = --ui.selectionStart);
+            }
+            if(!e.key || e.key.length > 1 || e.ctrlKey)
                 return ;
             if(this.format) {
                 this.ca++;
@@ -289,8 +289,8 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'ui
                 while(this.format[s] && '_XdDmMyY9'.indexOf(this.format[s])==-1) s++;
                 let ol = v.length, nl = Formatting(v.substr(0, s) + e.key + v.substr(s + 1), this.format).length;
                 if(s < ol && nl >= ol || s >= ol && nl > ol ) {
-                    ui.value = ui.value.substr(0, s) + ui.value.substr(s + 1); 
-                    ui.selectionEnd = s; 
+                    ui.value = ui.value.substr(0, s) + ui.value.substr(s + 1);
+                    ui.selectionEnd = s;
                 } else {
                     e.preventDefault();
                     return ;
@@ -305,8 +305,8 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'ui
         getValueProcessed(data, ui) {
             let transform = typeof this.transform === 'string' && this.transform.split('').map(s => +s);
             if(transform) {
-                let t = []; 
-                for(let i=0;i<data.length; i++) 
+                let t = [];
+                for(let i=0;i<data.length; i++)
                     transform.length > i && (t[transform[i]] = data.charAt(i));
                 data = t.join('');
             }
@@ -317,7 +317,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'ui
                     ui.value = data;
                     if(this.format && ss >= this.ca && ss <= v.length && v != ui.value) {
                        var over = this.format.substr(ss-this.ca, this.ca).replace(/[_XdDmMyY9]/g,'').length;
-                       ui.selectionEnd = ui.selectionStart = ss + over; 
+                       ui.selectionEnd = ui.selectionStart = ss + over;
                     }
                 } else {
                     ui.value = data;
@@ -330,7 +330,7 @@ define('components/editbox', ['dfe-core', 'components/validation-component', 'ui
             let { format: format, pattern: pattern, transform: transform, trigger: trigger, ...rest } = attributes;
             Object.assign(this, {format: format, pattern: pattern, transform: transform, trigger: trigger});
             return [[
-                Core.createElement( 'input', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }), 
+                Core.createElement( 'input', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }),
                 typeof errorClass !== 'string' && super.render(null, error, rest)
             ]]
         }
@@ -386,7 +386,7 @@ define('components/button', ['dfe-core', 'components/validation-component'], fun
                 super.render(null, error, rest)
             ]]
         }
-    }   
+    }
 })
 
 define('components/checkbox', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
@@ -417,14 +417,14 @@ define('components/dropdown', ['dfe-core', 'components/validation-component'], f
             let options = def ? [{text: 'Please select...', value: def}] : [];
             let selectedIndex = 0;
             if(Array.isArray(data.items)) {
-                options = options.concat( data.items.map( 
-                    item => item && typeof item === 'object' ? { text: item.description || new String(item.value).toString(), value: item.value } : { text: new String(item).toString(), value: item } 
+                options = options.concat( data.items.map(
+                    item => item && typeof item === 'object' ? { text: item.description || new String(item.value).toString(), value: item.value } : { text: new String(item).toString(), value: item }
                 ) );
             }
             options.forEach( (item, i) => testChoice(data.value, item.value) && (selectedIndex = i) );
             return [[
                 Core.createElement(
-                    'select', 
+                    'select',
                     { ...this.splitAttributes(rest, error), selectedIndex: selectedIndex, onChange: e => this.store(options[e.target.selectedIndex].value) },
                     options.map( opt => Core.createElement('option', { value: opt.value, text: opt.text }) )
                 ),
@@ -461,13 +461,13 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
         setActiveTab(key) {
             if(this.activeTab !== key) {
                 this.activeTab = key;
-                this.update(); 
+                this.update();
             }
         }
         render(data, error, attributes, children) {
             let {
                 rowclass$header: headerClass,
-                rowstyle$header: headerStyle, 
+                rowstyle$header: headerStyle,
                 rowclass: rowClass,
                 rowstyle: rowStyle,
                 headField: headField,
@@ -492,7 +492,7 @@ define('components/tab-s', ['dfe-core', 'components/base'], function(Core, BaseC
                             (child, field) => {
                                 if( field.name === headField ) {
                                     head.children.push( Core.createElement('div', child, layout => ({
-                                        ...layout, 
+                                        ...layout,
                                         ...(row.key === this.activeTab ? {class: (layout.class ? layout.class + ' ' : '') + haclass} : {}),
                                         onClick: () => this.setActiveTab(row.key)
                                     })))
@@ -529,7 +529,7 @@ define('components/tab-d', ['dfe-core', 'components/base'], function(Core, BaseC
         render(data, error, attributes, children) {
             let {
                 rowclass$header: headerClass,
-                rowstyle$header: headerStyle, 
+                rowstyle$header: headerStyle,
                 rowclass: rowClass,
                 rowstyle: rowStyle,
                 haclass: haclass,
@@ -540,7 +540,7 @@ define('components/tab-d', ['dfe-core', 'components/base'], function(Core, BaseC
             if(useHandler) {
                 this.handler.prepare(children);
             }
-            
+
             let head = Core.createElement('div', { class: headerClass, style : headerStyle });
             let body = Core.createElement('div', { class: rowClass, style : rowStyle });
             let headField = this.allColumns.filter(field => !field.class).pop();
@@ -549,7 +549,7 @@ define('components/tab-d', ['dfe-core', 'components/base'], function(Core, BaseC
                     let child = children.get(model.data).get(headField), isActive = (useHandler ? this.handler.activeTab : activeTab)(model);
                     if(child) {
                         head.children.push( Core.createElement('div', child, layout => ({
-                            ...layout, 
+                            ...layout,
                             ...(isActive ? {class: (layout.class ? layout.class + ' ' : '') + haclass} : {}),
                             onClick: () => (this.handler.store(model), this.store(model))
                         })));
@@ -577,16 +577,16 @@ define('components/div-c', ['dfe-core', 'components/table'], function(Core, Tabl
                 ...rest
             } = attributes;
             let fields = {
-                header: [], 
-                footer: [], 
-                "": [] 
+                header: [],
+                footer: [],
+                "": []
             }
             let rows = this.orderFilterRows(data, filter, order);
-            this.orderFilterFields(skip, colOrder).forEach( 
-                field => fields[field.class||''].push(field) 
+            this.orderFilterFields(skip, colOrder).forEach(
+                field => fields[field.class||''].push(field)
             )
             let columns = fields[""].map(
-                field => Core.createElement( 'div', { key: field.name, style: rowStyle, class: rowClass} ) 
+                field => Core.createElement( 'div', { key: field.name, style: rowStyle, class: rowClass} )
             );
             this.toColumns(children.get(null), fields.header, columns);
             rows.forEach( model => this.toColumns(children.get(model.data), fields[""], columns) );
@@ -629,19 +629,19 @@ define('components/radiolist', ['dfe-core', 'components/validation-component'], 
                     item => [
                         Core.createElement('input', {
                             name: this.defaultName,
-                            ...this.splitAttributes(rest, error), 
-                            type: 'radio', 
-                            checked: testChoice( normalized.value, item.value ), 
+                            ...this.splitAttributes(rest, error),
+                            type: 'radio',
+                            checked: testChoice( normalized.value, item.value ),
                             onChange: () => this.store(item.value)
-                        }), 
+                        }),
                         item.description || item.value.toString(),
-                        orientation === 'vertical' && Core.createElement('br') 
+                        orientation === 'vertical' && Core.createElement('br')
                     ]
                 )), super.render(null, error, rest)
             ]]
         }
     }
-}) 
+})
 
 define('components/iframe', ['dfe-core', 'components/base'], function(Core, BaseComponent) {
     return class Iframe extends BaseComponent {
@@ -649,7 +649,7 @@ define('components/iframe', ['dfe-core', 'components/base'], function(Core, Base
             return Core.createElement('iframe', { src: data.toString(), ...attributes });
         }
     }
-}) 
+})
 
 define('components/textarea', ['dfe-core', 'components/editbox', 'components/validation-component'], function(Core, Editbox, ValidationComponent) {
     return class Textarea extends Editbox {
@@ -657,7 +657,7 @@ define('components/textarea', ['dfe-core', 'components/editbox', 'components/val
             let { format: format, pattern: pattern, transform: transform, trigger: trigger, ...rest } = attributes;
             Object.assign(this, {format: format, pattern: pattern, transform: transform, trigger: trigger});
             return [[
-                Core.createElement('textarea', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }), 
+                Core.createElement('textarea', { ...this.splitAttributes(rest, error), ...this.events, value: this.getValueProcessed(data.toString()) }),
                 ValidationComponent.prototype.render.call(this, null, error, rest)
             ]]
         }
@@ -666,28 +666,41 @@ define('components/textarea', ['dfe-core', 'components/editbox', 'components/val
 
 define('components/child-runtime', ['dfe-core'], function(Core) {
     return class ChildRuntime extends Core.Component {
+    	constructor(node){
+    		super(node);
+    		this.modelKey = -1;
+    		this.formName = null;
+    		this.childRuntime = null;
+    		this.ref = null;
+    	}
         render(data, error, attributes, children) {
             let { form: formName, editTarget: editTarget, ref: ref, ...rest } = attributes;
-            let model = data[0]||{};
-            ChildRuntime.setDOMAttributes(this.ref, formName, editTarget, model);
-            return Core.createElement('div', { 
-                ...rest, 
-                ref: dom => ( ref && ref(dom), ChildRuntime.setDOMAttributes(this.ref = dom, formName, editTarget, model) )
+            let model = data[0];
+            if( model ) {
+	            if( this.formName !== formName || this.modelKey !== model.key || !this.childRuntime ) {
+	            	this.formName = formName;
+	            	this.modelKey = model.key;
+	            	this.childRuntimeShutdown();
+	            	require(['forms/' + formName]).then(formClass => this.childRuntime = new Core.Runtime().setDfeForm(formClass[0]).setModel(model).restart(this.ref));
+	            }
+            } else {
+            	this.childRuntimeShutdown();
+            }
+            return Core.createElement('div', {
+                ...rest,
+                ...(editTarget ? {domAttributes: {'dfe-edit-target':''}} : {}),
+                ref: dom => ( ref && ref(dom), this.ref = dom, this.childRuntime && this.childRuntime.setRoot(dom) )
             });
         }
-        destroy() {
-            let rt = this.ref && this.ref._dfe_runtime;
-            if(rt) {
-                rt.shutdown();
+        childRuntimeShutdown() {
+        	if(this.childRuntime) {
+            	this.childRuntime.shutdown();
             }
-            super.destroy();
+        	this.childRuntime = null;
         }
-        static setDOMAttributes(ref, formName, editTarget, model) {
-            if(ref) {
-                ref.setAttribute('dfe-form', formName);
-                ref.dfeModel = model;
-                editTarget ? ref.setAttribute('dfe-edit-target', '') : element.removeAttribute('dfe-edit-target');
-            }
+        destroy() {
+            this.childRuntimeShutdown();
+            super.destroy();
         }
     }
 })
@@ -703,7 +716,7 @@ define('components/div-button', ['dfe-core', 'components/validation-component'],
                 ])
             )
         }
-    }   
+    }
 })
 
 define('components/multioption', ['dfe-core', 'components/validation-component'], function(Core, ValidationComponent) {
@@ -714,10 +727,10 @@ define('components/multioption', ['dfe-core', 'components/validation-component']
                 Core.createElement('div', { ...this.splitAttributes(rest, error) }, [
                     ...Array.prototype.concat.apply([], data.options.map(
                         option => [
-                            Core.createElement('input', { 
-                                type: 'checkbox', 
-                                checked: option === value, 
-                                onChange: e => this.store(e.target.checked ? option : []) 
+                            Core.createElement('input', {
+                                type: 'checkbox',
+                                checked: option === value,
+                                onChange: e => this.store(e.target.checked ? option : [])
                             }),
                             option
                         ]
@@ -726,7 +739,7 @@ define('components/multioption', ['dfe-core', 'components/validation-component']
                 ])
             )
         }
-    }   
+    }
 })
 
 define('components/labeled-component', ['dfe-core', 'components/label'], function(Core, Label) {
@@ -734,8 +747,8 @@ define('components/labeled-component', ['dfe-core', 'components/label'], functio
         render(data, error, attributes, children) {
             let firstChild;
             children.forEach(map => map.forEach(child => firstChild || (firstChild = child) ));
-            return [ 
-                ...super.render("not specified", error, attributes, children), 
+            return [
+                ...super.render("not specified", error, attributes, children),
                 firstChild
             ]
         }
@@ -819,8 +832,8 @@ define('components/modal', ['dfe-core', 'components/div'], function(Core, Div){
         static fields(children, config) {
             return (
                 Core.Form.field(Div, {
-                    atr: () => ({wrap: false}), 
-                    layout: [ { style: 'position: absolute; left: 300px; top: 300px; border: 2px solid #bbb; border-radius: 3px; padding: 5px;' } ] 
+                    atr: () => ({wrap: false}),
+                    layout: [ { style: 'position: absolute; left: 300px; top: 300px; border: 2px solid #bbb; border-radius: 3px; padding: 5px;' } ]
                 }, children )
             )
         }
@@ -931,11 +944,11 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
         }
         onResize() {}
         onPopupShown() {}
-        getMapper(value) { 
-            return value; 
+        getMapper(value) {
+            return value;
         }
-        setMapper(value) { 
-            return value; 
+        setMapper(value) {
+            return value;
         }
         getPopupActiveElement() {
             return this.popupContainer.firstChild;
@@ -947,9 +960,9 @@ define('components/editbox-popup', ['dfe-core', 'components/editbox', 'component
     }
 })
 
-/* TODO: 
+/* TODO:
 define('components/typeahead', ['components/component', 'ui/utils', 'ui/jquery', 'ui/jquery-typeahead'], function(Component, uiUtils, jQuery) {
-	function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
+        function _extend() { for(var i = arguments.length-1, to = arguments[i], from; from = arguments[--i];) for (var key in from) to[key] = from[key]; return to; }
     return _extend({
         cname: 'typeahead',
         defaultOPTS: { source : {}, minLength: 1, maxItem: 8, maxItemPerGroup: 6, order: "asc", hint: true, searchOnFocus: true, debug: false, display: ['value','description'], template: '{{value}}: {{description}}', emptyTemplate: 'no result for {{query}}' },
@@ -984,7 +997,7 @@ define('components/typeahead', ['components/component', 'ui/utils', 'ui/jquery',
                     match || (rt.memorizedItem = data.found);
                     rt.node.value = rt.memorizedItem[attrs.display || 'description'];     //jQuery(rt.node).typeahead('close');
                 }
-            } else 
+            } else
                 jQuery(rt.node).typeahead('showloading');
         },
         emptyUI: function(control) {

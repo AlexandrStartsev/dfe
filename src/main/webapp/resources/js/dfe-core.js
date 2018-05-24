@@ -431,7 +431,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
                     if( isArray ) {
                         html[0].nodeName ? html.forEach(node => domElement.appendChild(node)) : (domElement.innerHTML = html.join(''));
                     } else {
-                        html.nodeName ? domElement.appendChild(html) : domElement.innerHTML = html.toString();
+                        html.nodeName ? domElement.appendChild(html) : (domElement.innerHTML = html.toString());
                     }
                 }
             }

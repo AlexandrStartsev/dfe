@@ -721,8 +721,8 @@ var require = (function (modules, loadLock, moduleIdx){
 	}
 	
 	var __noop__ = (function(){
-		var dummy = function() { return dummy; }
-		dummy.__noSuchProperty__ =dummy;
+		var dummy = function(prop) { return dummy; }
+		dummy.__noSuchProperty__ = dummy;
 		dummy.__noSuchMethod__ = dummy;
 		return dummy;
 	})()
@@ -955,7 +955,6 @@ var validateDfe = (function(){
 	            return true; 
 	        },
 	        get : function(data, elem) { return data[elem] },
-	        // TODO: this is used to set attribute of subform and it kind of "mutates". Do something about whole thing
 	        set : function (data, element, value, action) { if(data[element] != value) { data[element] = value; this.notify(data, element, action, value) }; return true; },
 	        For: function(o) { return listener(o); }
 		}
