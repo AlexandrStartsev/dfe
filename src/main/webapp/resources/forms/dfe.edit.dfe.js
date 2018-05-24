@@ -169,7 +169,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }), Form.field(Button, "restart", {
                 class: "header",
                 get: () => 'Restart target',
-                set: () => targetRuntime.restart(),
+                set: $$ => { targetRuntime.restart(); $$.$node.runtime.setModel(targetRuntime.nodes[0].field).restart(); },
                 layout: [ {
                     style: "display: inline; margin-left: 2px; height: min-content;"
                 } ]
@@ -189,7 +189,7 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         filter: Editor.filterRow.bind(null, $$.get('childrenOf'), $$.get('hierarchyOf'), $$.get('subChildren'), nameToField),
                         class: 'div-flex-h',
                         style: 'box-sizing: border-box; overflow-y: scroll; height: 400px;',
-                        rowclass$header: 'div-alt-color-fc',
+                        rowclass: 'div-alt-color-fc',
                         orientation: 'horizontal',
                         events: {
                             onMouseOver: this.highlightField.bind(this),
@@ -449,8 +449,8 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                         items: [ '', 'header', 'footer' ]
                     }),
                 set: function($$, value) {
-                    $$.set('.class', value);
-                    $$.listener.notify($$.get('..').data, 'children');
+                    value ? $$.set('.class', value) : $$.set('.class');
+                    Editor.resetField($$.key);
                 },
                 atr: $$ => ({
                         style: $$.get('..component') == 0 ? 'visibility:hidden;' : ''
@@ -459,9 +459,26 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                     class: "div-flex-col editbox-col"
                 } ]
             }), Form.field(EditboxCodePopup, "layout_spec_ctrl", {
-                get: $$ => JSON.stringify($$.listener.get($$.data, 'layout')||[]),
+                get: $$ => {
+                    let layout = $$.listener.get($$.data, 'layout');
+                    return layout && layout != 0 ? uglify.parse(JSON.stringify(layout)).print_to_string().replace(/;$/, '') : ''
+                },
                 set: function($$, value) {
-                    console.warn('TODO');
+                    try {
+                        if(!value || value == 0 || value == '[]') {
+                            $$.listener.set($$.data, 'layout');
+                            Editor.resetField($$.key);
+                        } else {
+                            value = targetWindow.eval(value);
+                            if(!Array.isArray(value) || value.some(part => typeof part !== 'object' || Array.isArray(part)) ) {
+                                throw new Error('Must be an array of simple objects');
+                            }
+                            $$.listener.set($$.data, 'layout', value);
+                            Editor.resetField($$.key);
+                        }
+                    } catch(e) { 
+                        console.warn(e.message);
+                    }
                 }, 
                 atr: () => ({
                     style: 'margin: 0px',
@@ -479,16 +496,19 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }) ]) ])
         }
         static resetField(fieldKey, resetChildren) {
+            let toReset = new Set();
             targetRuntime.nodes.filter(node => node.field.key === fieldKey || node.field.name === fieldKey).forEach(node => {
                 let targetNode = resetChildren ? node : node.parent;
-                if(targetNode) {
-                    targetNode.children.forEach(map => map.forEach(child => targetRuntime.evict(child)));
-                    targetNode.notify();
-                }
+                targetNode && toReset.add(targetNode);
+            })
+            toReset.forEach(node => {
+                node.children.forEach(map => map.forEach(child => targetRuntime.evict(child)));
+                node.children.clear();
+                node.notify();
             })
         }
         static allFields($$) {
-            let tr = model => model.get('.children').reduce( (out, field) => out.concat(tr(field)), [model])
+            let tr = model => model.data.__bkp$children ? [model] : model.get('.children').reduce( (out, field) => out.concat(tr(field)), [model]);
             return [].concat.apply([], $$.get('children').map(tr));
         }
         static codeToText(fn) {
@@ -516,19 +536,32 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                 doc.body.removeChild(old[i]);
             }
             if(my && my.model) {
-                let fieldKey = my.model.key, style = 'background: peru;';
+                let fieldKey = my.model.key, style = 'background: peru;', pseudo = 'border: dashed; border-color: red;';
                 let nodes = targetRuntime.nodes.filter(node => node.field.key === fieldKey && node !== targetRuntime.nodes[0]);
                 while(nodes.length && !nodes.some(node => node.isAttached())) {
                     nodes = nodes.map(node => node.parent).filter(node => node);
-                    style = 'border: dashed; border-color: red;';
+                    style = pseudo;
                 }
                 let uniq = new Set();
                 nodes.filter(node => node.isAttached()).forEach(node => uniq.add(node));
                 
                 uniq.forEach(
                     node => {
-                        let content = Core.getDOMContent(node);
-                        content.filter( node => content.indexOf(node.parentNode) === -1 ).forEach(
+                        let getContent = (n) => { let c = Core.getDOMContent(n); n == 0 && (c = Core.getDOMContent(n, true)); return c }
+                        let content = getContent(node);
+                        if(content == 0 && node.$prevDom !== node.$lastDom) {
+                            let st = node.$prevDom ? node.$prevDom.nextSibling : node.$parentDom.firstChild;
+                            while(true) {
+                                content.push(st);
+                                if(st === node.$lastDom) break ;
+                                st = st.nextSibling;
+                            }
+                        }
+                        while(content == 0 && node.parent) {
+                            style = pseudo;
+                            content = getContent(node = node.parent);
+                        }
+                        content.filter( e => content.indexOf(e.parentNode) === -1 ).forEach(
                             dom => {
                                 let r = (dom.getBoundingClientRect ? dom : dom.parentNode).getBoundingClientRect(), sp;
                                 if(r && (r.x || r.width)){
@@ -613,14 +646,21 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
                     case 'function':
                         return value.toString();
                     case 'object':
-                        throw 'TODO'
+                        if(value instanceof RegExp) {
+                            return value.toString();
+                        }
+                        if(Array.isArray(value)) {
+                            return '[' + value.map(v => stringify(v)).join() + ']'
+                        } else {
+                            return '{' + Object.keys(value).map(key => key + ':' + stringify(value[key])).join() + '}'
+                        }
                     default:
                         return JSON.stringify(value);
                 }
             }
             let tr = data => {
-                let {key, name, component, children, ...rest} = data;
-                let chldrn = children.map(tr).join();
+                let {key, name, __bkp$children, component, children, ...rest} = data;
+                let chldrn = (__bkp$children||children).map(tr).join();
                 let str = 'Form.field(' + component.name;
                 let props = Object.getOwnPropertyNames(rest).filter(prop => !prop.match(/_text/)).map(
                     prop => prop + ':' + stringify(rest[prop])
@@ -664,33 +704,6 @@ define([ "dfe-core", "require", "uglify", "babel", "dfe-common", "components/but
             }, function(xhr, s) {
                 xhr.responseText ? displayServerError(xhr.responseText) : displayServerError(JSON.stringify(xhr));
             });
-        }
-        changePos(px, prop, value) {
-            if (px) {
-                var fpx = px.get('..');
-                px.listener.notify(fpx.get('..').data, 'children');
-                prop && px.set(prop, value);
-                fpx.data.pos = cmn.extend(fpx.data.pos, []);
-            }
-        }
-        validateTarget($$) {
-            var tr = $$.runtime.target_runtime, formName = $$.data.name;
-            tr.notifyControls(Array.from(tr.controls), 'validate');
-        }
-        loadJS($$, script) {
-            var tr = $$.runtime.target_runtime, formName = $$.data.name, t = window.opener || window;
-            t.requirejs.undef('forms/' + formName);
-            t.eval(script.replace('defineForm(', 'defineForm("' + formName + '",'));
-            t.require([ 'forms/' + formName ], function(dfe) {
-                tr.setDfeForm(dfe.form).restart();
-                $$.runtime.setModel(dfe.form).restart();
-            });
-        }
-        generateName(px) {
-            for (var n = Editor.allFields(px).map(function(p) {
-                return p.get('.name');
-            }), i = 1; n.indexOf('field-' + i) != -1; i++) ;
-            return 'field-' + i;
         }
         */
     }

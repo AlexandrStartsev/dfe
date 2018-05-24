@@ -600,6 +600,7 @@ define('dfe-core', ['dfe-dom'], function(document) {
         static field(clazz, ...args) {
             let field = new Field(clazz, ...args);
             if( clazz.prototype instanceof Form ) {
+                field.__bkp$children = field.children;
                 field.children = clazz.fields(field.children, field.config||{})||[];
                 Array.isArray(field.children) || ( field.children = [field.children] );
                 // Not quite sure about this.
