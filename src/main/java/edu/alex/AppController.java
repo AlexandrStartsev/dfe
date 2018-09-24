@@ -31,5 +31,10 @@ public class AppController {
 	   public String p2(Model model) {
 	      model.addAttribute("user","alex");
 	      return "editor";
-	   }		 	  
+	   }	
+	  @RequestMapping(path={"/app"},method=RequestMethod.GET)
+	   public String p3(Model model) {
+	      model.addAttribute("user","alex");
+	      return "app";
+	   }	
 }

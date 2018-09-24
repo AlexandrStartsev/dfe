@@ -1,7 +1,5 @@
 package com.arrow.util.nashorn.collections;
 
-import static jdk.nashorn.internal.runtime.Context.getGlobal;
-
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -85,7 +83,7 @@ public class NashornSet<K> {
 	}	
 	
 	public void forEach(ScriptObjectMirror action) {
-		this.forEach(action, getGlobal());
+		this.forEach(action, null);
     }	
 
 	public void forEach(ScriptObjectMirror action, Object ctx) {

@@ -1,17 +1,29 @@
 package com.arrow.util.nashorn.collections;
 
-import static jdk.nashorn.internal.runtime.Context.getGlobal;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import jdk.nashorn.internal.runtime.ScriptRuntime;
-
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 @SuppressWarnings({ "restriction" })
 public class NashornMap<K, V> {
+
+	private final static Object _undefined = new Function(){
+		@Override
+		public Object apply(Object o) {
+			try {
+				return new ScriptEngineManager().getEngineByName("nashorn").eval("undefined");
+			} catch (ScriptException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}.apply(null);
 
 	public final static JSPrototype prototype = new JSPrototype();
 	
@@ -65,7 +77,7 @@ public class NashornMap<K, V> {
 	
 	public V get(K key) {
 		LinkedEntry<K, V> e = this.map.get(key);
-		return e == null ? (V)ScriptRuntime.UNDEFINED : e.value;
+		return e == null ? (V)_undefined : e.value;
 	}
 	
 	public boolean has(K key) {
@@ -74,7 +86,7 @@ public class NashornMap<K, V> {
 	
 	
 	public void forEach(ScriptObjectMirror action) {
-		this.forEach(action, getGlobal());
+		this.forEach(action, null);
     }
 	
 	public void forEach(ScriptObjectMirror action, Object ctx) {

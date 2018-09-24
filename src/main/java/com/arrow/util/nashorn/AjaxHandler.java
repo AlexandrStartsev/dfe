@@ -85,7 +85,7 @@ public class AjaxHandler {
 	}
 	
 	public final static void primeNashornAjaxCache(@SuppressWarnings("unused") String scriptName, String key, String jsonResponse) {
-		ExperimentalUtilsFactory.execute("function(k, v){ ajaxCache.put(k, v, 'json', 'success') }", key, jsonResponse);
+		NashornUtils.execute("function(k, v){ ajaxCache.put(k, v, 'json', 'success') }", key, jsonResponse);
 	}
 	
 	/*

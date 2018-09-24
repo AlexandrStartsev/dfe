@@ -681,7 +681,7 @@ define('components/child-runtime', ['dfe-core'], function(Core) {
 	            	this.formName = formName;
 	            	this.modelKey = model.key;
 	            	this.childRuntimeShutdown();
-	            	require(['forms/' + formName]).then(formClass => this.childRuntime = new Core.Runtime().setDfeForm(formClass[0]).setModel(model).restart(this.ref));
+	            	require(['forms/' + formName], formClass => this.childRuntime = new Core.Runtime().setDfeForm(formClass).setModel(model).restart(this.ref));
 	            }
             } else {
             	this.childRuntimeShutdown();

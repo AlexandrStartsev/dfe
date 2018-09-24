@@ -14,7 +14,9 @@ Array.from = function(s) {
     return r; 
 }
 
-var Symbol = {iterator: 'Symbol(Symbol.iterator)'};
+var Symbol = function(){}
+Symbol.iterator = 'Symbol(Symbol.iterator)';
+Symbol.toStringTag = 'Symbol(Symbol.toStringTag)';
  
 var Set = Java.type('com.arrow.util.nashorn.collections.NashornSet'); 
 var Map = Java.type('com.arrow.util.nashorn.collections.NashornMap'); 
@@ -22,37 +24,16 @@ var Map = Java.type('com.arrow.util.nashorn.collections.NashornMap');
 Set.prototype.constructor = Set;
 Map.prototype.constructor = Map;
 
-var JavaCompletableFuture = Java.type('java.util.concurrent.CompletableFuture');
-var JavaConcurrentHashMap = Java.type('java.util.concurrent.ConcurrentHashMap');
-var JavaAtomicInteger = Java.type('java.util.concurrent.atomic.AtomicInteger');
-var JavaTimeUnit = Java.type('java.util.concurrent.TimeUnit');
-var JavaThread = Java.type('java.lang.Thread');
-var JavaThreadLocal = Java.type('java.lang.ThreadLocal');
-var JavaLinkedBlockingQueue = Java.type('java.util.concurrent.LinkedBlockingQueue');
-var JavaTimer = Java.type('java.util.Timer');
-var JavaTimerTask = Java.type('java.util.TimerTask');
-var JavaException = Java.type('java.lang.Exception');
-var JavaExecutors = Java.type('java.util.concurrent.Executors');
-var JavaRunnable = Java.type('java.lang.Runnable');
-var JavaCallable = Java.type('java.util.concurrent.Callable');
-var JavaTimeoutException = Java.type('java.util.concurrent.TimeoutException');
-var JavaIOUtils = Java.type('org.apache.commons.io.IOUtils');
-var JavaURL = Java.type('java.net.URL');
-var JavaCacheHandler = Java.type('com.arrow.util.nashorn.CacheHandler');
-var classLoader = JavaThread.currentThread().getContextClassLoader();
-
-
-var makeJavaException = (function(){
-	var JavaException = Java.type('java.lang.Exception');
-	return function (message, e) {
-		if(typeof message !== 'string') {
-			e = message;
-			message = undefined;
-		}
-		var javaException = new JavaException(e.stack ?  e.toString() + '\n' +  e.stack : e);
-		return message ? new JavaException(message, javaException) : javaException;
+var WeakMap = (function(){
+	var JavaWeakMap = Java.type('java.util.WeakHashMap');
+	
+	var WeakMap = function() {
+		this.__impl = new JavaWeakMap();
 	}
-})();
+	WeakMap.prototype.get = function(key) { return this.__impl.get(key); }
+	WeakMap.prototype.set = function(key, value) { return this.__impl.put(key, value); }
+	return WeakMap;
+})()
 
 //########################################################################################
 
@@ -61,15 +42,14 @@ var makeJavaException = (function(){
  */
 
 var console = (function(){
-    var timeMap = JavaThreadLocal.withInitial(function() { return new Map()});
+    var timeMap = new Map();
     var System = Java.type('java.lang.System');
+    var JavaException = Java.type('java.lang.Exception');
     function format(a) {
         if(a instanceof Error) {
             return a.message + '\n' + a.stack;
         }
         switch(typeof a) {
-        case 'undefined':
-            return 'undefined';
         case 'function':
             return a.toString();
         case 'number':
@@ -78,7 +58,8 @@ var console = (function(){
             return a;
         case 'object':
             try {
-                return JSON.stringify(a);
+            	if(a && typeof a[Symbol.toStringTag] === 'function') return a[Symbol.toStringTag]();
+                return JSON.stringify(a) || new String(a);
             } catch(a) {
                 return new String(a);
             }
@@ -113,11 +94,11 @@ var console = (function(){
                 doLog(arguments[i], System.err, 'ALERT: ');
         },
         time : function(s) {
-            timeMap.get().set(s, System.currentTimeMillis())
+            timeMap.set(s, System.currentTimeMillis())
         },
         timeEnd : function(s) {
-            this.log(s + ": " + (System.currentTimeMillis() - timeMap.get().get(s)) + "ms" );
-            timeMap.get().delete(s);
+            this.log(s + ": " + (System.currentTimeMillis() - timeMap.get(s)) + "ms" );
+            timeMap.delete(s);
         }
     }
 })();
@@ -125,548 +106,448 @@ var console = (function(){
 var alert = console.alert;
 
 /**
- * Event loop with thread context. All "user" code will be executed with a single thread thus will remain thread-safe;  
+ * Event loop with thread context. All events will be executed within the same thread thus will remain thread-safe.
+ * Some event suppliers (non-blocking feeder and http calls) will run in separate threads managed by externally supplied executor services. 
+ * 
+ * Eventloop will automatically shutdown if event supply is exhausted because there is no way to supply new events unless through other events.
+ *   
+ * Eventloop will generally respond to thread interruption with shutdown, it will release non-blocking feeder threads in this case,
+ * so no need to do it manually. It will not shutdown supplied non-blocking executor services so they can be reused.
+ * It will not close async http client.
+ *    
+ * non-blocking feeder is expected to shutdown by interrupting its thread. non-blocking feeder thread is interrupted externally,
+ * its resources will be released from event loop. Eventloop will not shutdown in this case.     
  */
 
-var non_event_loop_executor = JavaExecutors.newCachedThreadPool();
+var global = (function() {return this})();
 
-function executeAsync(task, eventLoopContext) {
-	eventLoopContext ? eventLoopContext.supplyAsync(task) : non_event_loop_executor.submit(new (Java.extend(JavaRunnable, { run: task })));
-}
+function EventLoop(rootTask, localhostAddress, httpClient){
+	var JavaInterruptedException = Java.type('java.lang.InterruptedException');
+	var JavaConcurrentHashMap = Java.type('java.util.concurrent.ConcurrentHashMap');
+	var JavaLinkedBlockingQueue = Java.type('java.util.concurrent.LinkedBlockingQueue');
+	var JavaTimer = Java.type('java.util.Timer');
+	var JavaTimerTask = Java.type('java.util.TimerTask');
+	var JavaException = Java.type('java.lang.Exception');
 
+	var makeJavaException = (function(){
+		return function (message, e) {
+			if(typeof message !== 'string') {
+				e = message;
+				message = undefined;
+			}
+			var javaException = new JavaException(e.stack ?  e.toString() + '\n' +  e.stack : e);
+			return message ? new JavaException(message, javaException) : javaException;
+		}
+	})();
 
-function argsToArray(args, initialIndex, out) {
-	var params = out||[];
-	for(var i = initialIndex||0; i < args.length; i++) {
-		params.push(args[i]);
+	function wrapJavaException(e) {
+		if(e instanceof JavaException) {
+			return new Error(e.getMessage());
+		}
+		return e;
 	}
-	return params;
-}
-
-var EventLoop = (function(){
-	var threadContext = new JavaThreadLocal();
+	
+	function argsToArray(args, initialIndex, out) {
+		var params = out||[];
+		for(var i = initialIndex||0; i < args.length; i++) {
+			params.push(args[i]);
+		}
+		return params;
+	}
+	
 	var isDebugMode = typeof __EVENTLOOP_DEBUG_MODE__ !== 'undefined' && __EVENTLOOP_DEBUG_MODE__;
 
-	function newEventLoopContext(httpServletRequest) {
-		var name = '__threadContext__' + JavaThread.currentThread().getName();
-		//console.log('Starting event loop: ' + name);
-		return {
-			name: name, 
-			executor: JavaExecutors.newCachedThreadPool(),
-			httpServletRequest: httpServletRequest,
-			counter: new JavaAtomicInteger(0),
-			eventQueue: new JavaLinkedBlockingQueue(),
-			timer: new JavaTimer(),
-			pendingTasks: new JavaConcurrentHashMap(),
-			supplyAsync: function(callable) {
-				return JavaCompletableFuture.supplyAsync( callable, this.executor );
-			},
-			exceptions: new Set()
-		}
-	}
+//	var threadContext_name = '__threadContext__' + JavaThread.currentThread().getName();
+	var threadContext_counter = 0;
+	var threadContext_breakpoint = 0;
+	var threadContext_currentTask = null; 
+	var threadContext_eventQueue = new JavaLinkedBlockingQueue();
+	var threadContext_timer = new JavaTimer();
+	var threadContext_pendingTasks = new JavaConcurrentHashMap();
+	var interrupted = false;
 
-	function shutdownEventLoopContext(context, result) {
-		if(typeof result !== 'undefined') {
-			context.result = result;
-		}			
-		if(!context.executor.isShutdown()) {
-			context.timer.cancel();
-			context.executor.shutdown();
-			context.pendingTasks.clear();
-			context.eventQueue.drainTo([]);
-			context.eventQueue = null;
-		}
-	}
-
-	function createQueueTaskInContext(context, callback, type, _this, parameters) {
+	// When enabling parent tracking, make sure following doesn't blow up or do something about it: function DoLoad(v, callback) {v ? setImmediate(DoLoad.bind(null, v-1, callback)) : callback();} function Do(x) {	if(x < 100000) {		console.time("" + x);		DoLoad(10000, function() {			console.timeEnd("" + x);			Do(x + 1);		});	}};Do(0);
+	function prepareTask(type, oncancel) {
 		var once = type !== 'interval', task = {
-			id: context.counter.incrementAndGet(),
-			execute: function(args) { // array
-				once && context.pendingTasks.remove(task.id);
-				if(task.status === 'scheduled') {
-					try {
-						task.result = callback.apply(_this, parameters||args);
-					} catch (e) {
-						task.result = e;
-						console.error('Scheduled task [' + type + '] threw exception:', e);
-						context.exceptions.add(e);
-					} finally {
-						typeof task.callback === 'function' &&  task.callback(task.result);
-						once && (task.status = 'done');
-					}
-				}
-			},
+			id: threadContext_counter++,
+			breakpoint: (threadContext_currentTask ? threadContext_currentTask.breakpoint : 0),
+			//depth: (threadContext_currentTask ? threadContext_currentTask.depth : 0) + 1,
 			type: type,
 			status: 'scheduled',
-			perform: function() {
-				context.eventQueue ? context.eventQueue.put({task: task, args: argsToArray(arguments)}) : console.warn('eventQueue has already been stopped and will be unable to execute task [' + type + ']\nyou stopped this queue despite it still having this task, so it s fine, right?');
+			submit: function(body) {
+				try {
+					threadContext_eventQueue.put(function() {
+						(once || task.status === 'cancelled') && threadContext_pendingTasks.remove(task.id);
+						if(task.status === 'scheduled') {
+							try {
+								threadContext_currentTask = task;
+								body();
+							} catch (e) {
+								console.log(e);
+								console.error('Scheduled task [' + type + '] threw exception:', e, "Task creation path: ", task.stack);
+							} finally {
+								once && (task.status = 'done');
+							}
+						}
+					});
+				} catch(e) {
+					if(e instanceof JavaInterruptedException) interrupted = true;
+				}
 			},
-			debugInfo: isDebugMode && makeDebugInfo(callback, _this, parameters)   
+			cancel: function() {
+				if(task.status !== 'cancelled') {
+                    task.status = 'cancelled';
+                    threadContext_pendingTasks.remove(task.id);
+                    typeof oncancel === 'function' && oncancel(task);
+				}
+			},
+			stack: isDebugMode && new String(new Error().stack).replace(/Error/, "task creation stack trace for: ")
 		}
-		context.pendingTasks.put(task.id, task);
+		threadContext_pendingTasks.put(task.id, task);
 		return task;
 	}
 	
-	function cancelQueueTask(task) {
-		task.status = 'cancelled';
-		threadContext.get().pendingTasks.remove(task.id);
-	}
-
-	function executeNextTask() {
-		var context = threadContext.get();
-		if(context.pendingTasks.size() > 0) {
-			var job = context.eventQueue.take();
-			var value = job.task.execute.call(null, job.args);
-			return true ;
-		}
+	function cancelTaskTree(breakpoint) {
+		threadContext_pendingTasks.forEach(function(_, task){
+			if(task.breakpoint === breakpoint) {
+				//task.type === 'promise' && console.log(task.__traceStatus());
+				task.cancel();
+			}
+		});
 	}
 	
-	function run(rootTask, durationLimit, httpServletRequest, exitLoopIf) { 
-		if(typeof durationLimit !== 'number' || durationLimit <= 0) {
-			durationLimit = 10*1000;
-		}
-		var System = Java.type('java.lang.System');
-		var context = newEventLoopContext(httpServletRequest);
-		var mainThreadResult, mainThreadException;
+	function setBreakpoint() {
+		return threadContext_currentTask.breakpoint = ++threadContext_breakpoint;
+	}
+
+	function showPendingTasks() {
+		console.warn("*** Pending tasks snapshot ***");
+		threadContext_pendingTasks.forEach(function(_, task){
+			console.warn('[' + task.id + '] ' + task.type + ' <' + task.status + '> ' + task.stack);
+		});
+		console.warn("******************************")
+	}
+	
+	function nonBlockingFeeder(asyncSupplier, syncConsumer, executorService) {
+		isDebugMode && console.log("Starting new non-blocking feeder");
+		var managed = !executorService;
+		managed && (executorService = Java.type("java.util.concurrent.Executors").newSingleThreadExecutor());
+		var thread, task = prepareTask('interval', function() { isDebugMode && console.log("Non-blocking feeder shutdown requested"); managed ? executorService.shutdownNow() : thread.interrupt() });
+		executorService.execute(function() {
+			thread = Java.type('java.lang.Thread').currentThread();
+			while(true) {
+				try {
+					task.submit(syncConsumer.bind(null, asyncSupplier()));
+				} catch(e) {
+					if(e instanceof JavaInterruptedException || interrupted) break ;
+				}
+			}
+			task.cancel();
+			isDebugMode && console.log("Non-blocking feeder shutdown complete");
+		});
+	}
+	
+	function run() {
 		try {
-			context.supplyAsync(function(){
-				threadContext.set(context);
-				setImmediate(function(){
-					var rootResult = rootTask.apply(context, argsToArray(arguments, 2));
-					if( typeof context.result === 'undefined' ) {
-						context.result = rootResult;
-					}
-				})
-				while( !(typeof exitLoopIf === 'function' && exitLoopIf()) && executeNextTask() );
-			}).get(durationLimit, JavaTimeUnit.MILLISECONDS);
-		} catch (e) {
-			if( e instanceof JavaTimeoutException ) {
-				console.warn('event loop timed out');
-				if(isDebugMode) {
-					console.warn("*** Pending tasks snapshot ***")
-					takePendingTasksSnapshot(context).forEach(function(task) {
-						console.warn('[' + task.id + '] ' + task.type + ' ' + task.status, task.debugInfo.stack);
+			isDebugMode && console.log("Eventloop started");
+			setImmediate(
+				function(){
+					rootTask({
+						setBreakpoint: setBreakpoint,
+						cancelTaskTree: cancelTaskTree,
+						nonBlockingFeeder: nonBlockingFeeder
 					})
-					console.warn("******************************")
-			    }
-			} else {
-				console.warn('exception in event loop', e);
-			}
-			return e;
-		} finally {
-			shutdownEventLoopContext(context);
-			return context.result;
-		}
-	}
-	
-    function makeDebugInfo(callback, _this, parameters) {
-		return {
-			callback: typeof callback === 'function' && callback.toString(),
-			targetClass: typeof _this === 'object' && _this !== null && _this.constructor.name,
-			stack: new Error().stack,
-			parameters: Array.isArray(parameters) && parameters.slice()
-		}
-	}
-
-	function takePendingTasksSnapshot(context) {
-		try {
-			var tasks = [];
-			context.pendingTasks.forEach(function(_, task){
-				tasks.push({id: task.id, type: task.type, status: task.status, debugInfo: task.debugInfo});
-			})
-		} catch(e) {
-			console.error(e);
-		}
-		return tasks;
-	}
-
-	return {
-		createQueueTask: function(callback, type, _this, parameters) {
-			return createQueueTaskInContext(threadContext.get(), callback, type, _this, parameters)
-		},
-		cancelQueueTask: cancelQueueTask,
-		run: run,
-		isRunning: function() {
-			var tx = threadContext.get();
-			return tx !== null && tx.eventQueue !== null;
-		},
-		shutdown: function(result) {
-			return shutdownEventLoopContext(threadContext.get(), result);
-		},
-		getTimer: function () {
-			return threadContext.get().timer
-		},
-		supplyAsync: function(task) {
-			return threadContext.get().supplyAsync(task);
-		},
-		__debugContextName: function() {
-			return threadContext.get().name;
-		},
-		getContext: function() {
-			return threadContext.get()
-		},
-		setContext: function(context) {
-			if(threadContext.get() !== null && context !== null) {
-				throw 'Unable to set context - already in event loop';
-			}
-			threadContext.set(context)
-		},
-		takePendingTasksSnapshot: takePendingTasksSnapshot,
-		hasPendingNonTimerEvents: function() {
-			return threadContext.get().pendingTasks.values().stream().anyMatch(function(task) { return task.type != 'interval' && task.type != 'timeout' });
-		}
-	}
-})( )
-
-function setTimeout(callback, delay) { //...arguments
-	if(EventLoop.isRunning()) {
-		var task = EventLoop.createQueueTask(callback, 'timeout', null, argsToArray(arguments, 2));
-		var timerTask = new (Java.extend(JavaTimerTask, {
-		    run: function() {
-		    	task.perform();
-		    }
-		}))();
-		EventLoop.getTimer().schedule(timerTask, delay);
-		return {task: task, timerTask: timerTask};
-	} else {
-		callback.apply(null, argsToArray(arguments, 2));
-	}
-}
-
-function setInterval(callback, delay) { //...arguments
-	if(EventLoop.isRunning()) {
-		var task = EventLoop.createQueueTask(callback, 'interval', null, argsToArray(arguments, 2));
-		var timerTask = new (Java.extend(JavaTimerTask, {
-		    run: function() {
-		    	task.perform();
-		    }
-		}))();
-		EventLoop.getTimer().scheduleAtFixedRate(timerTask, delay, delay);
-		return {task: task, timerTask: timerTask};
-	}
-}
-
-function clearTimeout(tt) {
-	if(EventLoop.isRunning() && typeof tt !== 'undefined' ) {
-		tt.timerTask.cancel();
-		EventLoop.cancelQueueTask(tt.task);
-	}
-}
-
-function clearInterval(tt) {
-	clearTimeout(tt);
-}
-
-function setImmediate(callback) { //...arguments
-	if(EventLoop.isRunning()) {
-		EventLoop.createQueueTask(callback, 'immediate', null, argsToArray(arguments, 1)).perform();
-	} else {
-		callback.apply(null, argsToArray(arguments, 1));
-	}
-}
-
-var XMLHttpRequest = (function(hostAddress){
-	var JavaDefaultHttpClient = Java.type('org.apache.http.impl.client.DefaultHttpClient');
-	var JavaHttpGet = Java.type('org.apache.http.client.methods.HttpGet');
-	var JavaHttpPost = Java.type('org.apache.http.client.methods.HttpPost');
-	var JavaStringEntity = Java.type('org.apache.http.entity.StringEntity');
-	var JavaHttpResponse = Java.type('org.apache.http.HttpResponse');
-	var JavaEntityUtils = Java.type('org.apache.http.util.EntityUtils');
-	var JavaBasicHttpContext = Java.type('org.apache.http.protocol.BasicHttpContext');
-	var JavaPoolingClientConnectionManager = Java.type('org.apache.http.impl.conn.PoolingClientConnectionManager');
-	var commonClient = new JavaDefaultHttpClient(new JavaPoolingClientConnectionManager());
-	
-	return function () {
-		var _this = this, impl = {
-			schedule: [],
-			client: commonClient, //new JavaDefaultHttpClient(), 
-			request: null,
-			httpResponse: undefined,
-			readyState: 0,
-			status: 0,
-			statusText: 'Not sent',
-			responseText: undefined,
-			url: undefined
-		}
-		Object.defineProperties(this, {
-			onreadystatechange: { 
-				set: function( callback ) {  // callback.call(this);
-					if( impl.readyState === 4 )
-						callback.call(_this);
-					else 
-						impl.schedule.push(callback);
-				},
-				enumerable: false
-			},
-			readyState: {
-				get: function() {
-					return impl.readyState
-				},
-				enumerable: true
-			},
-			status: {
-				get: function() {
-					return impl.status
-				},
-				enumerable: true
-			},			
-			statusText: {
-				get: function() {
-					return impl.status
-				},
-				enumerable: true
-			},
-			response: {
-				value: null,
-				enumerable: true
-			},
-			responseText: {
-				get: function() {
-					return impl.responseText
-				},
-				enumerable: true
-			}
-		});
-		function handleChangeState(newState) {
-			impl.readyState = newState;
-			impl.schedule.forEach(function(callback){
-				callback.call(_this);
-			})
-		}
-		function handleExecutionComplete() {
-			try {
-				if( impl.httpResponse instanceof JavaHttpResponse ) {
-					var resp = impl.httpResponse;
-					var entity = resp.getEntity();
-					impl.responseText = entity == null ? 'null' : JavaEntityUtils.toString(entity); 
-					impl.status = resp.getStatusLine().getStatusCode();
-					impl.statusText = resp.getStatusLine().getReasonPhrase();
-					//impl.httpResponse.close();
-				} else {
-					var resp = impl.httpResponse;
-					impl.status = -1; // ? 
-					impl.statusText = 'ERROR: ' + resp instanceof JavaException ? resp.getMessage() : resp instanceof Error ? resp.message : JSON.stringify(resp);
 				}
-				handleChangeState(4);
-				impl.schedule = null;
-			} catch (e) {
-				impl.httpResponse = e;
-				handleChangeState(4);
-			} finally {
-				//impl.client.close();
-			}
-		}		
-		this.setRequestHeader = function(name, value) {
-			impl.request.setHeader(name, value);
-		}
-		this.open = function(method, url) {
-			impl.url = url.match(/^http[s]?\:/) ? url : hostAddress + url;
-			try {
-				switch(method) {
-				case 'GET':
-					impl.request = new JavaHttpGet(impl.url);
-					break ;
-				case 'POST':
-					impl.request = new JavaHttpPost(impl.url);
-					break ;
-				default:
-					throw 'Unsupported';
-				}
-				handleChangeState(1);
-			} catch ( e ) {
-				impl.httpResponse = e;
-				handleExecutionComplete();
-			}
-		}
-		this.send = function(payload) {
-			if(impl.request instanceof JavaHttpPost) {
-			switch(typeof payload) {
-				case 'string':
-					impl.request.setEntity(new JavaStringEntity(payload));
-					break ;
-				case 'object':
-					impl.request.setEntity(new JavaStringEntity(JSON.stringify(payload)));
-					break ;
-				default:
-					// no op
-				}
-			}
-			var task = EventLoop.createQueueTask(handleExecutionComplete, 'httprequest');
-			/** 
-			 * Alex: if code below fails, and future isn't scheduled, pending task will remain and eventloop will "hang" until timeout.
-			 * this doens't include async body (impl.client.execute...) - just supplyAsync / handl themselves, 
-			 * so i don't think catch / cleanup are necessary. But keep an eye on this code. If things start acting up, check here first.  
-			 */
-			var future = EventLoop.supplyAsync(function() {
-				var response = impl.client.execute(impl.request, new JavaBasicHttpContext()); // TODO: populate credentials and other stuff from  context::httpServletRequest
-				return response;
-			});
-			future.handle(function(response, exception) {
-				impl.httpResponse = response||exception;
-				task.perform();
-			})
-			impl.worker = { task : task, future: future }
-			handleChangeState(2);
-		}		
-	}
-})(__AJAX_ROOT__);
-
-/**
- *  Promise polyfill -- based on setImmediate/ setTimeout. As-is browser polyfill copy
- */
-
-var Promise = (function() {
-	var counter = new JavaAtomicInteger();
-    var Promise = function(biConsumer) {
-		var impl = new JavaCompletableFuture();
-        function followup(status, value) {
-			impl.complete({ status: status, value: value });
-		}
-        function thenImpl(resolve, reject) {
-			var task = EventLoop.createQueueTask(function(obj){
-				(obj.status === 1 ? resolve : reject )(obj.value);
-			}, 'promise');
-            impl.thenAccept( task.perform.bind(task) );
-		}
-		this.then = function(onResolve, onReject) {
-			return new Promise(function(resolve, reject){
-                thenImpl(function(_value){
-					try {
-                        resolve(typeof onResolve === 'function' ? onResolve(_value) : undefined);  
-					} catch (e) {
-						console.warn('Uncaught exception in promise(resolve)', e);
-						reject(e);
+			);
+			while(!interrupted && threadContext_pendingTasks.size() > 0) {
+				try {
+					threadContext_eventQueue.take()();
+				} catch(e) {
+					if(e instanceof JavaInterruptedException ) {
+						interrupted = true;
+					} else {
+						console.error("Event threw exception - it is likely API issue", e);
 					}
-				}, function(_value){
-					try {
-                        reject(typeof onReject === 'function' ? onReject(_value) : undefined);
-					} catch (e) {
-						console.warn('Uncaught exception in promise(reject)', e);
-						reject(e);
-					}
-				});
-			})
-		}
-		this.catch = function(onReject) {
-			this.then(null, onReject);
-		}
-
-		try {
-		    biConsumer(followup.bind(this, 1), followup.bind(this, -1));
+				}
+			}
 		} catch (e) {
-			console.warn('Unhandled exception in promise body', e);
-			followup(-1, e);
+			console.warn('Exception in event loop', e);
+			throw e;
+		} finally {
+			interrupted && threadContext_pendingTasks.forEach(function(_, task){ if(task.status !== "cancelled") try { task.cancel(); } catch(e) { console.warn("Failed to cancel task " + task.id) }});
+			if(isDebugMode ) {
+				interrupted && showPendingTasks();
+				console.log("Eventloop finished. Cleaning up");
+			}
+			threadContext_timer.cancel();
+			threadContext_pendingTasks.clear();
+			threadContext_eventQueue.drainTo([]);
+			threadContext_eventQueue = null;			
 		}
+	}	
+
+	global.setTimeout = function(callback, delay) { //...arguments
+		var task = prepareTask('timeout', function(t) { t.timerTask && (t.timerTask.cancel(), t.timerTask = null) });
+		task.timerTask = new (Java.extend(JavaTimerTask, {
+		    run: function() {
+		    	task.submit(function() { callback.apply(arguments[2], argsToArray(arguments, 3)) });
+		    }
+		}))();
+		threadContext_timer.schedule(task.timerTask, delay);
+		return task;
 	}
-	Promise.all = function(promises) {
-		return new Promise(function(resolve, reject){
-			var all = [];
-			if(promises.length === 0){
-                resolve([]);
+
+	global.setInterval = function(callback, delay) { //...arguments
+		var task = prepareTask('interval', function(t) { t.timerTask && (t.timerTask.cancel(), t.timerTask = null) });
+		task.timerTask = new (Java.extend(JavaTimerTask, {
+		    run: function() {
+		    	task.submit(function() { callback.apply(arguments[2], argsToArray(arguments, 3)) });
+		    }
+		}))();	
+		threadContext_timer.scheduleAtFixedRate(task.timerTask, delay, delay);
+		return task;
+	}
+
+	global.clearInterval = global.clearTimeout = function(task) { // EventLoop.isRunning() &&
+		task && task.cancel();
+	}
+
+	global.setImmediate = function(callback) { //...arguments
+		var task = prepareTask('immediate');
+		task.submit(function() { callback.apply(arguments[1]||null, argsToArray(arguments, 2)) });
+		return task;
+	}
+
+	global.XMLHttpRequest = (function(){
+		var JavaResponse = Java.type('org.asynchttpclient.Response');
+		var JavaDsl = Java.type('org.asynchttpclient.Dsl');
+		var counter = 0;
+		
+		return function () {
+			var _this = this, impl = {
+				schedule: [],
+				requestBuilder: null,
+				httpResponse: undefined,
+				readyState: 0,
+				status: 0,
+				statusText: 'Not sent',
+				responseText: undefined,
+				url: undefined
+			}, instance = counter++;
+			Object.defineProperties(this, {
+				onreadystatechange: { 
+					set: function( callback ) {  // callback.call(this);
+						if( impl.submitState === 4 )
+							callback.call(_this);
+						else 
+							impl.schedule.push(callback);
+					},
+					enumerable: false
+				},
+				readyState: {
+					get: function() {
+						return impl.submitState
+					},
+					enumerable: true
+				},
+				status: {
+					get: function() {
+						return impl.status
+					},
+					enumerable: true
+				},			
+				statusText: {
+					get: function() {
+						return impl.status
+					},
+					enumerable: true
+				},
+				response: {
+					value: null,
+					enumerable: true
+				},
+				responseText: {
+					get: function() {
+						return impl.responseText
+					},
+					enumerable: true
+				}
+			});
+			function handleChangeState(newState) {
+				try {
+					impl.submitState = newState;
+					impl.schedule.forEach(function(callback){
+						callback.call(_this);
+					})
+				} catch (resp) {
+					console.error("Unhandled exception in onreadystatechange", resp);
+				}
 			}
-			promises.forEach(function(promise){
-        		promise.then(function(value){
-					all.push(value);
-					if(all.length === promises.length) {
-						resolve(all);
+			function handleExecutionComplete() {
+				try {
+					if( impl.httpResponse instanceof JavaResponse ) {
+						var resp = impl.httpResponse;
+						impl.responseText = resp.getResponseBody();
+						impl.status = resp.getStatusCode();
+						impl.statusText = resp.getStatusText();
+					} else {
+						impl.status = -1;
+						impl.responseText = impl.statusText = 'ERROR: ' + impl.httpResponse.message;
 					}
-				}, function(error) {
-					reject(error);
-				})
-			})
-		})
-	}
-	Promise.race = function(promises) {
-		return new Promise(function(resolve, reject){
-			var done = 0;
-			if(promises.length === 0){
-                resolve([]);
+					handleChangeState(4);
+					impl.schedule = null;
+				} catch (resp) {
+					impl.httpResponse = resp;
+					handleExecutionComplete();
+				}
+			}		
+			this.open = function(method, url) {
+				try {
+					impl.url = url.match(/^http[s]?\:/) ? url : localhostAddress + url;
+					isDebugMode && console.log("Nashorn XMLHttpRequest @" + instance + " open connection to " + impl.url);
+					impl.requestBuilder = JavaDsl.request(method, impl.url);
+					handleChangeState(1);
+				} catch(e) {
+					throw wrapJavaException(e); 
+				}
 			}
-			promises.forEach(function(promise){
-                promise.then(function(value){
-					done++ || resolve(value);						
-				}, function(error) {
-					done++ || reject(error);
+			this.setRequestHeader = function(name, value) {
+				impl.requestBuilder.addHeader(name, value);
+			}
+			this.send = function(payload) {
+				var request = impl.requestBuilder.setBody(payload === null || payload === undefined ? "" : typeof payload === 'string' ? payload : JSON.stringify(payload)).build();
+				var task = prepareTask('httprequest', function() {
+					task.future && (task.future.abort(new JavaException("Request has been cancelled by EventLoop API")), console.warn("httprequest task cancelled"));
+				});
+				try {
+					(task.future = httpClient.executeRequest(request)).toCompletableFuture().handle(function(response, exception) {
+						task.future = null;
+						impl.httpResponse = response||exception;
+						isDebugMode && console.log("Nashorn XMLHttpRequest @" + instance + " got result: " + (response && response.getStatusCode()));
+						task.submit(handleExecutionComplete);
+					});
+				} catch(exception) {
+        			if( e instanceof JavaInterruptedException ) {
+        				interrupted = true;
+        				return ;
+        			}
+					task.cancel();
+					throw wrapJavaException(exception); 
+				}
+				handleChangeState(2);
+			}
+		}
+	})();
+
+	global.Promise = (function() {
+		var JavaCompletableFuture = Java.type('java.util.concurrent.CompletableFuture');
+		var STATUS_RESOLVED = "resolved", STATUS_REJECTED = "rejected";
+	    var Promise = function(biConsumer) {
+	    	var _status = "pending", impl = new JavaCompletableFuture(); //, stack = isDebugMode && new Error().stack, breakpoint = threadContext_currentTask.breakpoint;
+	        function followup(status, value) {
+	        	if(value && typeof value.then === 'function') {
+	        		value.then(followup.bind(null, STATUS_RESOLVED), followup.bind(null, STATUS_REJECTED));
+	        	} else {
+	        		impl.complete({ status: _status = status, value: value });
+	        	}
+			}
+	        
+	        this.then = function(onResolve, onReject) {
+				return new Promise(function(resolve, reject){
+		        	var task = prepareTask('promise', function() { _status === "pending" && followup(STATUS_REJECTED, new Error("Promise has been cancelled by EventLoop API")) });
+					impl.thenAccept(function(obj) {
+						var ok = obj.status === STATUS_RESOLVED;
+		            	task.submit(function() {
+		            		try {
+		            			var f1 = ok ? onResolve : onReject;
+		            			(ok ? resolve : reject)(typeof f1 === 'function' ? f1(obj.value) : undefined);
+		            		} catch(e) {
+		            			if( e instanceof JavaInterruptedException ) {
+		            				interrupted = true;
+		            				return ;
+		            			}
+		            			console.warn('Uncaught exception in promise handler', e);
+		            			reject(e);
+		            		}
+		            	})
+		            })
+				})
+			}
+	        
+			this.catch = function(onReject) {
+				this.then(null, onReject);
+			}
+
+			this[Symbol.toStringTag] = function() {
+				return "Promise { < " + _status + " > }";
+			}
+
+			try {
+			    biConsumer(followup.bind(null, STATUS_RESOLVED), followup.bind(null, STATUS_REJECTED));
+			} catch (e) {
+				if( e instanceof JavaInterruptedException ) {
+					interrupted = true;
+					return ;
+				}
+				console.warn('Unhandled exception in promise body', e);
+				followup(STATUS_REJECTED, e);
+			}
+			
+		}
+		
+		Promise.all = function(promises) {
+			return new Promise(function(resolve, reject){
+				var all = [], toGo = promises.length, rejected = 0;
+				if(toGo === 0){
+	                resolve([]);
+				}
+				promises.forEach(function(promise, i){
+	        		promise.then(function(value){
+						all[i] = value;
+						--toGo || resolve(all);
+					}, function(error) {
+						rejected++ || reject(error);
+					})
 				})
 			})
-		});
-	}
-	Promise.resolve = function(value) {
-		return new Promise(function(resolve) {
-			resolve(value);
-		})
-	}
-	Promise.reject = function(value) {
-		return new Promise(function(resolve) {
-			reject(value);
-		})
-	}
-	return Promise;
-})()
-
-/**
- * Require polyfill 
- */
-
-var require = (function (modules, loadLock, moduleIdx){
-	var config = {
-        baseUrl: './',
-        paths: {},
-        bundles: {},
-        pkgs: {},
-        shim: {},
-        config: {},
-        map: {},
-        translateModuleName: function(moduleName) {
-        	var maps = (function flattenMap(map) {
-	        	return Array.prototype.concat.apply([], Object.getOwnPropertyNames(map).map(function(id) { 
-	        		return typeof map[id] == 'string' ? [{ path: id, module: map[id]}] : flattenMap(map[id]).map(function(tail) { return { path: id + '/' + tail.path, module: tail.module } } ) 
-	        	}))
-	        })(this.map).map(function(row) { 
-	        	return { weight: row.path.length, regexp: new RegExp('^' + row.path.replace(/\*/g, '.+') + '$'), module: row.module } 
-	        }).sort(function(a, b) { return b.weight - a.weight}); // [^/]+
-	        for(var i = 0; i < maps.length; i++ ) {
-	        	if(moduleName.match(maps[i].regexp))
-	        		return maps[i].module;
-	        }
-	        return moduleName;
-        },
-        nameToUrl: function (moduleName, ext, skipExt) {
-        	var paths, syms, i, parentModule, url, parentPath, bundleId, pkgMain = this.pkgs[moduleName];
-	        if (pkgMain) {
-	            moduleName = pkgMain;
-	        }
-	        bundleId = Object.getOwnPropertyNames(this.bundles).filter(
-	        	function( id ){ 
-	        		return Array.isArray(this.bundles[id]) && this.bundles[id].indexOf(moduleName) > -1 
-	        	}, this
-	        ).shift();
-	        if ( bundleId && bundleId != moduleName ) {
-	            return this.nameToUrl(bundleId, ext, skipExt);
-	        }
-	        
-	        if (/^\/|:|\?|\.js$/.test(moduleName)) {
-	            url = moduleName + (ext || '');
-	        } else {
-	            paths = this.paths;
-	            syms = moduleName.split('/');
-	            for (i = syms.length; i > 0; i -= 1) {
-	                parentModule = syms.slice(0, i).join('/');
-	                if (parentPath = paths[parentModule]) {
-	                    if (Array.isArray(parentPath)) {
-	                        parentPath = parentPath[0];
-	                    }
-	                    syms.splice(0, i, parentPath);
-	                    break;
-	                }
-	            }
-	            url = syms.join('/');
-	            url += (ext || (/^data\:|^blob\:|\?/.test(url) || skipExt ? '' : '.js'));
-	            url = (url.charAt(0) === '/' || url.match(/^[\w\+\.\-]+:/) ? '' : this.baseUrl) + url;
-	        }
-	        return this.urlArgs && !/^blob\:/.test(url) ? url + this.urlArgs(moduleName, url) : url;
-	    }
-	}
+		}
+		Promise.race = function(promises) {
+			return new Promise(function(resolve, reject){
+				var done = 0;
+				if(promises.length === 0){
+	                resolve([]);
+				}
+				promises.forEach(function(promise){
+	                promise.then(function(value){
+						done++ || resolve(value);						
+					}, function(error) {
+						done++ || reject(error);
+					})
+				})
+			});
+		}
+		Promise.resolve = function(value) {
+			//if(value && typeof value.then === 'function') return value; 
+			return new Promise(function(resolve) {
+				resolve(value);
+			})
+		}
+		Promise.reject = function(value) {
+			return new Promise(function(resolve) {
+				reject(value);
+			})
+		}
+		return Promise;
+	})()
+	
+	//=========main function===========
+	run();
+}
+	
+var require = (function(s) {
+	var JavaIOUtils = Java.type('org.apache.commons.io.IOUtils');
+	var classLoader = Java.type('java.lang.Thread').currentThread().getContextClassLoader();
+	var JavaURL = Java.type('java.net.URL');
 	
 	function getAsText(uri) {
 		try {
@@ -677,330 +558,284 @@ var require = (function (modules, loadLock, moduleIdx){
 			throw e;
 		}
 	}
-
-	var currentModule = new JavaThreadLocal();
 	
-	function resolveModuleFutureSync (future, d, eventLoopContext) { 
-		eventLoopContext &&	EventLoop.setContext(eventLoopContext);
-		try {
-			loadModuleSync( d, config.nameToUrl(d) );
-			//d.indexOf('forms/') == 0 ? loadFormSync( config.paths.forms, d.replace(/^forms\/|!es5$|!es6$/g,'') ) : loadModuleSync( d, config.nameToUrl(d) );
-		} finally {
-			eventLoopContext && EventLoop.setContext(null);
-		}
-	}
-	/*
-	var loadFormSync = function(formUriBase, formName) {
-		loadLock.get(formName, function() {
-			var moduleName = 'forms/' + formName;
-			var scriptId = moduleName + '!script';
-			var scriptName = formUriBase + formName + '.js';
-			var transpiledScriptName = formUriBase.replace(/forms/,'forms-transpiled') + formName + '.js';
-			console.log('Nashorn loading form "' + formName + '" from ' + scriptName + ' (transpiled file expected at: ' + transpiledScriptName + ')');
-			var code = getAsText(scriptName), transpiled;
-			currentModule.set(moduleName);
-			define(moduleName + '!es6', function() { return code });
-			try {
-				transpiled = getAsText(transpiledScriptName);
-			} catch(e) {
-				transpiled = require('babel').transform(code, { plugins: ['transform-es3-property-literals', 'transform-es3-member-expression-literals', 'transform-object-assign', 'transform-object-rest-spread'], presets : ['es2015']}).code;
-			}
-			define(moduleName + '!es5', function() { return transpiled });
-			load({name: transpiledScriptName, script: transpiled} );
-			return formName;
-		});
-	} */
-	
-	var loadModuleSync = function(moduleName, uri) {
-		loadLock.get(uri, function() {
-			console.log('Nashorn loading module "' + moduleName + '" from ' + uri);
-			currentModule.set(moduleName);			
-			load({name: uri, script: getAsText(uri)});
-			return uri;
-		});
-	}
-	
-	var __noop__ = (function(){
-		var dummy = function(prop) { return dummy; }
-		dummy.__noSuchProperty__ = dummy;
-		dummy.__noSuchMethod__ = dummy;
-		return dummy;
-	})()
-
-	var requireAsFuture = function (moduleName, module, eventLoopContext) {
-		switch(moduleName){
-			case 'module': 
-				return JavaCompletableFuture.completedFuture(module);
-			case 'exports': 
-				return JavaCompletableFuture.completedFuture(module.exports);
-			case 'require':  
-			    return JavaCompletableFuture.completedFuture(require);
-			case '__noop__':  
-			    return JavaCompletableFuture.completedFuture(__noop__);
-			default:
-				var translated = config.translateModuleName(moduleName);
-				return modules.get(moduleName, function() {
-					var future = new JavaCompletableFuture();
-					if(translated === moduleName) {
-						executeAsync(function(){
-							try {
-								resolveModuleFutureSync(future, moduleName, eventLoopContext);
-							} catch(e) {
-								future.completeExceptionally(makeJavaException(e));// throw e;
-							}
-						}, eventLoopContext)
-					} else {
-						requireAsFuture(translated).handle(function(v, e) {
-							e ? future.completeExceptionally(makeJavaException(e)) : future.complete(v)
-						})
-					}
-					return future;
-				});
-		}
-	}	
-	
-	function require_el(d, cb, rj, module, eventLoopContext) {
-		if(typeof d == 'string') {
-			var value = requireAsFuture(d, module, eventLoopContext).getNow(null);
-			if(value === null) {
-				throw 'Module ' + d + ' has not been loaded yet and can not be fetched in event loop';
-			}
-			return value;
-		}
-		if(Array.isArray(d)) {
-			var future = new JavaCompletableFuture();
-			executeAsync(function(){
-				try {
-					var futures = d.map( function(i) { return requireAsFuture(i, module, eventLoopContext) } );
-					JavaCompletableFuture.allOf( futures ).get(config.waitSeconds, JavaTimeUnit.SECONDS);
-					var args = futures.map( function(f) { return f.get() } );
-					future.complete(args);
-				} catch(e) {
-					future.completeExceptionally(makeJavaException(e));// throw e;
-				}
-			}, eventLoopContext);
-			return new Promise(function(resolve, reject) {
-				var task = EventLoop.createQueueTask(function(deps, e){
-					if( !(e instanceof JavaException || e instanceof Error) ) {
-						try {
-							resolve(deps);
-							return ;
-						} catch (ex) {
-							e = ex;
-						}
-					} 
-					reject(e);
-				}, 'require');
-				future.handle(task.perform);
-			}).then(function(args) { 
-				return typeof cb === 'function' ? cb.apply(null, args) : args
-			}, function(e) {
-				return typeof rj === 'function' ? rj(e) : (console.warn('Unhandled error while requiring modules', d, e), e)
-			});
-		}
-	}
-
-	function require_non_el(d, cb, rj, module) {
-		if(typeof d == 'string') {
-			return requireAsFuture(d, module).get(config.waitSeconds, JavaTimeUnit.SECONDS);
-		}
-		if(Array.isArray(d)) {
-			var future = new JavaCompletableFuture();
-			executeAsync(function(){
-				try {
-					JavaCompletableFuture.allOf( d.map( function(i) { return requireAsFuture(i, module) } ) ).get(config.waitSeconds, JavaTimeUnit.SECONDS);
-					var args = d.map( function(d) { return require(d, null, null, module) } );
-					typeof cb == 'function' && cb.apply(null, args);
-					future.complete(args);
-				} catch(e) {
-					typeof rj == 'function' && rj(e);
-					future.completeExceptionally(makeJavaException(e));// throw e;
-				}
-			});
-			return future;
-		}
-	}
-	
-	var require = function(d, cb, rj, module) {
-		return (EventLoop.getContext() === null ? require_non_el : require_el)(d, cb, rj, module);
-	}
-	
-	var define = function(n, d, cb) {
-		if(typeof n != 'string') {
-			cb = d;
-			d = n;
-			n = currentModule.get() || '_anonymous_' + moduleIdx.incrementAndGet();
-		}
-		var r, exports = {}, module = { id: n, uri: '<unsupported>', config: {}, exports: exports };
-		if(!Array.isArray(d) ) { 
-			cb = d; 
-			d = n === 'require' ? [] : [ 'require', 'exports', 'module' ]; 
-		}
-		var future = modules.get(n, function() { return new JavaCompletableFuture() });
-		require(d, function(){
-			future.complete(typeof cb == 'function' && ( cb.apply(exports, arguments) ) || exports || undefined);
-		}, function(e) {
-			future.completeExceptionally(makeJavaException('Failed to define module ' + n, e));
-		}, module);
-	}
-	
-	// This is kind of hax but otherwise it s pretty hard to tell how it will name new module. 
-	var makeModuleFromSource = function(code, name, discard) {
-		var moduleName = name || '_anonymous_' + moduleIdx.incrementAndGet();
-		currentModule.set(moduleName);
-		try {
-			var future = new JavaCompletableFuture();
-			modules.put(moduleName, future);
-			load({name: moduleName, script: code});
-			return future;
-		} finally {
-			discard && require.undef(moduleName);
-		}
-	}
-	
-	require.config = function(cfg) {
-		(function mixin(dest, src) {
-			Object.getOwnPropertyNames(src).forEach(function(prop) {
-				if( typeof dest[prop] === 'undefined' )
-					dest[prop] = src[prop];
-				else {
-					if( typeof dest[prop] !== typeof src[prop] )
-						throw 'Invalid property';
-					if( typeof src[prop] === 'string' )
-						dest[prop] = src[prop];
-					else
-						mixin(dest[prop], src[prop]);
-				}
-			})
-		})( config, cfg );
-	}
-
-	require.clear = function() { loadLock.clear(); modules.clear(); }
-	require.require = require;
-	require.define = define;
-	require.undef = function(n) { modules.remove(n); }
-	require.define.amd = { jQuery: false };
-	require.requireAsFuture = requireAsFuture;
-	require.makeModuleFromSource = makeModuleFromSource;
-	return require;
-})(new JavaCacheHandler(), new JavaCacheHandler(), new JavaAtomicInteger());
-
-var define = require.define;
-
-require.config({
-	baseUrl: __STATIC_ROOT__ + 'js/core/',
-	waitSeconds: 60,
-	bundles: {
-		'dfe-core' : ['dfe-core', 'core-validation-component' ], 
-        'components/generic' : [ 
-            'components/base',
-            'components/button',
-            'components/checkbox',
-            'components/child-runtime',
-            'components/container',
-            'components/div',
-            'components/div-button',
-            'components/div-c',
-            'components/div-r',
-            'components/dropdown',
-            'components/editbox',
-            'components/editbox-money',
-            'components/editbox-popup',
-            'components/either',
-            'components/html',
-            'components/html-form',
-            'components/iframe',
-            'components/inline-rows',
-            'components/label',
-            'components/labeled',
-            'components/labeled-checkbox',
-            'components/labeled-component',
-            'components/labeled-dropdown',
-            'components/labeled-editbox',
-            'components/labeled-editbox-money',
-            'components/labeled-radiolist',
-            'components/modal',
-            'components/multioption',
-            'components/radiolist',
-            'components/span',
-            'components/tab-d',
-            'components/table',
-            'components/tab-s',
-            'components/text',
-            'components/textarea',
-            'components/validation-component'
-        ]
-	},
-	map: {
-		ui: {
-			'utils' : 'nashorn-ui-utils',
-			'*' : '__noop__'
-		}
-	},
-	paths: { 
-		forms: __STATIC_ROOT__ + 'js/core/forms/',
-		'nashorn-ui-utils': 'classpath:com/arrow/js/nashorn-ui-utils'
-	}
-})
-
-var validateDfe = (function(){
-	function listener(c) {
-		return {
-	        depend : function () {},
-	        notify : function (d, e, a, v) { 
-	            if('mard'.indexOf(a) != -1) {
-	                console.error('Model is mutating (' + (c && c.field.name) + '):\n' + JSON.stringify(d) + '\n' + e + '\n' + a + '\n' + v );
-	                throw new Error('Model is mutating');
-	            }
-	            return true; 
-	        },
-	        get : function(data, elem) { return data[elem] },
-	        set : function (data, element, value, action) { if(data[element] != value) { data[element] = value; this.notify(data, element, action, value) }; return true; },
-	        For: function(o) { return listener(o); }
-		}
-	}
-	return function (jsonModel, formClass, timeLimit) {
-		console.time('Nashorn validation took');
-		var Core = require('dfe-core');
-		var errors = [], runtime = new Core.Runtime(listener()).setDfeForm(formClass).setModel(JSON.parse(jsonModel));
-		var failure = EventLoop.run(function() { runtime.restart(null, 'validate', 5) }, timeLimit*1000, undefined, function() { return runtime && !(runtime.shouldAnythingRender || EventLoop.hasPendingNonTimerEvents()) });
-		if( failure instanceof JavaException || failure instanceof Error ) {
-            return JSON.stringify({ result : false, data : {field: formClass.name, error: failure.message + "\n" + failure.stack }});
+	return function(uri) {
+		console.log("Nashorn is loading module: " + uri);
+		var _bkp = typeof module === 'object' ? module : null;
+		module = {exports: {}};
+		exports = module.exports;
+		load({name: uri, script: getAsText(s + uri)});
+		var ret = module.exports;
+		if(_bkp) {
+			exports = (module = bkp).exports;
 		} else {
-			var node = runtime.nodes[0];
-			node.erroringChildren.forEach( function(node) { errors.push( {field: node.field.name, error: node.lastError} ) } );
-			console.timeEnd('Nashorn validation took');
-			return JSON.stringify({ result : errors.length == 0, data : errors});
+			delete this.module;
+			delete this.exports;
 		}
+		return ret;
 	}
-})();
+})(__STATIC_ROOT__)
 
-var ssr = (function () {
-	return function(jsonModel, formClass, timeLimit, waitAjax) {
-		var Core = require('dfe-core');
-		var DOM = require('dfe-dom');
-		var ajaxCache = require('ajaxCache');
-		var uiUtils = require('ui/utils');
-		var runtime, node = DOM.createElement('span'), ajaxKeys = new Set(), ajaxPrime = []; 
-		try {
-			var ajaxCacheCallback = function(key, promise){
-				ajaxKeys.has(key) || (ajaxKeys.add(key), promise.then(function(payload){ ajaxPrime.push({key: key, payload: payload}) }))
-			}
-			EventLoop.run(function() {
-				ajaxCache.setCallback(waitAjax ? ajaxCacheCallback : null);
-				runtime = new Core.Runtime().setDfeForm(formClass).setModel(JSON.parse(jsonModel));
-				runtime.restart(node, undefined, 5);
-			}, timeLimit*1000, undefined, function() {
-				return runtime && !(runtime.shouldAnythingRender || waitAjax && EventLoop.hasPendingNonTimerEvents()) 
-			});
-			var styles = uiUtils.getAllCustomStyles([runtime.nodes[0].field]);
-			return { 
-				styles: Object.keys(styles).map(function(name) { return '<style id="' + name + '-custom-style">' + styles[name] + '</style>' }).join(''),
-				script: 'require(["ajaxCache"], function(ajaxCache){' + ajaxPrime.map(function(o) { return 'ajaxCache.putResolved("' + o.key + '", ' + JSON.stringify(o.payload) + ')' } ).join(",") + '})', 
-				html: node.serialize([]).join('') 
-			}
-		} finally {
-			runtime && runtime.shutdown();
-		}
+var documentFactory = (function() {
+	var innerContentNotAllowed = new Set();
+	['AREA', 'BASE', 'BR', 'COL', 'COMMAND', 'EMBED', 'HR', 'IMG', 'INPUT', 'KEYGEN', 'LINK', 'META', 'PARAM', 'SOURCE', 'TRACK', 'WBR'].forEach(function(tag) { innerContentNotAllowed.add(tag) });
+    
+	function escapeHtml(str) {
+	    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 	}
+	
+	function Node(type, ownerDocument) {
+        type = new String(type).toString();
+		this.nodeName = type.charAt(0) == '#' ? type : type.toUpperCase();
+		this.attributes = {};
+		this.firstChild = null;
+		this.lastChild = null;
+		this.nextSibling = null;
+		this.parentNode = null;
+        this.nodeValue = null;
+        this._ownerDocument = ownerDocument;
+	} 
+	
+	Node.prototype.serialize = function(out, outer){
+        var attrs = Object.keys(this.attributes).map(
+			function(key) {
+				if(['disabled', 'checked', 'selected'].indexOf(key) >= 0) {
+					return !!this.attributes[key] ? key + '=""' : '';
+				} else {
+					var value = new String(this.attributes[key]).toString();
+					return key + '="' + escapeHtml(value) + '"';
+				}
+			}, this
+		).join(' ');
+		outer && out.push('<' + this.nodeName + (attrs ? ' ' + attrs : '') + (this.firstChild ? '>' : '/>'));
+		for(var c = this.firstChild; c; c = c.nextSibling) {
+			c.serialize(out, true);
+		}
+		if( outer && this.firstChild ) {
+			out.push( '</' + this.nodeName + '>' )
+			
+		}
+        return out;
+	}
+	
+	Node.prototype.setAttribute = function(name, value) {
+		this.attributes[name] = new String(value).toString();
+	}
+	
+	Node.prototype.removeAttribute = function(name) {
+		delete this.attributes[name];
+	}
+	
+	Node.prototype.addEventListener = function() {
+		
+	}
+	
+	Node.prototype.removeEventListener = function() {
+		
+	}
+	
+	Node.prototype.removeChild = function(node) {
+		if(node === null || node.parentNode !== this) {
+			throw new Error('Node is not the child of current node');
+		}
+		if(node === this.firstChild) {
+			if((this.firstChild = this.firstChild.nextSibling) === null ) {
+				this.lastChild = null;
+			}
+		} else {
+			for(var c = this.firstChild; c.nextSibling !== node; c = c.nextSibling) {}
+			if((c.nextSibling = node.nextSibling) === null) {
+				this.lastChild = c;
+			}
+		}
+		node.parentNode = null;
+		node.nextSibling = null;
+		return node;
+	}
+	
+	Node.prototype.appendChild = function(node) {
+		if(node.parentNode) {
+			if(this.lastChild === node) {
+				return ;
+			}
+			node.parentNode.removeChild(node);
+		}
+		if(this.lastChild) {
+			this.lastChild = (this.lastChild.nextSibling = node);
+		} else {
+			this.firstChild = this.lastChild = node;
+		}
+		node.parentNode = this;
+		return node;
+	}
+	
+	Node.prototype.insertBefore = function(node, other) {
+		if(other === null) {
+			this.appendChild(node);
+		} else {
+			if(other.parentNode !== this) {
+				throw new Error('Other node is not the child of current node');
+			}
+			if(node !== this.firstChild) {
+				if(node.parentNode) {
+					node.parentNode.removeChild(node);
+				}
+				if(other === this.firstChild) {
+					this.firstChild = node;
+				} else {
+					for(var c = this.firstChild; c.nextSibling !== other; c = c.nextSibling) {}
+					c.nextSibling = node;
+				}
+				node.parentNode = this;
+				node.nextSibling = other;
+			}
+		}
+		return node;
+	}
+
+	// TODO: properties
+	/*
+		nodeValue: string  // #text node value
+		*/
+	
+	Object.defineProperties(Node.prototype, {
+		outerHTML: {
+			enumerable: false,
+			get: function() {
+				var out = [];
+				this.serialize(out, true);
+				return out.join('');
+			}
+        },
+        ownerDocument: { enumerable: false, get: function() { return this._ownerDocument } },
+		innerHTML: {
+			enumerable: false,
+			get: function() {
+				var out = [];
+				this.serialize(out, false);
+				return out.join('');
+			},
+			set: function(html) {
+				while(this.firstChild) {
+					this.removeChild(this.firstChild);
+                }
+                // TODO: need to parse instead
+				this.appendChild(new HtmlNode(html, this._ownerDocument));
+			}
+		},
+		innerText: {
+			enumerable: false,
+			get: function() {
+				var ret = "";
+				for(var n = this.firstChild; n; n = n.nextSibling) {
+					var p = n.innerText;
+					p && (ret = ret + p + '\n');
+				}
+				return ret;
+			},
+			set: function(text) {
+				while(this.firstChild) {
+					this.removeChild(this.firstChild);
+				}
+				this.appendChild(new TextNode(text, this._ownerDocument));
+			}
+		},
+		text: {
+			enumerable: false,
+			get: function() {
+                return this.innerText;
+			},
+			set: function(text) {
+				this.innerText = text;
+			}
+		},
+		disabled: { get: function() { return this.attributes.disabled; }, set: function(value) { this.attributes.disabled = !!value; } },
+		checked: { get: function() { return this.attributes.checked; }, set: function(value) { this.attributes.checked = !!value; } },
+		selected: { get: function() { return this.attributes.selected; }, set: function(value) { this.attributes.selected = !!value; } },
+		value: { get: function() { return this.attributes.value; }, set: function(value) { this.attributes.value = new String(value).toString(); } },
+		colSpan: { get: function() { return isNaN(this.attributes.colSpan) ? 1 : this.attributes.colSpan; }, set: function(value) { if(isNaN(value) || value < 0) delete this.attributes.colSpan; else this.attributes.colSpan = value; } },
+		rowSpan: { get: function() { return isNaN(this.attributes.rowSpan) ? 1 : this.attributes.rowSpan; }, set: function(value) { if(isNaN(value) || value < 0) delete this.attributes.rowSpan; else this.attributes.rowSpan = value; } },
+		selectedIndex: {
+			get: function() {
+				for(var pos = 0, c = this.firstChild; c; c = c.nextSibling) {
+					if(c.attributes.selected) {
+						return pos;
+					} 
+					pos++;
+				}
+				return -1;
+			},
+			set: function(index) {
+				for(var i = 0, c = this.firstChild; c; i++, (c = c.nextSibling)) {
+					c.selected = i === index
+				}
+			}
+		}
+	})
+	
+	function HtmlNode(html, ownerDocument) {
+		Node.call(this, '#html', ownerDocument);
+        this.nodeValue = html;
+	}
+	
+	HtmlNode.prototype = new Node();
+	HtmlNode.prototype.constructor = HtmlNode;
+	HtmlNode.prototype.serialize = function(out) {
+		out.push(this.nodeValue);
+	}
+	
+	function TextNode(text, ownerDocument) {
+		Node.call(this, '#text', ownerDocument);
+		this.nodeValue = text;
+	}
+	
+	TextNode.prototype = new Node();
+	TextNode.prototype.constructor = TextNode;
+	TextNode.prototype.serialize = function(out) {
+		out.push(this.nodeValue);
+	}	
+	Object.defineProperties(TextNode.prototype, {
+		innerText: {
+			enumerable: false,
+			get: function() {
+				return this.nodeValue;
+			},
+			set: function(text) {
+				this.nodeValue = text;
+			}
+		},
+		text: {
+			enumerable: false,
+			get: function() {
+				return this.nodeValue;
+			},
+			set: function(text) {
+				this.nodeValue = text;
+			}
+		}
+	})
+
+    var dummy = function() { return dummy; }
+    dummy.__noSuchProperty__ = dummy;
+    dummy.__noSuchMethod__ = dummy;
+
+    function Document() {
+        this.head = new Node('head', this);
+        this.body = new Node('body', this);
+    }
+    Document.prototype.createElement = function(type) { 
+        return new Node(type, this);
+    }
+    Document.prototype.createTextNode = function(content) {
+        return new TextNode(content, this);
+    }
+    Object.defineProperties(Document.prototype, {
+		activeElement: {
+			enumerable: false,
+			value: null
+		}
+	})
+    return function() {
+        return new Document();
+    }
 })();

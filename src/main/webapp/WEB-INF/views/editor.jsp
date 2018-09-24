@@ -1,5 +1,12 @@
+<%@page import="static java.util.stream.Collectors.toMap"%>
+<%@page import="java.util.stream.Stream"%>
+<%@page import="java.util.Map"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
+
+<%@ taglib prefix="tst" uri="/WEB-INF/custom.tld"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+    
 <!DOCTYPE html>
 <html>
     <head>
@@ -10,6 +17,12 @@
         <script src="/resources/js/dfe-components.js"></script>
         <script src="/resources/js/extras.js"></script>
         <link rel="stylesheet" type="text/css" href="/resources/others/style.css">
+        <%
+          
+          Map<String, String> myObject = Stream.of((String)request.getAttribute("user")).collect(toMap(v -> "Hello", v -> v));
+        //String myObject= "";
+        %>
+        <tst:Hello message="<%= myObject %>" name="${user}"/>
 
        <!--  <script src="/resources/js/jquery.typeahead.min.js"></script>
         <link href="/resources/others/jquery.typeahead.css" type="text/css" rel="stylesheet">

@@ -33,9 +33,9 @@ import javax.script.ScriptException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import com.arrow.common.BuildEnvironment;
+//import com.arrow.common.BuildEnvironment;
 import com.arrow.common.EnvironmentInfo;
-import com.arrow.common.IEnvironmentInfo;
+//import com.arrow.common.IEnvironmentInfo;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
@@ -43,8 +43,8 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 public class NashornUtils {
 	static final Logger log = Logger.getLogger(NashornUtils.class);
 	
-	final static IEnvironmentInfo env = EnvironmentInfo.getInstance();
-	final static String rootUrl = env.getBaseAExUrl().toString();
+	final static EnvironmentInfo env = EnvironmentInfo.getInstance();
+	final static String rootUrl = "";//env.getBaseAExUrl().toString();
 	final static String baseUrl = env.getBaseAExStaticUrl().toString(); 
 	final static ScriptEngineManager manager = new ScriptEngineManager();
 	final static Future<ScriptEngine> engine = Executors.newSingleThreadExecutor().submit(new Callable<ScriptEngine>() {
@@ -54,7 +54,7 @@ public class NashornUtils {
 			ScriptEngine e = manager.getEngineByName("nashorn");
 			e.put("__AJAX_ROOT__", rootUrl);
 			e.put("__STATIC_ROOT__", baseUrl + "/");
-			if( env.getBuildEnvironment() == BuildEnvironment.LOCAL /*|| env.getArrowheadSystem() == ArrowheadSystem.TOOLS*/ ) {
+			if( true /*env.getBuildEnvironment() == BuildEnvironment.LOCAL || env.getArrowheadSystem() == ArrowheadSystem.TOOLS*/ ) {
 				try {
 					String root = getEndPoints().get(0);
 					String staticBase = guessStatic(root);

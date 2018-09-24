@@ -8,4 +8,8 @@ public class EnvironmentInfo {
 	public String getBaseAExStaticUrl() {
 		return "http://localhost:8080/static";
 	}
+	
+	public static String g(final String f) {
+		return f;
+	}
 }

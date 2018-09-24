@@ -1,9 +1,7 @@
+<%@page import="com.arrow.common.EnvironmentInfo"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
-<%
-   
-%>
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -15,6 +13,11 @@
         <script src="/resources/js/jquery.typeahead.js"></script>
         <link href="/resources/others/jquery.typeahead.css" type="text/css" rel="stylesheet"></link>
         <style id="custom-css-dfe" type="text/css"></style>
+        
+        <%
+        String someVariable = "abc"; 
+    	%>
+        <%@ include file="inc.jspf" %>
 
 	    <script>
 	        window.onkeydown = function(event) { if(event.key == "F10") window.open("/editor", "DFE editor", "height=460,width=1690,left=300,top=300,toolbar=no,titlebar=no,status=no,menubar=no"); }
