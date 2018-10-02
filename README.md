@@ -1,5 +1,3 @@
-# nashorn-polyfill
-
 # EventLoop
 Guarantees to run all user code in single thread, whether it s triggered by promise, http call, or timer, thus addressing thread safety concern. 
 Multiple java threads can share same global as long as they don't create any new global variables.
