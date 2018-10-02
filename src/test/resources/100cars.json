@@ -1,0 +1,4705 @@
+{
+  "controlId": {},
+  "controlSet": {
+    "bridgeQuoteId": "",
+    "buildenv": "local",
+    "clienttype": "comm",
+    "dbVersion": "865",
+    "overrideEffectiveLimit": "N",
+    "prodcode": "111111",
+    "prodmaincode": "111111",
+    "prodsubcode": "qatest",
+    "quotecreated": "201809231456",
+    "site": "NAL",
+    "sourcesystem": "NAL",
+    "txnHistory": {
+      "lobTxnHistoryMap": {
+        "bbop": {
+          "quoterate": "2018-09-26T11:10:01-08:00",
+          "status": "complete"
+        },
+        "cmau": {
+          "quoterate": "2018-09-26T11:10:01-08:00",
+          "status": "pending"
+        },
+        "work": {
+          "quoterate": "2018-09-26T11:10:01-08:00",
+          "status": "pending"
+        }
+      }
+    },
+    "type": "policy",
+    "version": "2"
+  },
+  "insuredSet": {
+    "address": {
+      "address": "3510 E 73RD CIR N",
+      "city": "VALLEY CENTER",
+      "state": "KS",
+      "zip": "67147"
+    },
+    "companyName": "TC-2YVZYFt",
+    "dBA": "ComplexScenarios2KS",
+    "email": "test@test.com",
+    "firstName": "TFirstKSQqyi",
+    "individual": "n",
+    "instype": "Limited Liability Company",
+    "lastName": "TLastKSiaIE",
+    "wphone": "111-111-1111"
+  },
+  "navigation": {
+    "completedScreenEffectiveProduct": "WORK",
+    "completedScreenFormName": "quote.products"
+  },
+  "policy": {
+    "agentid": "qatest",
+    "bbopSet": {
+      "addtlIntInd": "N",
+      "automaticIncr": "4",
+      "classCodes": "74071,74831",
+      "commissionMap": {
+        "agencyBill100": "15.0000",
+        "directBill100": "15.0000"
+      },
+      "coverages": {
+        "amendagg": {
+          "includeFormInd": "Y"
+        },
+        "bipay": {
+          "includeInd": "N"
+        },
+        "bitime": {
+          "includeInd": "N"
+        },
+        "blanket": {
+          "includeInd": "N"
+        },
+        "blkai": {
+          "includeInd": "N"
+        },
+        "compf": {
+          "includeInd": "Y",
+          "limit": "50000"
+        },
+        "conadd": {
+          "includeInd": "Y"
+        },
+        "concov": {
+          "includeInd": "Y"
+        },
+        "conins": {
+          "blanketLimit": "5000",
+          "conEquipRentReimbursement": "Y",
+          "conToolsCovType": "Blanket Limit",
+          "empTools": {
+            "includeInd": "Y",
+            "limit": "20000"
+          },
+          "nonownTools": {
+            "includeInd": "Y",
+            "limit": "50000"
+          },
+          "propOnSite": "10000/30000"
+        },
+        "conscd": {},
+        "cyber": {
+          "includeInd": "N"
+        },
+        "datcom": {
+          "includeInd": "N"
+        },
+        "dentistEquip": {},
+        "empben": {
+          "includeInd": "N"
+        },
+        "emplia": {
+          "ded": "10000",
+          "includeInd": "Y",
+          "limit": "100000",
+          "numEmp": "50",
+          "numNonFTEmp": "20",
+          "thirdPartyCoverage": "N"
+        },
+        "eqpbrk": {
+          "includeInd": "Y"
+        },
+        "excladvertising": {
+          "includeFormInd": "Y"
+        },
+        "excladvertisinglawyers": {
+          "includeFormInd": "Y"
+        },
+        "exclinspection": {
+          "includeFormInd": "Y"
+        },
+        "exclinsulation": {
+          "includeFormInd": "Y"
+        },
+        "excllaundry": {
+          "includeFormInd": "Y"
+        },
+        "exclwarehouse": {
+          "includeFormInd": "Y"
+        },
+        "fellow": {
+          "includeInd": "N"
+        },
+        "hireda": {
+          "includeInd": "N"
+        },
+        "limart": {
+          "includeFormInd": "Y"
+        },
+        "limbook": {
+          "includeFormInd": "Y"
+        },
+        "limpet": {
+          "includeFormInd": "Y"
+        },
+        "limphoto": {
+          "includeFormInd": "Y"
+        },
+        "limrealestate": {
+          "includeFormInd": "Y"
+        },
+        "liqpet": {
+          "includeFormInd": "Y"
+        },
+        "nonown": {
+          "includeInd": "N"
+        },
+        "photof": {},
+        "snowCo": {
+          "includeInd": "N"
+        },
+        "suppr": {
+          "includeInd": "N"
+        },
+        "terror": {
+          "includeInd": "Y"
+        }
+      },
+      "finalized": "Y",
+      "fixedDeductible": "2500",
+      "gLOccurrenceLimit": "1000000",
+      "hasAieqip": "N",
+      "hasAiprem": "N",
+      "hasBldCov": "Y",
+      "hasContowCov": "N",
+      "hasFuncBldValue": "N",
+      "hasLcompf": "Y",
+      "hasLien": "N",
+      "hasLossPayee": "N",
+      "hasNoFuncBldValue": "Y",
+      "hasPpCov": "Y",
+      "hasReplacementCostValue": "Y",
+      "instec": {
+        "quoteNumber": "Q-000092408",
+        "storageId": "98821"
+      },
+      "isoClassGroups": "Contractors Office,Contractors Office",
+      "liaDed": "500",
+      "liabCovInd": "Y",
+      "locationList": [
+        {
+          "address": "3510 E 73RD CIR N",
+          "addressLine": "3510 E 73RD CIR N",
+          "based": "riskAddress1",
+          "bceg": {
+            "bcegCode": "99",
+            "callResult": "SUCCESSFUL",
+            "message": ""
+          },
+          "buildingList": [
+            {
+              "classCode": "74071",
+              "classOverride": "N",
+              "classTag": "PAY",
+              "construction": "Joisted Masonry",
+              "coverages": {
+                "actrec": {
+                  "includeInd": "Y",
+                  "limit": "200000"
+                },
+                "aieqip": {
+                  "includeInd": "N"
+                },
+                "aiprem": {
+                  "includeInd": "N"
+                },
+                "bld": {
+                  "includeInd": "Y",
+                  "limit": "580000",
+                  "valuation": "Replacement Cost"
+                },
+                "concom": {
+                  "includeFormInd": "Y"
+                },
+                "eq": {
+                  "coverageType": "No Coverage"
+                },
+                "lcompf": {
+                  "includeInd": "Y",
+                  "numEmployees": "15"
+                },
+                "liab": {
+                  "includeInd": "Y",
+                  "payroll": "500000"
+                },
+                "lienholder": {
+                  "includeInd": "N"
+                },
+                "lospay": {
+                  "includeInd": "N"
+                },
+                "ordLaw": {
+                  "covType": "Coverage 1",
+                  "includeInd": "Y"
+                },
+                "pP": {
+                  "includeInd": "Y",
+                  "limit": "200000",
+                  "seasonalIncrease": "25"
+                },
+                "spoil": {
+                  "includeInd": "N"
+                },
+                "tenfir": {
+                  "includeInd": "Y",
+                  "limit": "75000"
+                },
+                "utildd": {
+                  "includeInd": "N"
+                },
+                "utilte": {
+                  "includeInd": "N"
+                }
+              },
+              "cspCode": "0702",
+              "description": "Loc 1 Bldg 1",
+              "industrySegment": "",
+              "isoClassDescription": "Appliances and Accessories - Installation or Service or Repair - Commercial (Not including TV or Radio) (Office)",
+              "isoClassDescriptionId": "1056",
+              "isoClassGroup": "Contractors Office",
+              "lOI": "580000",
+              "naicsCode": "238210",
+              "numStories": "2",
+              "occupancy": "Owner Occupied Bldg - 10% or Less",
+              "occupiedSqFt": "4000",
+              "premOpsILF": "3",
+              "replacementCost": {
+                "callResult": "SUCCESSFUL",
+                "message": "",
+                "replacementCost": "600990"
+              },
+              "sicCode": "1799",
+              "soleOccupantInd": "Y",
+              "sprinklered": "Y",
+              "yearBuilt": "2012"
+            }
+          ],
+          "buildings": "1",
+          "city": "VALLEY CENTER",
+          "classCodes": "74071",
+          "confirmation": "N/A",
+          "countyName": "SEDGWICK",
+          "finalProtectionClass": "2",
+          "isoClassGroups": "Contractors Office",
+          "pPCAddressKey": "3510 E 73RD CIR N:VALLEY CENTER:KS:67147:3510:73RD:CIR",
+          "pPCCall": {
+            "driveDistanceToRespondingFireStation": "Greater than 1 to 2 miles",
+            "fireProtectionArea": "SEDGWICK CO FD 1 FDS",
+            "matchType": "Address Level Match",
+            "multiplePPCInd": "N",
+            "pPCCode": "5",
+            "respondingFireStation": "SEDGWICK CO FD 1 FS 32",
+            "waterSupplyType": "Hauled Water"
+          },
+          "postDir": "N",
+          "preDir": "E",
+          "rawProtectionClass": "2",
+          "recordType": "S",
+          "scrubberCalled": "Y",
+          "scrubberResult": "Accepted",
+          "secondaryName": "",
+          "state": "KS",
+          "street": "73RD",
+          "streetNum": "3510",
+          "streetType": "CIR",
+          "unit": "",
+          "userCountyName": "SEDGWICK",
+          "wHDeductiblePcnt": "2",
+          "zip": "67147",
+          "zipAddOn": "9234"
+        },
+        {
+          "address": "9101 GRANDEUR DR",
+          "addressLine": "9101 GRANDEUR DR",
+          "based": "riskAddress2",
+          "bceg": {
+            "bcegCode": "99",
+            "callResult": "SUCCESSFUL",
+            "message": ""
+          },
+          "buildingList": [
+            {
+              "classCode": "74831",
+              "classOverride": "N",
+              "classTag": "PAY",
+              "construction": "Non-Combustible",
+              "coverages": {
+                "actrec": {
+                  "includeInd": "Y",
+                  "limit": "75000"
+                },
+                "aieqip": {
+                  "includeInd": "N"
+                },
+                "aiprem": {
+                  "includeInd": "N"
+                },
+                "bld": {
+                  "includeInd": "Y",
+                  "limit": "600000",
+                  "valuation": "Actual Cash Value"
+                },
+                "concom": {
+                  "includeFormInd": "Y"
+                },
+                "eq": {
+                  "coverageType": "No Coverage"
+                },
+                "lcompf": {
+                  "includeInd": "N"
+                },
+                "liab": {
+                  "includeInd": "Y",
+                  "payroll": "250000"
+                },
+                "lienholder": {
+                  "includeInd": "N"
+                },
+                "lospay": {
+                  "includeInd": "N"
+                },
+                "ordLaw": {
+                  "includeInd": "N"
+                },
+                "pP": {
+                  "includeInd": "Y",
+                  "limit": "300000",
+                  "seasonalIncrease": "25"
+                },
+                "spoil": {
+                  "includeInd": "N"
+                },
+                "tenfir": {
+                  "includeInd": "Y",
+                  "limit": "150000"
+                },
+                "utildd": {
+                  "includeInd": "N"
+                },
+                "utilte": {
+                  "includeInd": "N"
+                }
+              },
+              "cspCode": "0702",
+              "description": "Loc 2 Bldg 1",
+              "industrySegment": "",
+              "isoClassDescription": "House Furnishings Installation - Not Otherwise Classified (Includes incidental upholstering and floor covering installation) (Office)",
+              "isoClassDescriptionId": "1097",
+              "isoClassGroup": "Contractors Office",
+              "lOI": "600000",
+              "naicsCode": "238210",
+              "numStories": "3",
+              "occupancy": "Non-Owner Occupied Bldg.",
+              "occupiedSqFt": "3000",
+              "premOpsILF": "3",
+              "replacementCost": {
+                "callResult": "SUCCESSFUL",
+                "message": "",
+                "replacementCost": "716955"
+              },
+              "sicCode": "1799",
+              "soleOccupantInd": "N",
+              "sprinklered": "Y",
+              "yearBuilt": "2013"
+            }
+          ],
+          "buildings": "1",
+          "city": "ATCHISON",
+          "classCodes": "74831",
+          "confirmation": "Y",
+          "countyName": "",
+          "finalProtectionClass": "2",
+          "isoClassGroups": "Contractors Office",
+          "pPCAddressKey": "9101 GRANDEUR DR:ATCHISON:KS:66002:9101:GRANDEUR:DR",
+          "pPCCall": {
+            "driveDistanceToRespondingFireStation": "Greater than 2 to 3 miles",
+            "fireProtectionArea": "ATCHISON CO RURAL FD 1",
+            "matchType": "Address Level Match",
+            "multiplePPCInd": "N",
+            "pPCCode": "5",
+            "respondingFireStation": "ATCHISON CO RURAL FD 1 FS",
+            "waterSupplyType": "Hydrant"
+          },
+          "postDir": "",
+          "preDir": "",
+          "rawProtectionClass": "2",
+          "recordType": "",
+          "scrubberCalled": "Y",
+          "scrubberResult": "Rejected",
+          "secondaryName": "#",
+          "state": "KS",
+          "street": "GRANDEUR",
+          "streetNum": "9101",
+          "streetType": "DR",
+          "unit": "",
+          "userCountyName": "ATCHISON",
+          "wHDeductiblePcnt": "2",
+          "zip": "66002",
+          "zipAddOn": ""
+        }
+      ],
+      "medicalExpenses": "10000",
+      "otherCOA": "2000000",
+      "proLiabInd": "N",
+      "productsCOA": "2000000",
+      "propCovInd": "Y",
+      "removeITVProvision": "N",
+      "statesNotAllowedStopGap": "",
+      "uniqueStatesList": "KS"
+    },
+    "brokerfee": "0",
+    "cmauSet": {
+      "autonomousVehicles": "N",
+      "commissionMap": {
+        "agencyBill100": "15.0000",
+        "directBill100": "15.0000"
+      },
+      "coverageInfoAllStates": {
+        "coveragesGen": {
+          "doccCoverage": {
+            "includeInd": "N"
+          },
+          "emphired": {
+            "includeInd": "N"
+          },
+          "haCoverage": {
+            "includeInd": "N"
+          },
+          "lia": {
+            "includeInd": "Y"
+          },
+          "limmex": {
+            "includeInd": "N"
+          },
+          "medCoverage": {
+            "medLimit": "10000"
+          },
+          "nonOwnedAuto": {
+            "includeInd": "N"
+          },
+          "noticeToOthersOfCancellation": {
+            "includeInd": "N"
+          },
+          "waiverOfSubrogation": {
+            "blanketWithExtensions": "Included",
+            "includeInd": "N"
+          }
+        },
+        "perState": {
+          "ks": {
+            "address": {
+              "city": "VALLEY CENTER",
+              "state": "KS",
+              "zip": "67147"
+            },
+            "coverages": {
+              "doccCoverage": {
+                "includeInd": "N"
+              },
+              "emphired": {
+                "includeInd": "N"
+              },
+              "haCoverage": {
+                "includeInd": "N"
+              },
+              "lia": {
+                "includeInd": "Y"
+              },
+              "limmex": {
+                "includeInd": "N"
+              },
+              "medCoverage": {
+                "medLimit": "10000"
+              },
+              "nonOwnedAuto": {
+                "includeInd": "N"
+              },
+              "noticeToOthersOfCancellation": {
+                "includeInd": "N"
+              },
+              "uMCoverage": {
+                "liabilityType": "Combined Single Limit",
+                "limitCSL": "65000"
+              },
+              "waiverOfSubrogation": {
+                "blanketWithExtensions": "Included",
+                "includeInd": "N"
+              }
+            },
+            "garageInd": "N"
+          }
+        }
+      },
+      "coverages": {
+        "otherCoverages": {
+          "basketdedendo": {
+            "includedInd": "N"
+          },
+          "endoextension": {
+            "includedInd": "Included"
+          }
+        },
+        "terrorCoverage": {
+          "allother": "Include All Other Terrorism",
+          "includedInd": "Y",
+          "premtype": "Included at No Additional Charge"
+        }
+      },
+      "driverList": [
+        {
+          "birthdate": "19800101",
+          "driverAttractScore": "Not Found.",
+          "firstname": "DFirstKS",
+          "lastname": "DLastKS",
+          "licenseNumber": "P2015170",
+          "licenseState": "KS",
+          "relationshipToInsured": "Self"
+        },
+        {
+          "birthdate": "19900721",
+          "driverAttractScore": "Not Found.",
+          "firstname": "TEXAS",
+          "hiredate": "20050101",
+          "lastname": "VALID",
+          "licenseNumber": "37345555",
+          "licenseState": "TX",
+          "relationshipToInsured": "Employee"
+        }
+      ],
+      "finalized": "N",
+      "foodDelivery": "N",
+      "hasAdditionalNamedInsured": "N",
+      "hasAiLessor": "N",
+      "hasExcludedDrivers": "N",
+      "hasLossPayee": "Y",
+      "hasPPA": "Y",
+      "hazardousMaterials": "N",
+      "instec": {
+        "quoteNumber": "Q-000092407",
+        "storageId": "98820"
+      },
+      "isDriverInfoVerified": "Y",
+      "leasedRentedVehicles": "N",
+      "liability": "1000000",
+      "locationList": [
+        {
+          "address": "3510 E 73RD CIR N",
+          "addressLine": "3510 E 73RD CIR N",
+          "based": "riskAddress1",
+          "cars": [
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "1000",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "towlabor": "No Coverage",
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "valuationMethod": "Actual Cash Value",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            },
+            {
+              "controlNbr": "OLD  1988 1G3WS14W\\CJD\\R300001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 2",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "3"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3027",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "OLDSMOBILE",
+              "modelInfo": "CUTLASS SUPREME",
+              "modelYr": "1988",
+              "origCost": "13495",
+              "physDmgInd": "N",
+              "vehUseCd": "All Other",
+              "vehicleCostNew": "13495",
+              "vehicleType": "car",
+              "vinnumber": "1G3WS14W4JD313751",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            }
+          ],
+          "city": "VALLEY CENTER",
+          "confirmation": "N/A",
+          "countyName": "SEDGWICK",
+          "garageInd": "N",
+          "postDir": "N",
+          "preDir": "E",
+          "recordType": "S",
+          "scrubberCalled": "Y",
+          "scrubberResult": "Accepted",
+          "secondaryName": "",
+          "state": "KS",
+          "street": "73RD",
+          "streetNum": "3510",
+          "streetType": "CIR",
+          "unit": "",
+          "zip": "67147",
+          "zipAddOn": "9234"
+        },
+        {
+          "address": "9101 GRANDEUR DR",
+          "addressLine": "9101 GRANDEUR DR",
+          "based": "riskAddress2",
+          "cars": [
+            {
+              "controlNbr": "FOR  1988 1FABP64T\\CJH\\R100001-999999",
+              "coverages": {
+                "collisionDeductible": "No Coverage",
+                "comprehensiveDeductible": "No Coverage",
+                "liab": {
+                  "includeInd": "Y"
+                },
+                "pipCoverage": {
+                  "additionalPipKS": "Option 1",
+                  "numberOfAdditionalBroadenedPipIndividualsKS": "0",
+                  "numberOfBroadenedPipIndividualsKS": "0"
+                },
+                "uMCoverage": {
+                  "liabilityType": "Combined Single Limit",
+                  "limitCSL": "65000"
+                }
+              },
+              "emplessor": "N",
+              "grossVehicleWeight": "3415",
+              "hasvin": "Y",
+              "lossPayee": {
+                "lossPayeeIncludeInd": "Y",
+                "namedInsuredInd": "N"
+              },
+              "make": "FORD",
+              "modelInfo": "THUNDERBIRD",
+              "modelYr": "1988",
+              "operExp": "No operator licensed less than 5 years",
+              "operUse": "Not driven to work or school",
+              "origCost": "17250",
+              "physDmgInd": "N",
+              "vehUseCd": "Furnished for Non-Business Use",
+              "vehicleCostNew": "17250",
+              "vehicleType": "car",
+              "vinnumber": "1FABP64T2JH157839",
+              "vinoverride": "N",
+              "vinvalid": "Y"
+            }
+          ],
+          "city": "ATCHISON",
+          "confirmation": "Y",
+          "countyName": "",
+          "garageInd": "N",
+          "postDir": "",
+          "preDir": "",
+          "recordType": "",
+          "scrubberCalled": "N",
+          "scrubberResult": "",
+          "secondaryName": "#",
+          "state": "KS",
+          "street": "GRANDEUR",
+          "streetNum": "9101",
+          "streetType": "DR",
+          "unit": "",
+          "zip": "66002",
+          "zipAddOn": ""
+        }
+      ],
+      "scheduledAutoInd": "Y",
+      "transportPassengers": "N",
+      "uniqueStatesList": "KS"
+    },
+    "commonSet": {
+      "applicableStates": "KS",
+      "company": "",
+      "dnb": {
+        "dunsNumber": "777777772"
+      },
+      "effective": "20180923",
+      "expiration": "20190923",
+      "industrySegment": "Electrical Contractors and Other Wiring Installation Contractors",
+      "instecPrimaryAccount": "T-12493",
+      "instecSecondaryAccount": "0-12494",
+      "naicsCode": "238210",
+      "quoteSource": "AEX",
+      "quoteType": "NB",
+      "sicCode": "1799",
+      "state": "KS",
+      "stateOfDomicile": "KS",
+      "uw": {
+        "ineligibleInd": "N",
+        "packageEligibleInd": "N",
+        "rulesResult": {
+          "finalizedDecision": {
+            "code": "QUICK_QUOTE",
+            "details": {
+              "ruleDetailsList": [
+                {
+                  "decisionCode": "QUICK_QUOTE",
+                  "lob": "ALL",
+                  "messages": [
+                    {
+                      "htmlText": "",
+                      "text": ""
+                    }
+                  ],
+                  "name": "QuickQuotePassesRule",
+                  "ruleType": "qqfinal",
+                  "statesFailingLicensing": "",
+                  "unrecoverableInd": "N"
+                }
+              ]
+            },
+            "statesFailingLicensing": ""
+          },
+          "lobsUsedInFinalizedDecision": "BBOP,WORK",
+          "perLobDecisionMap": {
+            "bbop": {
+              "code": "QUICK_QUOTE",
+              "details": {
+                "ruleDetailsList": [
+                  {
+                    "decisionCode": "QUICK_QUOTE",
+                    "lob": "ALL",
+                    "messages": [
+                      {
+                        "htmlText": "",
+                        "text": ""
+                      }
+                    ],
+                    "name": "QuickQuotePassesRule",
+                    "ruleType": "qqfinal",
+                    "statesFailingLicensing": "",
+                    "unrecoverableInd": "N"
+                  }
+                ]
+              },
+              "statesFailingLicensing": ""
+            },
+            "cmau": {
+              "code": "SFA_BOP",
+              "details": {
+                "ruleDetailsList": [
+                  {
+                    "decisionCode": "SFA_BOP",
+                    "lob": "CMAU",
+                    "messages": [
+                      {
+                        "htmlText": "The ratio of drivers to power units less than 50%",
+                        "text": "The ratio of drivers to power units less than 50%"
+                      }
+                    ],
+                    "name": "DriverToPURatio",
+                    "ruleType": "sfabop",
+                    "statesFailingLicensing": "",
+                    "unrecoverableInd": "N"
+                  },
+                  {
+                    "decisionCode": "SFA_BOP",
+                    "lob": "CMAU",
+                    "messages": [
+                      {
+                        "htmlText": "Applicant has 10 or more power units",
+                        "text": "Applicant has 10 or more power units"
+                      }
+                    ],
+                    "name": "PowerUnitCount",
+                    "ruleType": "sfabop",
+                    "statesFailingLicensing": "",
+                    "unrecoverableInd": "N"
+                  },
+                  {
+                    "decisionCode": "SFA_BOP",
+                    "lob": "CMAU",
+                    "messages": [
+                      {
+                        "htmlText": "Check MVRs for any failures.",
+                        "text": "Check MVRs for any failures."
+                      }
+                    ],
+                    "name": "SfaBopCheckMvrsRule",
+                    "ruleType": "metasfabop",
+                    "statesFailingLicensing": "",
+                    "unrecoverableInd": "N"
+                  }
+                ]
+              },
+              "statesFailingLicensing": ""
+            },
+            "work": {
+              "code": "QUICK_QUOTE",
+              "details": {
+                "ruleDetailsList": [
+                  {
+                    "decisionCode": "QUICK_QUOTE",
+                    "lob": "ALL",
+                    "messages": [
+                      {
+                        "htmlText": "",
+                        "text": ""
+                      }
+                    ],
+                    "name": "QuickQuotePassesRule",
+                    "ruleType": "qqfinal",
+                    "statesFailingLicensing": "",
+                    "unrecoverableInd": "N"
+                  }
+                ]
+              },
+              "statesFailingLicensing": ""
+            }
+          }
+        }
+      },
+      "yearBizStarted": "2012"
+    },
+    "custid": "121653",
+    "customerid": "121653",
+    "effective": "20180923",
+    "effectiveProduct": "WORK",
+    "expiration": "20190923",
+    "formName": "quote.work.policy",
+    "formgroup": "corecomm",
+    "indicator": {
+      "closedzip": "N"
+    },
+    "producer": {
+      "email": "test@test.com",
+      "emailCC": "test@test.com",
+      "emailConfirm": "test@test.com",
+      "name": "Test",
+      "phone": "111-111-1111"
+    },
+    "product": "BBOP",
+    "quoteId": "131354",
+    "state": "KS",
+    "umbrSet": {
+      "coverages": {},
+      "finalized": "N",
+      "instec": {
+        "quoteNumber": "",
+        "storageId": ""
+      },
+      "locationList": [
+        {
+          "address": "3510 E 73RD CIR N",
+          "buildings": "1",
+          "city": "VALLEY CENTER",
+          "state": "KS",
+          "zip": "67147"
+        },
+        {
+          "address": "9101 GRANDEUR DR",
+          "buildings": "1",
+          "city": "ATCHISON",
+          "state": "KS",
+          "zip": "66002"
+        }
+      ],
+      "otherAgencyWCInfo": {},
+      "uniqueStatesList": "KS"
+    },
+    "uniqueStatesList": "KS",
+    "workSet": {
+      "accidentLimit": "500000",
+      "additionalNamedInsured": "N",
+      "antooc": {
+        "includeInd": "N"
+      },
+      "bureauMap": {
+        "ncci": {
+          "expmodtype": "1.000",
+          "status": "Not Exp Rated"
+        }
+      },
+      "classCodes": "0042",
+      "commissionMap": {
+        "agencyBill401": "12.0000",
+        "agencyBill402": "12.0000",
+        "agencyBill403": "12.0000",
+        "agencyBill404": "",
+        "agencyBill405": "",
+        "agencyBill406": "",
+        "agencyBill407": "",
+        "agencyBill408": "",
+        "agencyBill409": "",
+        "agencyBill410": "",
+        "directBill401": "12.0000",
+        "directBill402": "12.0000",
+        "directBill403": "12.0000",
+        "directBill404": "",
+        "directBill405": "",
+        "directBill406": "",
+        "directBill407": "",
+        "directBill408": "",
+        "directBill409": "",
+        "directBill410": "",
+        "premiumTier": "1"
+      },
+      "companyInfo": {
+        "expiringpremium": "1000",
+        "feinnumber": "387072024",
+        "yrsinbusiness": "4"
+      },
+      "diseaseLimit": "500000",
+      "effective": "20180930",
+      "empDiseaseLimit": "500000",
+      "eratingStateMap": {
+        "ks": {
+          "showOnForm": "Y"
+        },
+        "wa": {
+          "showOnForm": "Y"
+        }
+      },
+      "expiration": "20190930",
+      "finalized": "N",
+      "hasInclExclMembers": "Y",
+      "industrygroups": "constructorerect",
+      "instec": {
+        "quoteNumber": "Q-000092406",
+        "storageId": "98819"
+      },
+      "isConstructAndErectGroup": "N",
+      "isConstructOrErectGroup": "N",
+      "isServiceAndArtisansGroup": "N",
+      "locations": [
+        {
+          "address": "3510 E 73RD CIR N",
+          "city": "VALLEY CENTER",
+          "classes": [
+            {
+              "code": "0042",
+              "description": "Landscape Gardening and Drivers.",
+              "fulltimeemployeeamt": "1",
+              "industrygroup": "constructorerect",
+              "instecDescription": "Landscape Gardening & Drivers.",
+              "parttimeemployeeamt": "0",
+              "payroll": "100000",
+              "subcode": "0042-1"
+            }
+          ],
+          "state": "KS",
+          "zip": "67147"
+        },
+        {
+          "address": "9101 GRANDEUR DR",
+          "city": "ATCHISON",
+          "classes": [
+            {
+              "code": "0042",
+              "description": "Street Or Road Construction-Beautification Work and Drivers",
+              "fulltimeemployeeamt": "1",
+              "industrygroup": "constructorerect",
+              "instecDescription": "Street or Road Construction-Beautification Work & Drivers",
+              "parttimeemployeeamt": "0",
+              "payroll": "100000",
+              "subcode": "0042-2"
+            }
+          ],
+          "state": "KS",
+          "zip": "66002"
+        },
+        {
+          "noSpecificLocation": "Y",
+          "state": "WA",
+          "stopGap": {
+            "includeInd": "N",
+            "limit": "No Coverage"
+          }
+        }
+      ],
+      "safety": {
+        "dailyops": "N",
+        "equipmentAge": "Not Applicable",
+        "injury": "Y",
+        "meetings": "Not Applicable",
+        "mvr": "Y",
+        "protection": "Y",
+        "returntowork": "Y",
+        "training": "Y",
+        "turnover": "Y"
+      },
+      "uniqueStatesList": "KS,WA",
+      "uwAnswers": {
+        "acord130Answers": {},
+        "classesUwAnswers": {},
+        "generalUwAnswers": {},
+        "industryUwAnswers": {
+          "artisan": {},
+          "automotive": {},
+          "clerical": {},
+          "construction": {},
+          "foodpackaging": {},
+          "habitational": {},
+          "healthcare": {},
+          "hospitality": {},
+          "lifesciences": {},
+          "manufacturingmetal": {},
+          "manufacturingmisc": {},
+          "manufacturingpaper": {},
+          "manufacturingtextile": {},
+          "mercantile": {}
+        },
+        "submission": "N"
+      },
+      "waivers": {
+        "waivertype": "NoWaiver"
+      }
+    }
+  }
+}
