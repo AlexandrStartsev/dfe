@@ -68,6 +68,8 @@ public class TestClass {
 					String response = cb.get();
 					//assert gson.fromJson(response, new TypeToken<List<String>>() {}.getType()) instanceof List;
 					System.out.println(t + ": " + (System.currentTimeMillis() - ts) + " ms");
+					
+					//if(t < 100) Thread.sleep(50);
 				}
 				// ending event loop
 				tt.interrupt();

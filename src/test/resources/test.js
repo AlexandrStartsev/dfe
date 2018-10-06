@@ -1,5 +1,5 @@
 var __STATIC_ROOT__ = 'classpath:nodejs/';
-var __EVENTLOOP_DEBUG_MODE__ = true;
+var __EVENTLOOP_DEBUG_MODE__ = false;
 load('classpath:nashorn-utils.js');
 
 var $ = jQuery = function() { return jQuery; }
@@ -23,7 +23,7 @@ EventLoop(function(context) {
 	return ;*/
 	
 	context.nonBlockingFeeder(function() { return queue.take(); }, function(payload) {
-		service.validate(payload.formName, JSON.parse(payload.model), function(result) {
+		service.validate(payload.formName, JSON.parse(payload.model)).then(function(result) {
 			payload.callback.complete(JSON.stringify(result));
 		});
 	});
